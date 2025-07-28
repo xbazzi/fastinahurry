@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+package trading;
+
+service TradingService {
+  rpc SendOrder(Order) returns (OrderAck);
+  rpc StreamMarketData(MarketRequest) returns (stream MarketData);
+}
+
+enum Side {
+  SIDE_UNSPECIFIED = 0;
+  BUY = 1;
+  SELL = 2;
+}
+
+message Order {
+  string symbol = 1;
+  int32 quantity = 2;
+  double price = 3;
+  Side side = 4; // "buy" or "sell"
+}
+
+message OrderAck {
+  bool success = 1;
+  string message = 2;
+}
+
+message MarketRequest {
+  string symbol = 1;
+}
+
+message MarketData {
+  string symbol = 1;
+  double price = 2;
+  int64 timestamp = 3;
+}
