@@ -26,15 +26,13 @@ jobs:
 
           # 🪞 GitHub Mirror
           
-          This is an automated mirror of the repository hosted on Gitea.
+          This is an automated mirror of the repository hosted at [https://gitgud.foo/xbazzi/fastinahurry](GitGud.foo).
           
           **⚠️ This is a read-only mirror - do not create issues or pull requests here.**
           
           ## 🏠 Original Repository
           
-          The main repository is located at: [https://gitgud.foo/xbazzi/fastinahurry](https://gitgud.foo/xbazzi/fastinahurry)
-          
-          Please visit the original repository for:
+          Please visit the [https://gitgud.foo/xbazzi/fastinahurry](original) repository for:
           - 📝 Issues and bug reports
           - 🔄 Pull requests and contributions
           - 📋 Project documentation
