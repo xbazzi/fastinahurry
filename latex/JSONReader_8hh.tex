@@ -1,0 +1,40 @@
+\doxysection{include/readers/\+JSONReader.hh File Reference}
+\hypertarget{JSONReader_8hh}{}\label{JSONReader_8hh}\index{include/readers/JSONReader.hh@{include/readers/JSONReader.hh}}
+{\ttfamily \#include $<$queue$>$}\newline
+{\ttfamily \#include $<$string$>$}\newline
+{\ttfamily \#include $<$memory$>$}\newline
+{\ttfamily \#include "{}trading.\+pb.\+h"{}}\newline
+{\ttfamily \#include $<$nlohmann/json.\+hpp$>$}\newline
+Include dependency graph for JSONReader.\+hh\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{JSONReader_8hh__incl}
+\end{center}
+\end{figure}
+This graph shows which files directly or indirectly include this file\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=310pt]{JSONReader_8hh__dep__incl}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Namespaces}
+\begin{DoxyCompactItemize}
+\item 
+namespace \mbox{\hyperlink{namespacereaders}{readers}}
+\item 
+namespace \mbox{\hyperlink{namespacereaders_1_1json}{readers\+::json}}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Typedefs}
+\begin{DoxyCompactItemize}
+\item 
+using \mbox{\hyperlink{namespacereaders_1_1json_a5f54a39f5770ab1576f53a06a159cb42}{readers\+::json\+::\+JSON}} = nlohmann\+::json
+\item 
+using \mbox{\hyperlink{namespacereaders_1_1json_aa2743dc5b5ec05c84803e442f21f43d1}{readers\+::json\+::\+Order\+Queue}} = std\+::queue$<$trading\+::\+Order$>$
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{namespacereaders_1_1json_aa2743dc5b5ec05c84803e442f21f43d1}{Order\+Queue}} \mbox{\hyperlink{namespacereaders_1_1json_a05735378dfc87c287094d7aa33ac8209}{readers\+::json\+::read\+\_\+orders\+\_\+from\+\_\+json}} (const std\+::string \&filename)
+\end{DoxyCompactItemize}

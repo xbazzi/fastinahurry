@@ -1,0 +1,52 @@
+\doxysection{Thread\+Pool.\+hh}
+\hypertarget{ThreadPool_8hh_source}{}\label{ThreadPool_8hh_source}\index{include/utils/ThreadPool.hh@{include/utils/ThreadPool.hh}}
+\mbox{\hyperlink{ThreadPool_8hh}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{//\ C++\ Includes}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#include\ <vector>}}
+\DoxyCodeLine{00003\ \textcolor{preprocessor}{\#include\ <queue>}}
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ <thread>}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ <functional>}}
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#include\ <condition\_variable>}}
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#include\ <mutex>}}
+\DoxyCodeLine{00008\ \textcolor{preprocessor}{\#include\ <future>}}
+\DoxyCodeLine{00009\ }
+\DoxyCodeLine{00010\ \textcolor{keyword}{namespace\ }\mbox{\hyperlink{namespaceutils}{utils}}\ \{}
+\DoxyCodeLine{00011\ }
+\DoxyCodeLine{00012\ \textcolor{keyword}{class\ }\mbox{\hyperlink{classutils_1_1ThreadPool_a02ccb8118692092d5d4132eab7c751e2}{ThreadPool}}\ \{}
+\DoxyCodeLine{00013\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00014\ \ \ \ \ std::vector<std::thread>\ \mbox{\hyperlink{classutils_1_1ThreadPool_a3113eec4fac2948b403a0d94c42a3732}{\_workers}};}
+\DoxyCodeLine{00015\ \ \ \ \ std::queue<std::function<void()>>\ \mbox{\hyperlink{classutils_1_1ThreadPool_acbc332a452776263a9e6557131495aee}{\_tasks}};}
+\DoxyCodeLine{00016\ }
+\DoxyCodeLine{00017\ \ \ \ \ std::mutex\ \mbox{\hyperlink{classutils_1_1ThreadPool_ad59af3c00e330ac777fb5eb349e0e291}{\_queue\_mutex}};}
+\DoxyCodeLine{00018\ \ \ \ \ std::condition\_variable\ \mbox{\hyperlink{classutils_1_1ThreadPool_ad0284bde5203396b2e3cf95e07893748}{\_cv}};}
+\DoxyCodeLine{00019\ \ \ \ \ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{classutils_1_1ThreadPool_a6a2a828a76092e3170cb6a93d679043f}{\_stop}}\{\textcolor{keyword}{false}\};}
+\DoxyCodeLine{00020\ }
+\DoxyCodeLine{00021\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00022\ \ \ \ \ \textcolor{keyword}{explicit}\ \mbox{\hyperlink{classutils_1_1ThreadPool_a02ccb8118692092d5d4132eab7c751e2}{ThreadPool}}(std::size\_t\ threads\ =\ std::thread::hardware\_concurrency());}
+\DoxyCodeLine{00023\ \ \ \ \ \mbox{\hyperlink{classutils_1_1ThreadPool_a6f0428a4b19a724f956d82e408013108}{\string~ThreadPool}}();}
+\DoxyCodeLine{00024\ }
+\DoxyCodeLine{00025\ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{class\ }F,\ \textcolor{keyword}{class}...\ Args>}
+\DoxyCodeLine{00026\ \ \ \ \ \textcolor{keyword}{auto}\ \mbox{\hyperlink{classutils_1_1ThreadPool_a06f6b246fd98c4970c0510d48141a29d}{enqueue}}(F\&\&\ f,\ Args\&\&...\ args)\ -\/>\ std::future<std::invoke\_result\_t<F,\ Args...>>\ \{}
+\DoxyCodeLine{00027\ \ \ \ \ \ \ \ \ \textcolor{keyword}{using\ }return\_type\ =\ std::invoke\_result\_t<F,\ Args...>;}
+\DoxyCodeLine{00028\ }
+\DoxyCodeLine{00029\ \ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\ task\_ptr\ =\ std::make\_shared<std::packaged\_task<return\_type()>>(}
+\DoxyCodeLine{00030\ \ \ \ \ \ \ \ \ \ \ \ \ std::bind(std::forward<F>(f),\ std::forward<Args>(args)...)}
+\DoxyCodeLine{00031\ \ \ \ \ \ \ \ \ );}
+\DoxyCodeLine{00032\ }
+\DoxyCodeLine{00033\ \ \ \ \ \ \ \ \ std::future<return\_type>\ result\ =\ task\_ptr-\/>get\_future();}
+\DoxyCodeLine{00034\ }
+\DoxyCodeLine{00035\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00036\ \ \ \ \ \ \ \ \ \ \ \ \ std::unique\_lock\ lock(\mbox{\hyperlink{classutils_1_1ThreadPool_ad59af3c00e330ac777fb5eb349e0e291}{\_queue\_mutex}});}
+\DoxyCodeLine{00037\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{classutils_1_1ThreadPool_a6a2a828a76092e3170cb6a93d679043f}{\_stop}})}
+\DoxyCodeLine{00038\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ std::runtime\_error(\textcolor{stringliteral}{"{}Tried\ to\ enqueue\ on\ stopped\ ThreadPool"{}});}
+\DoxyCodeLine{00039\ }
+\DoxyCodeLine{00040\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{classutils_1_1ThreadPool_acbc332a452776263a9e6557131495aee}{\_tasks}}.emplace([task\_ptr]()\ \{\ (*task\_ptr)();\ \});}
+\DoxyCodeLine{00041\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00042\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{classutils_1_1ThreadPool_ad0284bde5203396b2e3cf95e07893748}{\_cv}}.notify\_one();}
+\DoxyCodeLine{00043\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ result;}
+\DoxyCodeLine{00044\ \ \ \ \ \}}
+\DoxyCodeLine{00045\ \};}
+\DoxyCodeLine{00046\ \}\ \textcolor{comment}{//\ End\ utils\ namespace}}
+
+\end{DoxyCode}

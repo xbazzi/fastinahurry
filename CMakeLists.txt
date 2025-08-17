@@ -6,6 +6,7 @@ include(cmake/common.cmake)
 find_package(gRPC REQUIRED)
 find_package(Protobuf REQUIRED)
 find_package(nlohmann_json REQUIRED)
+# find_package(Doxygen REQUIRED)
 
 include_directories(${Protobuf_INCLUDE_DIRS})
 
@@ -68,6 +69,9 @@ add_library(trading_grpc_proto
   ${trading_proto_hdrs})
 
 target_compile_features(fastinahurry PRIVATE cxx_std_23)
+add_compile_options(-O1 -g -fno-omit-frame-pointer -fsanitize=address,undefined,leak)
+add_link_options(-fsanitize=address,undefined,leak)
+
 
 # target_link_libraries(trading_grpc_proto
 #   # absl::check

@@ -7,8 +7,6 @@
   { "symbol": "MCLOVIN", "quantity": 12,  "price": 3121.0, "side": "BUY" },
   { "symbol": "XANDER", "quantity": 15,  "price": 3107.0, "side": "BUY" },
   { "symbol": "ADVB", "quantity": 5,  "price": 3101.0, "side": "BUY" },
-  { "symbol": "fvasd", "quantity": 8,  "price": 3102.0, "side": "BUY" },
-  { "symbol": "asdaad", "quantity": 10,  "price": 3107.0, "side": "BUY" },
   { "symbol": "JSTSXc", "quantity": 8,  "price": 3105.0, "side": "BUY" },
   { "symbol": "HEDGE", "quantity": 6,  "price": 3111.0, "side": "BUY" },
   { "symbol": "MAC10", "quantity": 9,  "price": 3113.0, "side": "BUY" },

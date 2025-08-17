@@ -27,6 +27,7 @@ public:
 private:
     std::queue<trading::Order> _orders;
     std::atomic<bool> _initialized{false};
+    std::atomic<bool> _stopping{false};
     std::atomic<bool> _running{false};
     std::shared_ptr<Publisher>  _pub;
 
@@ -34,6 +35,7 @@ private:
     utils::ThreadPool                      _thread_pool;
 
     std::mutex                      _send_mutex;
+    std::mutex                      _futures_mutex;
     std::jthread                    _reader_thread;
     std::vector<std::jthread>       _worker_threads;
     std::vector<std::future<bool>>  _futures;

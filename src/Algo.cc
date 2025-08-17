@@ -56,7 +56,7 @@ void Algo::process() {
         }
     });
 
-    std::size_t num_workers = 4;
+    std::size_t num_workers = 2;
     for (std::size_t i = 0; i < num_workers; ++i) {
         _worker_threads.emplace_back([this] (std::stop_token stoken) {
             while(!stoken.stop_requested()) {
@@ -64,10 +64,11 @@ void Algo::process() {
 
                 auto future = _thread_pool.enqueue([this, order]() -> bool {
                     grpc::Status status;
-                    {
-                        std::lock_guard lock(_send_mutex);
-                        status = _pub->send_order(order);
-                    }
+                    // {
+                    //     std::lock_guard lock(_send_mutex);
+                    //     status = _pub->send_order(order);
+                    // }
+                    status = _pub->send_order(order);
 
                     if (!status.ok()) {
                         std::cerr << "[Error] Failed to send order: "
@@ -86,7 +87,14 @@ void Algo::process() {
                         std::cerr << "[Inline] Order failed immediately for " << order.symbol() << '\n';
                     }
                 } else {
-                    _futures.push_back(std::move(future));
+                    if (_stopping.load(std::memory_order_relaxed)) {
+                        bool ok = future.get();
+                        if (!ok) std::cerr << "[Late] Order failed for " << order.symbol() << std::endl;
+                    } else {
+                        std::cout << "future got pushed brah" << std::endl;
+                        std::scoped_lock lk(_futures_mutex);
+                        _futures.emplace_back(std::move(future));
+                    }
                 }
             }
         });

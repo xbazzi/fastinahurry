@@ -14,5 +14,8 @@ pkgs.mkShell {
     grpc
     protobuf
     nlohmann_json
+    doxygen
+    graphviz
+    claude-code
   ];
 }

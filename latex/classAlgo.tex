@@ -1,0 +1,246 @@
+\doxysection{Algo Class Reference}
+\hypertarget{classAlgo}{}\label{classAlgo}\index{Algo@{Algo}}
+
+
+{\ttfamily \#include $<$Algo.\+hh$>$}
+
+
+
+Collaboration diagram for Algo\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=550pt]{classAlgo__coll__graph}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classAlgo_aaf4f951979fc60411ed84c558f081867}{Algo}} ()
+\item 
+void \mbox{\hyperlink{classAlgo_ac8b70d722d4b2c1ad5cad4a63c3b7c62}{initialize}} ()
+\item 
+void \mbox{\hyperlink{classAlgo_ac223b246cd2f8851c4e0893ff41547fa}{generate\+\_\+orders}} ()
+\item 
+void \mbox{\hyperlink{classAlgo_a8fcaaeaa5ad212a126490a19370c9b7e}{process}} ()
+\item 
+void \mbox{\hyperlink{classAlgo_ac556564d232b2d90cec73718538ec804}{send}} (trading\+::\+Order \&)
+\item 
+bool \mbox{\hyperlink{classAlgo_a6fef1866e14e8a08788cb1d54afcedaf}{initialized}} ()
+\item 
+void \mbox{\hyperlink{classAlgo_a330f03f9df9e5d1e2b701bc3f5e94524}{stop}} ()
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+std\+::queue$<$ trading\+::\+Order $>$ \mbox{\hyperlink{classAlgo_a889e1362976e78c4904007ee5edfd3fe}{\+\_\+orders}}
+\item 
+std\+::atomic$<$ bool $>$ \mbox{\hyperlink{classAlgo_a6cffb1f6d087978eba685bcb1d06b11d}{\+\_\+initialized}} \{false\}
+\item 
+std\+::atomic$<$ bool $>$ \mbox{\hyperlink{classAlgo_a3ce5d714379ab5094b6d82b99421b4a3}{\+\_\+running}} \{false\}
+\item 
+std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{classPublisher}{Publisher}} $>$ \mbox{\hyperlink{classAlgo_af5bcfa2719e948826f71983a18ec017d}{\+\_\+pub}}
+\item 
+\mbox{\hyperlink{classutils_1_1ThreadSafeQueue}{utils\+::\+Thread\+Safe\+Queue}}$<$ trading\+::\+Order $>$ \mbox{\hyperlink{classAlgo_ac4f2da176cc2dc9ba757140a635fe9b8}{\+\_\+order\+\_\+queue}}
+\item 
+\mbox{\hyperlink{classutils_1_1ThreadPool}{utils\+::\+Thread\+Pool}} \mbox{\hyperlink{classAlgo_adb85594bf1d2e7c9357d353b5e97787d}{\+\_\+thread\+\_\+pool}}
+\item 
+std\+::mutex \mbox{\hyperlink{classAlgo_a4943cab875d5261b0abec360b68878e8}{\+\_\+send\+\_\+mutex}}
+\item 
+std\+::jthread \mbox{\hyperlink{classAlgo_a743ddc60baad0afa7f036a529c340460}{\+\_\+reader\+\_\+thread}}
+\item 
+std\+::vector$<$ std\+::jthread $>$ \mbox{\hyperlink{classAlgo_ac72ec5a778fce0be42ebf635f2c504d0}{\+\_\+worker\+\_\+threads}}
+\item 
+std\+::vector$<$ std\+::future$<$ bool $>$ $>$ \mbox{\hyperlink{classAlgo_a671449864b2d1a1af9a57970eb104a0f}{\+\_\+futures}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\Hypertarget{classAlgo_aaf4f951979fc60411ed84c558f081867}\index{Algo@{Algo}!Algo@{Algo}}
+\index{Algo@{Algo}!Algo@{Algo}}
+\doxysubsubsection{\texorpdfstring{Algo()}{Algo()}}
+{\footnotesize\ttfamily \label{classAlgo_aaf4f951979fc60411ed84c558f081867} 
+Algo\+::\+Algo (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})}
+
+
+
+\doxysubsection{Member Function Documentation}
+\Hypertarget{classAlgo_ac223b246cd2f8851c4e0893ff41547fa}\index{Algo@{Algo}!generate\_orders@{generate\_orders}}
+\index{generate\_orders@{generate\_orders}!Algo@{Algo}}
+\doxysubsubsection{\texorpdfstring{generate\_orders()}{generate\_orders()}}
+{\footnotesize\ttfamily \label{classAlgo_ac223b246cd2f8851c4e0893ff41547fa} 
+void Algo\+::generate\+\_\+orders (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})}
+
+
+
+References \mbox{\hyperlink{classAlgo_a889e1362976e78c4904007ee5edfd3fe}{\+\_\+orders}}, and \mbox{\hyperlink{namespacereaders_1_1json_a05735378dfc87c287094d7aa33ac8209}{readers\+::json\+::read\+\_\+orders\+\_\+from\+\_\+json()}}.
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=346pt]{classAlgo_ac223b246cd2f8851c4e0893ff41547fa_cgraph}
+\end{center}
+\end{figure}
+\Hypertarget{classAlgo_ac8b70d722d4b2c1ad5cad4a63c3b7c62}\index{Algo@{Algo}!initialize@{initialize}}
+\index{initialize@{initialize}!Algo@{Algo}}
+\doxysubsubsection{\texorpdfstring{initialize()}{initialize()}}
+{\footnotesize\ttfamily \label{classAlgo_ac8b70d722d4b2c1ad5cad4a63c3b7c62} 
+void Algo\+::initialize (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})}
+
+
+
+References \mbox{\hyperlink{classAlgo_a6cffb1f6d087978eba685bcb1d06b11d}{\+\_\+initialized}}, and \mbox{\hyperlink{classAlgo_af5bcfa2719e948826f71983a18ec017d}{\+\_\+pub}}.
+
+\Hypertarget{classAlgo_a6fef1866e14e8a08788cb1d54afcedaf}\index{Algo@{Algo}!initialized@{initialized}}
+\index{initialized@{initialized}!Algo@{Algo}}
+\doxysubsubsection{\texorpdfstring{initialized()}{initialized()}}
+{\footnotesize\ttfamily \label{classAlgo_a6fef1866e14e8a08788cb1d54afcedaf} 
+bool Algo\+::initialized (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})}
+
+
+
+References \mbox{\hyperlink{classAlgo_a6cffb1f6d087978eba685bcb1d06b11d}{\+\_\+initialized}}.
+
+\Hypertarget{classAlgo_a8fcaaeaa5ad212a126490a19370c9b7e}\index{Algo@{Algo}!process@{process}}
+\index{process@{process}!Algo@{Algo}}
+\doxysubsubsection{\texorpdfstring{process()}{process()}}
+{\footnotesize\ttfamily \label{classAlgo_a8fcaaeaa5ad212a126490a19370c9b7e} 
+void Algo\+::process (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})}
+
+
+
+References \mbox{\hyperlink{classAlgo_a671449864b2d1a1af9a57970eb104a0f}{\+\_\+futures}}, \mbox{\hyperlink{classAlgo_ac4f2da176cc2dc9ba757140a635fe9b8}{\+\_\+order\+\_\+queue}}, \mbox{\hyperlink{classAlgo_af5bcfa2719e948826f71983a18ec017d}{\+\_\+pub}}, \mbox{\hyperlink{classAlgo_a743ddc60baad0afa7f036a529c340460}{\+\_\+reader\+\_\+thread}}, \mbox{\hyperlink{classAlgo_a4943cab875d5261b0abec360b68878e8}{\+\_\+send\+\_\+mutex}}, \mbox{\hyperlink{classAlgo_adb85594bf1d2e7c9357d353b5e97787d}{\+\_\+thread\+\_\+pool}}, \mbox{\hyperlink{classAlgo_ac72ec5a778fce0be42ebf635f2c504d0}{\+\_\+worker\+\_\+threads}}, and \mbox{\hyperlink{namespacereaders_1_1json_a05735378dfc87c287094d7aa33ac8209}{readers\+::json\+::read\+\_\+orders\+\_\+from\+\_\+json()}}.
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=304pt]{classAlgo_a8fcaaeaa5ad212a126490a19370c9b7e_cgraph}
+\end{center}
+\end{figure}
+\Hypertarget{classAlgo_ac556564d232b2d90cec73718538ec804}\index{Algo@{Algo}!send@{send}}
+\index{send@{send}!Algo@{Algo}}
+\doxysubsubsection{\texorpdfstring{send()}{send()}}
+{\footnotesize\ttfamily \label{classAlgo_ac556564d232b2d90cec73718538ec804} 
+void Algo\+::send (\begin{DoxyParamCaption}\item[{trading\+::\+Order \&}]{order}{}\end{DoxyParamCaption})}
+
+
+
+References \mbox{\hyperlink{classAlgo_af5bcfa2719e948826f71983a18ec017d}{\+\_\+pub}}.
+
+\Hypertarget{classAlgo_a330f03f9df9e5d1e2b701bc3f5e94524}\index{Algo@{Algo}!stop@{stop}}
+\index{stop@{stop}!Algo@{Algo}}
+\doxysubsubsection{\texorpdfstring{stop()}{stop()}}
+{\footnotesize\ttfamily \label{classAlgo_a330f03f9df9e5d1e2b701bc3f5e94524} 
+void Algo\+::stop (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})}
+
+
+
+References \mbox{\hyperlink{classAlgo_a671449864b2d1a1af9a57970eb104a0f}{\+\_\+futures}}, \mbox{\hyperlink{classAlgo_a743ddc60baad0afa7f036a529c340460}{\+\_\+reader\+\_\+thread}}, and \mbox{\hyperlink{classAlgo_ac72ec5a778fce0be42ebf635f2c504d0}{\+\_\+worker\+\_\+threads}}.
+
+
+
+\doxysubsection{Member Data Documentation}
+\Hypertarget{classAlgo_a671449864b2d1a1af9a57970eb104a0f}\index{Algo@{Algo}!\_futures@{\_futures}}
+\index{\_futures@{\_futures}!Algo@{Algo}}
+\doxysubsubsection{\texorpdfstring{\_futures}{\_futures}}
+{\footnotesize\ttfamily \label{classAlgo_a671449864b2d1a1af9a57970eb104a0f} 
+std\+::vector$<$std\+::future$<$bool$>$ $>$ Algo\+::\+\_\+futures\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Referenced by \mbox{\hyperlink{classAlgo_a8fcaaeaa5ad212a126490a19370c9b7e}{process()}}, and \mbox{\hyperlink{classAlgo_a330f03f9df9e5d1e2b701bc3f5e94524}{stop()}}.
+
+\Hypertarget{classAlgo_a6cffb1f6d087978eba685bcb1d06b11d}\index{Algo@{Algo}!\_initialized@{\_initialized}}
+\index{\_initialized@{\_initialized}!Algo@{Algo}}
+\doxysubsubsection{\texorpdfstring{\_initialized}{\_initialized}}
+{\footnotesize\ttfamily \label{classAlgo_a6cffb1f6d087978eba685bcb1d06b11d} 
+std\+::atomic$<$bool$>$ Algo\+::\+\_\+initialized \{false\}\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Referenced by \mbox{\hyperlink{classAlgo_ac8b70d722d4b2c1ad5cad4a63c3b7c62}{initialize()}}, and \mbox{\hyperlink{classAlgo_a6fef1866e14e8a08788cb1d54afcedaf}{initialized()}}.
+
+\Hypertarget{classAlgo_ac4f2da176cc2dc9ba757140a635fe9b8}\index{Algo@{Algo}!\_order\_queue@{\_order\_queue}}
+\index{\_order\_queue@{\_order\_queue}!Algo@{Algo}}
+\doxysubsubsection{\texorpdfstring{\_order\_queue}{\_order\_queue}}
+{\footnotesize\ttfamily \label{classAlgo_ac4f2da176cc2dc9ba757140a635fe9b8} 
+\mbox{\hyperlink{classutils_1_1ThreadSafeQueue}{utils\+::\+Thread\+Safe\+Queue}}$<$trading\+::\+Order$>$ Algo\+::\+\_\+order\+\_\+queue\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Referenced by \mbox{\hyperlink{classAlgo_a8fcaaeaa5ad212a126490a19370c9b7e}{process()}}.
+
+\Hypertarget{classAlgo_a889e1362976e78c4904007ee5edfd3fe}\index{Algo@{Algo}!\_orders@{\_orders}}
+\index{\_orders@{\_orders}!Algo@{Algo}}
+\doxysubsubsection{\texorpdfstring{\_orders}{\_orders}}
+{\footnotesize\ttfamily \label{classAlgo_a889e1362976e78c4904007ee5edfd3fe} 
+std\+::queue$<$trading\+::\+Order$>$ Algo\+::\+\_\+orders\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Referenced by \mbox{\hyperlink{classAlgo_ac223b246cd2f8851c4e0893ff41547fa}{generate\+\_\+orders()}}.
+
+\Hypertarget{classAlgo_af5bcfa2719e948826f71983a18ec017d}\index{Algo@{Algo}!\_pub@{\_pub}}
+\index{\_pub@{\_pub}!Algo@{Algo}}
+\doxysubsubsection{\texorpdfstring{\_pub}{\_pub}}
+{\footnotesize\ttfamily \label{classAlgo_af5bcfa2719e948826f71983a18ec017d} 
+std\+::shared\+\_\+ptr$<$\mbox{\hyperlink{classPublisher}{Publisher}}$>$ Algo\+::\+\_\+pub\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Referenced by \mbox{\hyperlink{classAlgo_ac8b70d722d4b2c1ad5cad4a63c3b7c62}{initialize()}}, \mbox{\hyperlink{classAlgo_a8fcaaeaa5ad212a126490a19370c9b7e}{process()}}, and \mbox{\hyperlink{classAlgo_ac556564d232b2d90cec73718538ec804}{send()}}.
+
+\Hypertarget{classAlgo_a743ddc60baad0afa7f036a529c340460}\index{Algo@{Algo}!\_reader\_thread@{\_reader\_thread}}
+\index{\_reader\_thread@{\_reader\_thread}!Algo@{Algo}}
+\doxysubsubsection{\texorpdfstring{\_reader\_thread}{\_reader\_thread}}
+{\footnotesize\ttfamily \label{classAlgo_a743ddc60baad0afa7f036a529c340460} 
+std\+::jthread Algo\+::\+\_\+reader\+\_\+thread\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Referenced by \mbox{\hyperlink{classAlgo_a8fcaaeaa5ad212a126490a19370c9b7e}{process()}}, and \mbox{\hyperlink{classAlgo_a330f03f9df9e5d1e2b701bc3f5e94524}{stop()}}.
+
+\Hypertarget{classAlgo_a3ce5d714379ab5094b6d82b99421b4a3}\index{Algo@{Algo}!\_running@{\_running}}
+\index{\_running@{\_running}!Algo@{Algo}}
+\doxysubsubsection{\texorpdfstring{\_running}{\_running}}
+{\footnotesize\ttfamily \label{classAlgo_a3ce5d714379ab5094b6d82b99421b4a3} 
+std\+::atomic$<$bool$>$ Algo\+::\+\_\+running \{false\}\hspace{0.3cm}{\ttfamily [private]}}
+
+\Hypertarget{classAlgo_a4943cab875d5261b0abec360b68878e8}\index{Algo@{Algo}!\_send\_mutex@{\_send\_mutex}}
+\index{\_send\_mutex@{\_send\_mutex}!Algo@{Algo}}
+\doxysubsubsection{\texorpdfstring{\_send\_mutex}{\_send\_mutex}}
+{\footnotesize\ttfamily \label{classAlgo_a4943cab875d5261b0abec360b68878e8} 
+std\+::mutex Algo\+::\+\_\+send\+\_\+mutex\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Referenced by \mbox{\hyperlink{classAlgo_a8fcaaeaa5ad212a126490a19370c9b7e}{process()}}.
+
+\Hypertarget{classAlgo_adb85594bf1d2e7c9357d353b5e97787d}\index{Algo@{Algo}!\_thread\_pool@{\_thread\_pool}}
+\index{\_thread\_pool@{\_thread\_pool}!Algo@{Algo}}
+\doxysubsubsection{\texorpdfstring{\_thread\_pool}{\_thread\_pool}}
+{\footnotesize\ttfamily \label{classAlgo_adb85594bf1d2e7c9357d353b5e97787d} 
+\mbox{\hyperlink{classutils_1_1ThreadPool}{utils\+::\+Thread\+Pool}} Algo\+::\+\_\+thread\+\_\+pool\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Referenced by \mbox{\hyperlink{classAlgo_a8fcaaeaa5ad212a126490a19370c9b7e}{process()}}.
+
+\Hypertarget{classAlgo_ac72ec5a778fce0be42ebf635f2c504d0}\index{Algo@{Algo}!\_worker\_threads@{\_worker\_threads}}
+\index{\_worker\_threads@{\_worker\_threads}!Algo@{Algo}}
+\doxysubsubsection{\texorpdfstring{\_worker\_threads}{\_worker\_threads}}
+{\footnotesize\ttfamily \label{classAlgo_ac72ec5a778fce0be42ebf635f2c504d0} 
+std\+::vector$<$std\+::jthread$>$ Algo\+::\+\_\+worker\+\_\+threads\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Referenced by \mbox{\hyperlink{classAlgo_a8fcaaeaa5ad212a126490a19370c9b7e}{process()}}, and \mbox{\hyperlink{classAlgo_a330f03f9df9e5d1e2b701bc3f5e94524}{stop()}}.
+
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+include/\mbox{\hyperlink{Algo_8hh}{Algo.\+hh}}\item 
+src/\mbox{\hyperlink{Algo_8cc}{Algo.\+cc}}\end{DoxyCompactItemize}

@@ -16,7 +16,6 @@ private:
 
 public:
     void push(T value) {
-
         {
             std::lock_guard<std::mutex> lock(_mutex);
             _queue.push(std::move(value));

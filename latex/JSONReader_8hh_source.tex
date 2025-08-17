@@ -1,0 +1,23 @@
+\doxysection{JSONReader.\+hh}
+\hypertarget{JSONReader_8hh_source}{}\label{JSONReader_8hh_source}\index{include/readers/JSONReader.hh@{include/readers/JSONReader.hh}}
+\mbox{\hyperlink{JSONReader_8hh}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#pragma\ once}}
+\DoxyCodeLine{00002\ }
+\DoxyCodeLine{00003\ \textcolor{comment}{//\ C++\ Includes}}
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ <queue>}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ <string>}}
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#include\ <memory>}}
+\DoxyCodeLine{00007\ }
+\DoxyCodeLine{00008\ \textcolor{comment}{//\ Third\ Party\ Includes}}
+\DoxyCodeLine{00009\ \textcolor{preprocessor}{\#include\ "{}trading.pb.h"{}}}
+\DoxyCodeLine{00010\ \textcolor{preprocessor}{\#include\ <nlohmann/json.hpp>}}
+\DoxyCodeLine{00011\ }
+\DoxyCodeLine{00012\ \textcolor{keyword}{namespace\ }\mbox{\hyperlink{namespacereaders_1_1json}{readers::json}}\ \{}
+\DoxyCodeLine{00013\ \textcolor{keyword}{using\ }\mbox{\hyperlink{namespacereaders_1_1json_a5f54a39f5770ab1576f53a06a159cb42}{JSON}}\ =\ nlohmann::json;}
+\DoxyCodeLine{00014\ \textcolor{keyword}{using\ }\mbox{\hyperlink{namespacereaders_1_1json_aa2743dc5b5ec05c84803e442f21f43d1}{OrderQueue}}\ =\ std::queue<trading::Order>;}
+\DoxyCodeLine{00015\ }
+\DoxyCodeLine{00016\ \mbox{\hyperlink{namespacereaders_1_1json_aa2743dc5b5ec05c84803e442f21f43d1}{OrderQueue}}\ \mbox{\hyperlink{namespacereaders_1_1json_a05735378dfc87c287094d7aa33ac8209}{read\_orders\_from\_json}}(\textcolor{keyword}{const}\ std::string\&\ filename);}
+\DoxyCodeLine{00017\ \}\ \textcolor{comment}{//\ End\ json\ namespace}}
+
+\end{DoxyCode}

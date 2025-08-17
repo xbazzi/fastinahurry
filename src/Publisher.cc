@@ -1,11 +1,12 @@
 #include "Publisher.hh"
 #include <iostream>
+#include <thread>
 
 
 Publisher::Publisher(std::shared_ptr<grpc::Channel> channel) 
     : _stub(trading::TradingService::NewStub(channel)) {}
 
-grpc::Status Publisher::send_order(const trading::Order& order) {
+grpc::Status Publisher::send_order(const trading::Order order) {
     grpc::ClientContext context;
     trading::OrderAck ack;
 

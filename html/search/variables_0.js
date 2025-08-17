@@ -1,0 +1,22 @@
+var searchData=
+[
+  ['_5falgo_0',['_algo',['../classController.html#af469cf532ccb25e9256a9e71d35072ed',1,'Controller']]],
+  ['_5fcv_1',['_cv',['../classutils_1_1ThreadPool.html#ad0284bde5203396b2e3cf95e07893748',1,'utils::ThreadPool::_cv'],['../classutils_1_1ThreadSafeQueue.html#aa8f60ba625a00977e004c6641325671e',1,'utils::ThreadSafeQueue::_cv']]],
+  ['_5ffutures_2',['_futures',['../classAlgo.html#a671449864b2d1a1af9a57970eb104a0f',1,'Algo']]],
+  ['_5finitialized_3',['_initialized',['../classAlgo.html#a6cffb1f6d087978eba685bcb1d06b11d',1,'Algo']]],
+  ['_5fmutex_4',['_mutex',['../classutils_1_1ThreadSafeQueue.html#a43fef8c13f23363c48bac7a6a49a565b',1,'utils::ThreadSafeQueue']]],
+  ['_5forder_5fqueue_5',['_order_queue',['../classAlgo.html#ac4f2da176cc2dc9ba757140a635fe9b8',1,'Algo']]],
+  ['_5forders_6',['_orders',['../classAlgo.html#a889e1362976e78c4904007ee5edfd3fe',1,'Algo']]],
+  ['_5fpub_7',['_pub',['../classAlgo.html#af5bcfa2719e948826f71983a18ec017d',1,'Algo']]],
+  ['_5fqueue_8',['_queue',['../classutils_1_1ThreadSafeQueue.html#a970596f4c9a6d1a806b06d46807e06ee',1,'utils::ThreadSafeQueue']]],
+  ['_5fqueue_5fmutex_9',['_queue_mutex',['../classutils_1_1ThreadPool.html#ad59af3c00e330ac777fb5eb349e0e291',1,'utils::ThreadPool']]],
+  ['_5freader_5fthread_10',['_reader_thread',['../classAlgo.html#a743ddc60baad0afa7f036a529c340460',1,'Algo']]],
+  ['_5frunning_11',['_running',['../classAlgo.html#a3ce5d714379ab5094b6d82b99421b4a3',1,'Algo']]],
+  ['_5fsend_5fmutex_12',['_send_mutex',['../classAlgo.html#a4943cab875d5261b0abec360b68878e8',1,'Algo']]],
+  ['_5fstop_13',['_stop',['../classutils_1_1ThreadPool.html#a6a2a828a76092e3170cb6a93d679043f',1,'utils::ThreadPool']]],
+  ['_5fstub_14',['_stub',['../classPublisher.html#ac495a5e279a5531eddb94314bdbd04ac',1,'Publisher']]],
+  ['_5ftasks_15',['_tasks',['../classutils_1_1ThreadPool.html#acbc332a452776263a9e6557131495aee',1,'utils::ThreadPool']]],
+  ['_5fthread_5fpool_16',['_thread_pool',['../classAlgo.html#adb85594bf1d2e7c9357d353b5e97787d',1,'Algo']]],
+  ['_5fworker_5fthreads_17',['_worker_threads',['../classAlgo.html#ac72ec5a778fce0be42ebf635f2c504d0',1,'Algo']]],
+  ['_5fworkers_18',['_workers',['../classutils_1_1ThreadPool.html#a3113eec4fac2948b403a0d94c42a3732',1,'utils::ThreadPool']]]
+];

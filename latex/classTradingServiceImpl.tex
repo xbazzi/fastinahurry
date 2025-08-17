@@ -1,0 +1,47 @@
+\doxysection{Trading\+Service\+Impl Class Reference}
+\hypertarget{classTradingServiceImpl}{}\label{classTradingServiceImpl}\index{TradingServiceImpl@{TradingServiceImpl}}
+
+
+Inheritance diagram for Trading\+Service\+Impl\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=201pt]{classTradingServiceImpl__inherit__graph}
+\end{center}
+\end{figure}
+
+
+Collaboration diagram for Trading\+Service\+Impl\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=201pt]{classTradingServiceImpl__coll__graph}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Private Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+Status \mbox{\hyperlink{classTradingServiceImpl_a8bc4ca1225b76d0fdb9d971c105e9e6c}{Send\+Order}} (Server\+Context \texorpdfstring{$\ast$}{*}ctx, const Order \texorpdfstring{$\ast$}{*}req, Order\+Ack \texorpdfstring{$\ast$}{*}res) override
+\item 
+Status \mbox{\hyperlink{classTradingServiceImpl_ac047a3c1ac78bddd357d89229d29ff95}{Stream\+Market\+Data}} (Server\+Context \texorpdfstring{$\ast$}{*}ctx, const Market\+Request \texorpdfstring{$\ast$}{*}req, grpc\+::\+Server\+Writer$<$ Market\+Data $>$ \texorpdfstring{$\ast$}{*}writer) override
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Member Function Documentation}
+\Hypertarget{classTradingServiceImpl_a8bc4ca1225b76d0fdb9d971c105e9e6c}\index{TradingServiceImpl@{TradingServiceImpl}!SendOrder@{SendOrder}}
+\index{SendOrder@{SendOrder}!TradingServiceImpl@{TradingServiceImpl}}
+\doxysubsubsection{\texorpdfstring{SendOrder()}{SendOrder()}}
+{\footnotesize\ttfamily \label{classTradingServiceImpl_a8bc4ca1225b76d0fdb9d971c105e9e6c} 
+Status Trading\+Service\+Impl\+::\+Send\+Order (\begin{DoxyParamCaption}\item[{Server\+Context \texorpdfstring{$\ast$}{*}}]{ctx}{, }\item[{const Order \texorpdfstring{$\ast$}{*}}]{req}{, }\item[{Order\+Ack \texorpdfstring{$\ast$}{*}}]{res}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [override]}, {\ttfamily [private]}}
+
+\Hypertarget{classTradingServiceImpl_ac047a3c1ac78bddd357d89229d29ff95}\index{TradingServiceImpl@{TradingServiceImpl}!StreamMarketData@{StreamMarketData}}
+\index{StreamMarketData@{StreamMarketData}!TradingServiceImpl@{TradingServiceImpl}}
+\doxysubsubsection{\texorpdfstring{StreamMarketData()}{StreamMarketData()}}
+{\footnotesize\ttfamily \label{classTradingServiceImpl_ac047a3c1ac78bddd357d89229d29ff95} 
+Status Trading\+Service\+Impl\+::\+Stream\+Market\+Data (\begin{DoxyParamCaption}\item[{Server\+Context \texorpdfstring{$\ast$}{*}}]{ctx}{, }\item[{const Market\+Request \texorpdfstring{$\ast$}{*}}]{req}{, }\item[{grpc\+::\+Server\+Writer$<$ Market\+Data $>$ \texorpdfstring{$\ast$}{*}}]{writer}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [override]}, {\ttfamily [private]}}
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+src/\mbox{\hyperlink{grpc__server_8cc}{grpc\+\_\+server.\+cc}}\end{DoxyCompactItemize}

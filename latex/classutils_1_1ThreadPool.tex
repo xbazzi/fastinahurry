@@ -1,0 +1,133 @@
+\doxysection{utils\+::Thread\+Pool Class Reference}
+\hypertarget{classutils_1_1ThreadPool}{}\label{classutils_1_1ThreadPool}\index{utils::ThreadPool@{utils::ThreadPool}}
+
+
+{\ttfamily \#include $<$Thread\+Pool.\+hh$>$}
+
+
+
+Collaboration diagram for utils\+::Thread\+Pool\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=172pt]{classutils_1_1ThreadPool__coll__graph}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classutils_1_1ThreadPool_a02ccb8118692092d5d4132eab7c751e2}{Thread\+Pool}} (std\+::size\+\_\+t threads=std\+::thread\+::hardware\+\_\+concurrency())
+\item 
+\mbox{\hyperlink{classutils_1_1ThreadPool_a6f0428a4b19a724f956d82e408013108}{\texorpdfstring{$\sim$}{\string~}\+Thread\+Pool}} ()
+\item 
+{\footnotesize template$<$class F, class... Args$>$ }\\auto \mbox{\hyperlink{classutils_1_1ThreadPool_a06f6b246fd98c4970c0510d48141a29d}{enqueue}} (F \&\&f, Args \&\&... args) -\/$>$ std\+::future$<$ std\+::invoke\+\_\+result\+\_\+t$<$ F, Args... $>$ $>$
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+std\+::vector$<$ std\+::thread $>$ \mbox{\hyperlink{classutils_1_1ThreadPool_a3113eec4fac2948b403a0d94c42a3732}{\+\_\+workers}}
+\item 
+std\+::queue$<$ std\+::function$<$ void()$>$ $>$ \mbox{\hyperlink{classutils_1_1ThreadPool_acbc332a452776263a9e6557131495aee}{\+\_\+tasks}}
+\item 
+std\+::mutex \mbox{\hyperlink{classutils_1_1ThreadPool_ad59af3c00e330ac777fb5eb349e0e291}{\+\_\+queue\+\_\+mutex}}
+\item 
+std\+::condition\+\_\+variable \mbox{\hyperlink{classutils_1_1ThreadPool_ad0284bde5203396b2e3cf95e07893748}{\+\_\+cv}}
+\item 
+bool \mbox{\hyperlink{classutils_1_1ThreadPool_a6a2a828a76092e3170cb6a93d679043f}{\+\_\+stop}} \{false\}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\Hypertarget{classutils_1_1ThreadPool_a02ccb8118692092d5d4132eab7c751e2}\index{utils::ThreadPool@{utils::ThreadPool}!ThreadPool@{ThreadPool}}
+\index{ThreadPool@{ThreadPool}!utils::ThreadPool@{utils::ThreadPool}}
+\doxysubsubsection{\texorpdfstring{ThreadPool()}{ThreadPool()}}
+{\footnotesize\ttfamily \label{classutils_1_1ThreadPool_a02ccb8118692092d5d4132eab7c751e2} 
+utils\+::\+Thread\+Pool\+::\+Thread\+Pool (\begin{DoxyParamCaption}\item[{std\+::size\+\_\+t}]{threads}{ = {\ttfamily std\+:\+:thread\+:\+:hardware\+\_\+concurrency()}}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [explicit]}}
+
+
+
+References \mbox{\hyperlink{classutils_1_1ThreadPool_ad0284bde5203396b2e3cf95e07893748}{\+\_\+cv}}, \mbox{\hyperlink{classutils_1_1ThreadPool_ad59af3c00e330ac777fb5eb349e0e291}{\+\_\+queue\+\_\+mutex}}, \mbox{\hyperlink{classutils_1_1ThreadPool_a6a2a828a76092e3170cb6a93d679043f}{\+\_\+stop}}, \mbox{\hyperlink{classutils_1_1ThreadPool_acbc332a452776263a9e6557131495aee}{\+\_\+tasks}}, and \mbox{\hyperlink{classutils_1_1ThreadPool_a3113eec4fac2948b403a0d94c42a3732}{\+\_\+workers}}.
+
+\Hypertarget{classutils_1_1ThreadPool_a6f0428a4b19a724f956d82e408013108}\index{utils::ThreadPool@{utils::ThreadPool}!````~ThreadPool@{\texorpdfstring{$\sim$}{\string~}ThreadPool}}
+\index{````~ThreadPool@{\texorpdfstring{$\sim$}{\string~}ThreadPool}!utils::ThreadPool@{utils::ThreadPool}}
+\doxysubsubsection{\texorpdfstring{\texorpdfstring{$\sim$}{\string~}ThreadPool()}{\string~ThreadPool()}}
+{\footnotesize\ttfamily \label{classutils_1_1ThreadPool_a6f0428a4b19a724f956d82e408013108} 
+utils\+::\+Thread\+Pool\+::\texorpdfstring{$\sim$}{\string~}\+Thread\+Pool (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})}
+
+
+
+References \mbox{\hyperlink{classutils_1_1ThreadPool_ad0284bde5203396b2e3cf95e07893748}{\+\_\+cv}}, \mbox{\hyperlink{classutils_1_1ThreadPool_ad59af3c00e330ac777fb5eb349e0e291}{\+\_\+queue\+\_\+mutex}}, \mbox{\hyperlink{classutils_1_1ThreadPool_a6a2a828a76092e3170cb6a93d679043f}{\+\_\+stop}}, and \mbox{\hyperlink{classutils_1_1ThreadPool_a3113eec4fac2948b403a0d94c42a3732}{\+\_\+workers}}.
+
+
+
+\doxysubsection{Member Function Documentation}
+\Hypertarget{classutils_1_1ThreadPool_a06f6b246fd98c4970c0510d48141a29d}\index{utils::ThreadPool@{utils::ThreadPool}!enqueue@{enqueue}}
+\index{enqueue@{enqueue}!utils::ThreadPool@{utils::ThreadPool}}
+\doxysubsubsection{\texorpdfstring{enqueue()}{enqueue()}}
+{\footnotesize\ttfamily \label{classutils_1_1ThreadPool_a06f6b246fd98c4970c0510d48141a29d} 
+template$<$class F, class... Args$>$ \\
+auto utils\+::\+Thread\+Pool\+::enqueue (\begin{DoxyParamCaption}\item[{F \&\&}]{f}{, }\item[{Args \&\&...}]{args}{}\end{DoxyParamCaption}) -\/$>$ std\+::future$<$std\+::invoke\+\_\+result\+\_\+t$<$F, Args...$>$$>$ \hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+References \mbox{\hyperlink{classutils_1_1ThreadPool_ad0284bde5203396b2e3cf95e07893748}{\+\_\+cv}}, \mbox{\hyperlink{classutils_1_1ThreadPool_ad59af3c00e330ac777fb5eb349e0e291}{\+\_\+queue\+\_\+mutex}}, \mbox{\hyperlink{classutils_1_1ThreadPool_a6a2a828a76092e3170cb6a93d679043f}{\+\_\+stop}}, and \mbox{\hyperlink{classutils_1_1ThreadPool_acbc332a452776263a9e6557131495aee}{\+\_\+tasks}}.
+
+
+
+\doxysubsection{Member Data Documentation}
+\Hypertarget{classutils_1_1ThreadPool_ad0284bde5203396b2e3cf95e07893748}\index{utils::ThreadPool@{utils::ThreadPool}!\_cv@{\_cv}}
+\index{\_cv@{\_cv}!utils::ThreadPool@{utils::ThreadPool}}
+\doxysubsubsection{\texorpdfstring{\_cv}{\_cv}}
+{\footnotesize\ttfamily \label{classutils_1_1ThreadPool_ad0284bde5203396b2e3cf95e07893748} 
+std\+::condition\+\_\+variable utils\+::\+Thread\+Pool\+::\+\_\+cv\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Referenced by \mbox{\hyperlink{classutils_1_1ThreadPool_a06f6b246fd98c4970c0510d48141a29d}{enqueue()}}, \mbox{\hyperlink{classutils_1_1ThreadPool_a02ccb8118692092d5d4132eab7c751e2}{Thread\+Pool()}}, and \mbox{\hyperlink{classutils_1_1ThreadPool_a6f0428a4b19a724f956d82e408013108}{\texorpdfstring{$\sim$}{\string~}\+Thread\+Pool()}}.
+
+\Hypertarget{classutils_1_1ThreadPool_ad59af3c00e330ac777fb5eb349e0e291}\index{utils::ThreadPool@{utils::ThreadPool}!\_queue\_mutex@{\_queue\_mutex}}
+\index{\_queue\_mutex@{\_queue\_mutex}!utils::ThreadPool@{utils::ThreadPool}}
+\doxysubsubsection{\texorpdfstring{\_queue\_mutex}{\_queue\_mutex}}
+{\footnotesize\ttfamily \label{classutils_1_1ThreadPool_ad59af3c00e330ac777fb5eb349e0e291} 
+std\+::mutex utils\+::\+Thread\+Pool\+::\+\_\+queue\+\_\+mutex\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Referenced by \mbox{\hyperlink{classutils_1_1ThreadPool_a06f6b246fd98c4970c0510d48141a29d}{enqueue()}}, \mbox{\hyperlink{classutils_1_1ThreadPool_a02ccb8118692092d5d4132eab7c751e2}{Thread\+Pool()}}, and \mbox{\hyperlink{classutils_1_1ThreadPool_a6f0428a4b19a724f956d82e408013108}{\texorpdfstring{$\sim$}{\string~}\+Thread\+Pool()}}.
+
+\Hypertarget{classutils_1_1ThreadPool_a6a2a828a76092e3170cb6a93d679043f}\index{utils::ThreadPool@{utils::ThreadPool}!\_stop@{\_stop}}
+\index{\_stop@{\_stop}!utils::ThreadPool@{utils::ThreadPool}}
+\doxysubsubsection{\texorpdfstring{\_stop}{\_stop}}
+{\footnotesize\ttfamily \label{classutils_1_1ThreadPool_a6a2a828a76092e3170cb6a93d679043f} 
+bool utils\+::\+Thread\+Pool\+::\+\_\+stop \{false\}\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Referenced by \mbox{\hyperlink{classutils_1_1ThreadPool_a06f6b246fd98c4970c0510d48141a29d}{enqueue()}}, \mbox{\hyperlink{classutils_1_1ThreadPool_a02ccb8118692092d5d4132eab7c751e2}{Thread\+Pool()}}, and \mbox{\hyperlink{classutils_1_1ThreadPool_a6f0428a4b19a724f956d82e408013108}{\texorpdfstring{$\sim$}{\string~}\+Thread\+Pool()}}.
+
+\Hypertarget{classutils_1_1ThreadPool_acbc332a452776263a9e6557131495aee}\index{utils::ThreadPool@{utils::ThreadPool}!\_tasks@{\_tasks}}
+\index{\_tasks@{\_tasks}!utils::ThreadPool@{utils::ThreadPool}}
+\doxysubsubsection{\texorpdfstring{\_tasks}{\_tasks}}
+{\footnotesize\ttfamily \label{classutils_1_1ThreadPool_acbc332a452776263a9e6557131495aee} 
+std\+::queue$<$std\+::function$<$void()$>$ $>$ utils\+::\+Thread\+Pool\+::\+\_\+tasks\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Referenced by \mbox{\hyperlink{classutils_1_1ThreadPool_a06f6b246fd98c4970c0510d48141a29d}{enqueue()}}, and \mbox{\hyperlink{classutils_1_1ThreadPool_a02ccb8118692092d5d4132eab7c751e2}{Thread\+Pool()}}.
+
+\Hypertarget{classutils_1_1ThreadPool_a3113eec4fac2948b403a0d94c42a3732}\index{utils::ThreadPool@{utils::ThreadPool}!\_workers@{\_workers}}
+\index{\_workers@{\_workers}!utils::ThreadPool@{utils::ThreadPool}}
+\doxysubsubsection{\texorpdfstring{\_workers}{\_workers}}
+{\footnotesize\ttfamily \label{classutils_1_1ThreadPool_a3113eec4fac2948b403a0d94c42a3732} 
+std\+::vector$<$std\+::thread$>$ utils\+::\+Thread\+Pool\+::\+\_\+workers\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Referenced by \mbox{\hyperlink{classutils_1_1ThreadPool_a02ccb8118692092d5d4132eab7c751e2}{Thread\+Pool()}}, and \mbox{\hyperlink{classutils_1_1ThreadPool_a6f0428a4b19a724f956d82e408013108}{\texorpdfstring{$\sim$}{\string~}\+Thread\+Pool()}}.
+
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+include/utils/\mbox{\hyperlink{ThreadPool_8hh}{Thread\+Pool.\+hh}}\item 
+src/utils/\mbox{\hyperlink{ThreadPool_8cc}{Thread\+Pool.\+cc}}\end{DoxyCompactItemize}

@@ -1,0 +1,20 @@
+\doxysection{Publisher.\+hh}
+\hypertarget{Publisher_8hh_source}{}\label{Publisher_8hh_source}\index{include/Publisher.hh@{include/Publisher.hh}}
+\mbox{\hyperlink{Publisher_8hh}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#pragma\ once}}
+\DoxyCodeLine{00002\ }
+\DoxyCodeLine{00003\ \textcolor{preprocessor}{\#include\ "{}trading.grpc.pb.h"{}}}
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ <grpcpp/grpcpp.h>}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ <memory>}}
+\DoxyCodeLine{00006\ }
+\DoxyCodeLine{00007\ \textcolor{keyword}{class\ }\mbox{\hyperlink{classPublisher_ac829a82a3cb7aeeaece86419ffb0119d}{Publisher}}\ \{}
+\DoxyCodeLine{00008\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00009\ \ \ \ \ \textcolor{keyword}{explicit}\ \mbox{\hyperlink{classPublisher_ac829a82a3cb7aeeaece86419ffb0119d}{Publisher}}(std::shared\_ptr<grpc::Channel>\ channel);}
+\DoxyCodeLine{00010\ }
+\DoxyCodeLine{00011\ \ \ \ \ grpc::Status\ \mbox{\hyperlink{classPublisher_a2fe75fa23a11f43f31e0d2d2261c86e8}{send\_order}}(\textcolor{keyword}{const}\ trading::Order\&\ order);}
+\DoxyCodeLine{00012\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00013\ \ \ \ \ std::unique\_ptr<trading::TradingService::Stub>\ \mbox{\hyperlink{classPublisher_ac495a5e279a5531eddb94314bdbd04ac}{\_stub}};}
+\DoxyCodeLine{00014\ \};}
+
+\end{DoxyCode}
