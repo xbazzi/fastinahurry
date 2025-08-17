@@ -9,8 +9,35 @@ jobs:
   mirror:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch full history for complete mirror
+          # token: ${{ secrets.GITEA_TOKEN }}
+
       - name: Push to GitHub
         run: |
+          # Configure git
+          git config --global user.name "Gitea Mirror Bot"
+          git config --global user.email "noreply@gitea.local"
+
+          # Add remote
           git remote add github https://${{ secrets.GH_TOKEN }}@github.com/xbazzi/fastinahurry.git
-          git push github master --force
+
+          # Check if GitHub repo is empty
+          if git ls-remote --heads github | grep -q refs/heads/; then
+            echo "GitHub repo has branches, doing full mirror"
+            git push github --all --force
+            git push github --tags --force
+          else
+            echo "GitHub repo is empty, pushing master branch first"
+            git push github master
+            # After master is established, push other branches and tags
+            git push github --all --force || echo "No additional branches to push"
+            git push github --tags --force || echo "No tags to push"
+          fi
+      - name: Debug git state
+        run: |
+          git log --oneline -5
+          git branch -a
+          git remote -v
