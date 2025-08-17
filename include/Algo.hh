@@ -21,9 +21,12 @@ public:
     void initialize();
     void generate_orders();
     void process();
-    void send(trading::Order&);
+    void start_background_processing();
+    grpc::Status send(trading::Order&);
     bool initialized();
     void stop();
+    bool is_running();
+    void cleanup_completed_futures();
 private:
     std::queue<trading::Order> _orders;
     std::atomic<bool> _initialized{false};
@@ -34,6 +37,7 @@ private:
     utils::ThreadSafeQueue<trading::Order> _order_queue;
     utils::ThreadPool                      _thread_pool;
 
+    std::mutex                      _orders_mutex;
     std::mutex                      _send_mutex;
     std::mutex                      _futures_mutex;
     std::jthread                    _reader_thread;

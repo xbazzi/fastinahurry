@@ -1,0 +1,16 @@
+name: Simple Mirror to GitHub
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Push to GitHub
+        run: |
+          git remote add github https://${{ secrets.GH_TOKEN }}@github.com/xbazzi/fastinahurry.git
+          git push github master --force

@@ -17,34 +17,74 @@ void Algo::initialize() {
     auto channel = grpc::CreateChannel(server_addr, grpc::InsecureChannelCredentials());
     _pub = std::make_shared<Publisher>(channel);
 
-    _initialized = true;
+    _initialized.store(true, std::memory_order_release);
+    _running.store(true, std::memory_order_release);
+}
+
+bool Algo::is_running() {
+    return _running;
 }
 
 void Algo::stop() {
-    // _running = false;
+    _stopping.store(true, std::memory_order_release);
+    _running.store(false, std::memory_order_release);
 
     _reader_thread.request_stop();
     for (auto& t : _worker_threads) {
         t.request_stop();
     }
 
-    for (auto& future : _futures) {
-        bool ok = future.get();
-        if (!ok) {
-            std::cerr << "[Warning] Some orders failed to send" << std::endl;
+    if (_reader_thread.joinable()) {
+        _reader_thread.join();
+    }
+    for (auto& t : _worker_threads) {
+        if (t.joinable()) {
+            t.join();
         }
+    }
+
+    {
+        std::lock_guard<std::mutex> lk(_futures_mutex);
+        for (auto& future : _futures) {
+            bool ok = future.get();
+            if (!ok) {
+                std::cerr << "[Warning] Some orders failed to send" << std::endl;
+            }
+        }
+        _futures.clear();
     }
 }
 
 void Algo::generate_orders() {
+    std::lock_guard<std::mutex> lock(_orders_mutex);
     _orders = readers::json::read_orders_from_json("orders.json");
 }
 
 bool Algo::initialized() {
-    return _initialized;
+    return _initialized.load(std::memory_order_acquire);
 }
 
 void Algo::process() {
+    this->generate_orders();
+    std::lock_guard<std::mutex> lock(_orders_mutex);
+    while (!_orders.empty()) {
+        auto order = _orders.front();
+        _orders.pop();
+        auto status = send(order);
+        if (status.ok()) {
+            std::ostringstream ss;
+            ss << "[Success] Sent order to buy " << order.quantity()
+                      << " shares of " << order.symbol() << " at $" 
+                      << order.price() << std::endl;
+            std::cout << ss.str();
+        } else {
+            std::cout << "[Error] Failed to send order for " << order.symbol() 
+                      << " - " << status.error_message() << std::endl;
+        }
+    }
+}
+
+void Algo::start_background_processing() {
     // Thread to read from file source and enqueue
     _reader_thread = std::jthread([this](std::stop_token stoken) {
         while (!stoken.stop_requested()) {
@@ -64,11 +104,11 @@ void Algo::process() {
 
                 auto future = _thread_pool.enqueue([this, order]() -> bool {
                     grpc::Status status;
-                    // {
-                    //     std::lock_guard lock(_send_mutex);
-                    //     status = _pub->send_order(order);
-                    // }
-                    status = _pub->send_order(order);
+                    {
+                        std::lock_guard lock(_send_mutex);
+                        status = _pub->send_order(order);
+                        std:: cout << "WOAH!" << std::endl;
+                    }
 
                     if (!status.ok()) {
                         std::cerr << "[Error] Failed to send order: "
@@ -92,25 +132,33 @@ void Algo::process() {
                         if (!ok) std::cerr << "[Late] Order failed for " << order.symbol() << std::endl;
                     } else {
                         std::cout << "future got pushed brah" << std::endl;
-                        std::scoped_lock lk(_futures_mutex);
-                        _futures.emplace_back(std::move(future));
+                        {
+                            std::lock_guard<std::mutex> lk(_futures_mutex);
+                            _futures.emplace_back(std::move(future));
+                        }
                     }
                 }
             }
         });
     }
-
-    // while(_running) {
-        // this->generate_orders();
-        // while (!_orders.empty()) {
-        //     auto order = _orders.front();
-        //     _orders.pop();
-        //     send(order);
-        // }
-        // sleep(1);
-    // }
 }
 
-void Algo::send(trading::Order& order) {
-    _pub->send_order(order);
+void Algo::cleanup_completed_futures() {
+    std::lock_guard<std::mutex> lk(_futures_mutex);
+    auto it = _futures.begin();
+    while (it != _futures.end()) {
+        if (it->wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
+            bool ok = it->get();
+            if (!ok) {
+                std::cerr << "[Background] Future failed" << std::endl;
+            }
+            it = _futures.erase(it);
+        } else {
+            ++it;
+        }
+    }
+}
+
+grpc::Status Algo::send(trading::Order& order) {
+    return _pub->send_order(order);
 }

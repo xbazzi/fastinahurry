@@ -6,4 +6,5 @@ public:
     void start();
 private:
     std::unique_ptr<Algo> _algo;
+    uint32_t _count;
 };
