@@ -45,6 +45,14 @@ jobs:
           *This mirror is automatically updated when changes are pushed to the master branch.*
           EOF
 
+          # Stage and commit the new README
+          git add README.md
+          if git diff --staged --quiet; then
+            echo "No changes to README, skipping commit"
+          else
+            git commit -m "Update README for GitHub mirror"
+          fi
+
           # Add remote
           git remote add github https://${{ secrets.GH_TOKEN }}@github.com/xbazzi/fastinahurry.git
 
