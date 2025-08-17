@@ -32,7 +32,7 @@ jobs:
           
           ## 🏠 Original Repository
           
-          The main repository is located at: [${{ env.GITEA_REPO_URL }}](${{ env.GITEA_REPO_URL }})
+          The main repository is located at: [https://gitgud.foo/xbazzi/fastinahurry](https://gitgud.foo/xbazzi/fastinahurry)
           
           Please visit the original repository for:
           - 📝 Issues and bug reports
