@@ -29,6 +29,10 @@ void Algo::stop() {
     _stopping.store(true, std::memory_order_release);
     _running.store(false, std::memory_order_release);
 
+    if (_pub) {
+        _pub->stop_market_data_stream();
+    }
+
     _reader_thread.request_stop();
     for (auto& t : _worker_threads) {
         t.request_stop();
@@ -84,6 +88,15 @@ void Algo::process() {
     }
 }
 
+void Algo::start_market_data_streaming() {
+    if (!_pub) {
+        std::cerr << "[Error] Publisher not initialized. Call initialize() first." << std::endl;
+        return;
+    }
+    
+    _pub->start_market_data_stream("AAPL");
+}
+
 void Algo::start_background_processing() {
     // Thread to read from file source and enqueue
     _reader_thread = std::jthread([this](std::stop_token stoken) {
@@ -96,7 +109,7 @@ void Algo::start_background_processing() {
         }
     });
 
-    std::size_t num_workers = 2;
+    std::size_t num_workers = 1;
     for (std::size_t i = 0; i < num_workers; ++i) {
         _worker_threads.emplace_back([this] (std::stop_token stoken) {
             while(!stoken.stop_requested()) {

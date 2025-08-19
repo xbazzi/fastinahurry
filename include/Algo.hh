@@ -22,6 +22,7 @@ public:
     void generate_orders();
     void process();
     void start_background_processing();
+    void start_market_data_streaming();
     grpc::Status send(trading::Order&);
     bool initialized();
     void stop();

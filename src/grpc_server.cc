@@ -2,6 +2,9 @@
 #include <grpcpp/grpcpp.h>
 #include <iostream>
 #include <thread>
+#include <cmath>
+#include <cstdlib>
+#include <ctime>
 
 using grpc::Server;
 using grpc::ServerBuilder;
@@ -26,30 +29,48 @@ class TradingServiceImpl final : public TradingService::Service {
 
     Status StreamMarketData(ServerContext* ctx, const MarketRequest* req,
                             grpc::ServerWriter<MarketData>* writer) override {
+        std::cout << "Starting market data stream for symbol: " << req->symbol() << std::endl;
         
-            uint32_t max_market_streams = 5;
-            for (uint32_t i = 0; i < max_market_streams; i++) {
-                MarketData data;
-                data.set_symbol(req->symbol());
-                data.set_price(100 + i);
-                data.set_timestamp(time(nullptr));
-                writer->Write(data);
-                std::this_thread::sleep_for(std::chrono::milliseconds(500));
+        uint32_t counter = 0;
+        while (!ctx->IsCancelled()) {
+            MarketData data;
+            data.set_symbol(req->symbol());
+            
+            double base_price = 100.0;
+            double price_variation = 5.0 * sin(counter * 0.1) + (rand() % 10 - 5) * 0.1;
+            data.set_price(base_price + price_variation);
+            data.set_timestamp(time(nullptr));
+            
+            if (!writer->Write(data)) {
+                break;
             }
-            return Status::OK;
+            
+            std::cout << "Sent market data: " << req->symbol() 
+                     << " @ $" << data.price() << std::endl;
+            
+            counter++;
+            std::this_thread::sleep_for(std::chrono::seconds(3));
+        }
+        
+        std::cout << "Market data stream ended for: " << req->symbol() << std::endl;
+        return Status::OK;
     }
 };
 
-    void RunServer() {
-        std::string addr("0.0.0.0:50051");
+    void RunServer(std::string port) {
+        std::string addr("0.0.0.0");
+        std::string socket = addr;
+        std::ostringstream ss;
+        ss << addr << ":" << port;
         TradingServiceImpl service;
 
         ServerBuilder builder;
-        builder.AddListeningPort(addr, grpc::InsecureServerCredentials());
+
+        builder.AddListeningPort(ss.str(), grpc::InsecureServerCredentials());
         builder.RegisterService(&service);
         std::unique_ptr<Server> server(builder.BuildAndStart());
 
-        std::cout << "Market server listening on" << addr << std::endl;
+        std::cout << "Market server listening on " << addr << ":" << port << std::endl;
         
         server->Wait();
     }

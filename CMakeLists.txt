@@ -46,6 +46,12 @@ set_target_properties(fastinahurry PROPERTIES
   CXX_STANDARD_REQUIRED YES
 )
 
+add_executable(server ${SRC_FILES} server_main.cc)
+set_target_properties(server PROPERTIES
+  CXX_STANDARD 23
+  CXX_STANDARD_REQUIRED YES
+)
+
 # add_executable(fastinahurry ${SRC_FILES} main.cc)
 # add_executable(fastinahurry ${SRC_FILES} main.cc)
 
@@ -61,6 +67,21 @@ target_include_directories(fastinahurry PRIVATE
   ${CMAKE_SOURCE_DIR}/include
   ${CMAKE_CURRENT_BINARY_DIR} # For generated *.pb.h
 )
+
+target_link_libraries(server PRIVATE
+  trading_grpc_proto
+  nlohmann_json::nlohmann_json
+  ${_REFLECTION}
+  ${_GRPC_GRPCPP}
+  ${_PROTOBUF_LIBPROTOBUF}
+)
+
+target_include_directories(server PRIVATE 
+  ${CMAKE_SOURCE_DIR}/include
+  ${CMAKE_CURRENT_BINARY_DIR} # For generated *.pb.h
+)
+
+target_compile_features(server PRIVATE cxx_std_23)
 
 add_library(trading_grpc_proto
   ${trading_grpc_srcs}

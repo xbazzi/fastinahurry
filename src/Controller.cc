@@ -11,10 +11,12 @@ Controller::Controller(int argc, char* argv[])
 
 void Controller::start() {
     if (!_algo->initialized()) _algo->initialize();
+    
+    _algo->start_market_data_streaming();
+    
     while(_algo->is_running()) {
-        _algo->process();
-        std::this_thread::sleep_for(std::chrono::seconds(3));
+        std::this_thread::sleep_for(std::chrono::seconds(1));
         _count++;
-        if (_count > 5) _algo->stop();
+        if (_count >= 10) _algo->stop();
     }
 }
