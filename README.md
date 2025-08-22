@@ -1,38 +1,18 @@
-# FastInAHurry🏃‍♀️‍➡️
-Financial market client/server orders simulator written in C++.
 
-Low latency, data locality, and high performance are paramount.
+# 🪞 GitHub Mirror
 
-# Build n' Run
-## Build
-Install nix (and optionally direnv) and run the `shell.nix` to load all dependencies in your local environment:
+This is an automated mirror of the repository hosted on [GitGud.foo/xbazzi/fastinahurry](https://gitgud.foo/xbazzi/fastinahurry).
 
-```bash
-nix-shell
-```
+**⚠️ This is a read-only mirror - do not create issues or pull requests here.**
 
-Then you can build the project
-```bash
-make
-```
+## 🏠 Original Repository
 
-## Run
+Please visit the [original](https://gitgud.foo/xbazzi/fastinahurry) repository for:
+- 📝 Issues and bug reports
+- 🔄 Pull requests and contributions
+- 📋 Project documentation
+- 💬 Discussions
 
-First, run the server:
+---
 
-```bash
-# Suppress output
-./build/server > /dev/null 2>&1 &
-
-#OR
-
-# Get hit with stdout
-./build/server &
-```
-
-Then run the client:
-```bash
-./build/fastinahurry 
-```
-
-If you have direnv, run `direnv allow` and enjoy having your packages loaded automatically; no need to run `nix-shell` everytime you're in a new shell or load another `shell.nix` from another project.
+*This mirror is automatically updated when changes are pushed to the master branch.*
