@@ -1,9 +1,0 @@
-<map id="src/grpc_client.cc" name="src/grpc_client.cc">
-<area shape="rect" id="Node000001" title=" " alt="" coords="156,5,290,33"/>
-<area shape="rect" id="Node000002" title=" " alt="" coords="5,81,137,109"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="197,36,113,76,110,72,195,31"/>
-<area shape="rect" id="Node000003" title=" " alt="" coords="160,81,286,109"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="226,34,226,65,220,65,220,34"/>
-<area shape="rect" id="Node000004" title=" " alt="" coords="310,81,389,109"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="247,31,316,71,313,75,244,36"/>
-</map>
