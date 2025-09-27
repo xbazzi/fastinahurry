@@ -6,7 +6,8 @@ include(cmake/common.cmake)
 find_package(gRPC REQUIRED)
 find_package(Protobuf REQUIRED)
 find_package(nlohmann_json REQUIRED)
-# find_package(Doxygen REQUIRED)
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(CASS REQUIRED IMPORTED_TARGET cassandra)
 
 include_directories(${Protobuf_INCLUDE_DIRS})
 
@@ -31,7 +32,6 @@ add_custom_command(
       DEPENDS "${trading_proto}"
 )
 
-# Include generated *.pb.h files
 include_directories("${CMAKE_SOURCE_DIR}/include")
 
 # Glob all source files in src/
@@ -40,8 +40,8 @@ file(GLOB_RECURSE SRC_FILES CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/src/*.cc")
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-add_executable(fastinahurry ${SRC_FILES} main.cc)
-set_target_properties(fastinahurry PROPERTIES
+add_executable(client ${SRC_FILES} main.cc)
+set_target_properties(client PROPERTIES
   CXX_STANDARD 23
   CXX_STANDARD_REQUIRED YES
 )
@@ -55,15 +55,16 @@ set_target_properties(server PROPERTIES
 # add_executable(fastinahurry ${SRC_FILES} main.cc)
 # add_executable(fastinahurry ${SRC_FILES} main.cc)
 
-target_link_libraries(fastinahurry PRIVATE
+target_link_libraries(client PRIVATE
   trading_grpc_proto
   nlohmann_json::nlohmann_json
+  PkgConfig::CASS
   ${_REFLECTION}
   ${_GRPC_GRPCPP}
   ${_PROTOBUF_LIBPROTOBUF}
 )
 
-target_include_directories(fastinahurry PRIVATE 
+target_include_directories(client PRIVATE 
   ${CMAKE_SOURCE_DIR}/include
   ${CMAKE_CURRENT_BINARY_DIR} # For generated *.pb.h
 )
@@ -71,6 +72,7 @@ target_include_directories(fastinahurry PRIVATE
 target_link_libraries(server PRIVATE
   trading_grpc_proto
   nlohmann_json::nlohmann_json
+  # cassandra-cpp-driver::cassandra-cpp-driver
   ${_REFLECTION}
   ${_GRPC_GRPCPP}
   ${_PROTOBUF_LIBPROTOBUF}
@@ -89,33 +91,6 @@ add_library(trading_grpc_proto
   ${trading_proto_srcs}
   ${trading_proto_hdrs})
 
-target_compile_features(fastinahurry PRIVATE cxx_std_23)
+target_compile_features(client PRIVATE cxx_std_23)
 add_compile_options(-O1 -g -fno-omit-frame-pointer -fsanitize=address,undefined,leak)
 add_link_options(-fsanitize=address,undefined,leak)
-
-
-# target_link_libraries(trading_grpc_proto
-#   # absl::check
-#   ${_REFLECTION}
-#   ${_GRPC_GRPCPP}
-#   ${_PROTOBUF_LIBPROTOBUF})
-
-# add_executable(server src/grpc_server.cc)
-# target_link_libraries(server trading_grpc_proto gRPC::grpc++)
-# target_include_directories(server PRIVATE "${CMAKE_CURRENT_BINARY_DIR}")
-
-# add_executable(client src/grpc_client.cc)
-# target_link_libraries(client trading_grpc_proto gRPC::grpc++)
-# target_include_directories(client PRIVATE "${CMAKE_CURRENT_BINARY_DIR}")
-
-# foreach(_target
-#   greeter_client greeter_server
-#   greeter_callback_client greeter_callback_server
-#   greeter_async_client greeter_async_client2 greeter_async_server)
-#   add_executable(${_target} "{CMAKE_BUILD_DIR}${_target}.cc")
-#   target_link_libraries(${_target}
-#     trading_grpc_proto
-#     ${_REFLECTION}
-#     ${_GRPC_GRPCPP}
-#     ${_PROTOBUF_LIBPROTOBUF})
-# endforeach()

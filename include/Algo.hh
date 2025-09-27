@@ -10,8 +10,8 @@
 
 // FastInAHurry includes
 #include "Publisher.hh"
-#include "utils/ThreadSafeQueue.hh"
-#include "utils/ThreadPool.hh"
+#include "utils/ThreadSafeQueue.hpp"
+#include "utils/ThreadPool.hpp"
 
 
 class Algo {

@@ -23,6 +23,7 @@ pkgs.mkShell {
     nlohmann_json
     doxygen
     graphviz
+    cassandra-cpp-driver
   ];
 
   # nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) [

@@ -2,18 +2,19 @@
 #include <sstream>
 
 // FastInAHurry Includes
-#include <Algo.hh>
+#include "Algo.hh"
 #include <readers/JSONReader.hh>
 
 // Third Party Includes
 #include <nlohmann/json.hpp>
+#include <cassandra.h>
 
 Algo::Algo() {
     std::cout << "Algo created" << std::endl;
 }
 
 void Algo::initialize() {
-    std::string server_addr = "localhost:50051";
+    std::string server_addr = "localhost:1234";
     auto channel = grpc::CreateChannel(server_addr, grpc::InsecureChannelCredentials());
     _pub = std::make_shared<Publisher>(channel);
 

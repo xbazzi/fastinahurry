@@ -6,7 +6,7 @@
 #include <condition_variable>
 #include <mutex>
 #include <future>
-#include "utils/ThreadPool.hh"
+#include "utils/ThreadPool.hpp"
 
 namespace utils {
 

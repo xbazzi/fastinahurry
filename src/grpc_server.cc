@@ -66,7 +66,10 @@ class TradingServiceImpl final : public TradingService::Service {
 
         ServerBuilder builder;
 
+
+        // std::string addr_str("0.0.0.0:1234");
         builder.AddListeningPort(ss.str(), grpc::InsecureServerCredentials());
+        // builder.AddListeningPort(addr_str, grpc::InsecureServerCredentials());
         builder.RegisterService(&service);
         std::unique_ptr<Server> server(builder.BuildAndStart());
 
