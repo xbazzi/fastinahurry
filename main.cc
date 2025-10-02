@@ -177,9 +177,6 @@ int main(int argc, char* argv[]) {
   cass_session_free(session);
   cass_cluster_free(cluster);
 
-
-
-
     for (uint8_t i = 0; i < argc; i++) {
         std::printf("argument[%d]: %s\n", i, argv[i]);
     }

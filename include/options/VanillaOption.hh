@@ -1,5 +1,7 @@
 #pragma once
 
+namespace options {
+
 class VanillaOption {
 private:
     double _K; // Strike price
@@ -31,3 +33,4 @@ public:
     double calc_put_price() const;
 
 };
+} // End namespace options

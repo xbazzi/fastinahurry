@@ -1,7 +1,9 @@
-#include "../include/VanillaOption.hh"
+#include "VanillaOption.hh"
 #include <cmath>
 #include <memory>
 #include <print>
+
+namespace options {
 
 // Cumulative distribution function for Gaussian distribution
 double N(const double x)
@@ -118,9 +120,4 @@ double VanillaOption::calc_put_price() const {
   double d_2 = d_1 - sigma_sqrt_T;
   return _K * exp(-_r*_T) * N(-d_2) - _S * N(-d_1);
 }
-
-int main() {
-    std::unique_ptr<VanillaOption> dumb_option = std::make_unique<VanillaOption>();
-    std::print("Call price: {0}\n", dumb_option->calc_call_price());
-    std::print("Put price: {0}\n", dumb_option->calc_put_price());
-}
+} // End namespace options
