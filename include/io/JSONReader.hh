@@ -9,9 +9,9 @@
 #include "trading.pb.h"
 #include <nlohmann/json.hpp>
 
-namespace readers::json {
+namespace io {
 using JSON = nlohmann::json;
 using OrderQueue = std::queue<trading::Order>;
 
 OrderQueue read_orders_from_json(const std::string& filename);
-} // End json namespace
+} // End io namespace

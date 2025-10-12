@@ -11,6 +11,7 @@ pkgs.mkShell {
   name = "fastinahurry-dev";
   buildInputs = with pkgs; [
     openssl
+    toml11
     gcc
     cmake
     gdb

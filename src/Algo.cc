@@ -3,18 +3,18 @@
 
 // FastInAHurry Includes
 #include "Algo.hh"
-#include <readers/JSONReader.hh>
+#include <io/JSONReader.hh>
 
 // Third Party Includes
 #include <nlohmann/json.hpp>
 #include <cassandra.h>
 
-Algo::Algo() {
-    std::cout << "Algo created" << std::endl;
+Algo::Algo() 
+{
 }
 
 void Algo::initialize() {
-    std::string server_addr = "localhost:1234";
+    std::string server_addr = "localhost:1337";
     auto channel = grpc::CreateChannel(server_addr, grpc::InsecureChannelCredentials());
     _pub = std::make_shared<Publisher>(channel);
 
@@ -62,7 +62,7 @@ void Algo::stop() {
 
 void Algo::generate_orders() {
     std::lock_guard<std::mutex> lock(_orders_mutex);
-    _orders = readers::json::read_orders_from_json("orders.json");
+    _orders = io::read_orders_from_json("orders.json");
 }
 
 bool Algo::initialized() {
@@ -102,7 +102,7 @@ void Algo::start_background_processing() {
     // Thread to read from file source and enqueue
     _reader_thread = std::jthread([this](std::stop_token stoken) {
         while (!stoken.stop_requested()) {
-            auto orders = readers::json::read_orders_from_json("orders.json");
+            auto orders = io::read_orders_from_json("orders.json");
             while(!orders.empty()) {
                 _order_queue.push(orders.front());
                 orders.pop();

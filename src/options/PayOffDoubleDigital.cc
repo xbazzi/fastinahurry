@@ -1,4 +1,4 @@
-#include "PayOffDoubleDigital.hh"
+#include "options/PayOffDoubleDigital.hh"
 
 namespace options {
 

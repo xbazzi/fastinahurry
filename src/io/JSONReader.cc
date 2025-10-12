@@ -3,13 +3,13 @@
 #include <iostream>
 
 // FastInAHurry Includes
-#include "readers/JSONReader.hh"
+#include "io/JSONReader.hh"
 #include <Algo.hh>
 
 // Third Party Includes
 #include "trading.pb.h"
 
-namespace readers::json {
+namespace io {
 
 OrderQueue read_orders_from_json(const std::string& filename) {
     OrderQueue orders;
@@ -43,4 +43,4 @@ OrderQueue read_orders_from_json(const std::string& filename) {
 
     return orders;
 }
-} // End json namespace
+} // End io namespace

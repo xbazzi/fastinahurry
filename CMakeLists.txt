@@ -9,6 +9,7 @@ add_subdirectory(src/options)
 find_package(gRPC REQUIRED)
 find_package(Protobuf REQUIRED)
 find_package(nlohmann_json REQUIRED)
+find_package(toml11 REQUIRED)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(CASS REQUIRED IMPORTED_TARGET cassandra)
 # Make it optional
@@ -90,6 +91,7 @@ set_target_properties(server PROPERTIES
 target_link_libraries(client PRIVATE
   trading_grpc_proto
   nlohmann_json::nlohmann_json
+  toml11::toml11
   PkgConfig::CASS
   ${_REFLECTION}
   ${_GRPC_GRPCPP}
@@ -99,6 +101,7 @@ target_link_libraries(client PRIVATE
 target_link_libraries(server PRIVATE
   trading_grpc_proto
   nlohmann_json::nlohmann_json
+  toml11::toml11
   ${_REFLECTION}
   ${_GRPC_GRPCPP}
   ${_PROTOBUF_LIBPROTOBUF}

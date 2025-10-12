@@ -1,4 +1,4 @@
-#include "PayOffDoubleDigital.hh"
+#include "options/PayOffDoubleDigital.hh"
 #include <iostream>
 
 using namespace options;
@@ -16,6 +16,10 @@ int main(int argc, char **argv) {
   std::cout << "Spot = 5.0 : " << pay(5.0) << std::endl;
   std::cout << "Spot = 15.0: " << pay(15.0) << std::endl;
   std::cout << "Spot = 25.0: " << pay(25.0) << std::endl;
+
+  // auto path = std::filesystem::path("config.toml");
+  // io::Config* config = new io::Config(path);
+  // config->parse_config();
 
   return 0;
 }

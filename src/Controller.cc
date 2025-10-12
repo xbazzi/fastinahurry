@@ -3,10 +3,6 @@
 
 Controller::Controller(int argc, char* argv[]) 
  : _algo(new Algo()), _count(0) {
-    std::cout << "argc: " << argc << std::endl;
-    for (uint16_t i = 1; i < argc; i++) {
-        std::cout << argv[i] << " ";
-    } std::cout << std::endl;
 }
 
 void Controller::start() {
