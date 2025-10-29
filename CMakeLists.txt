@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.25)
+cmake_minimum_required(VERSION 4.0)
 project(grpc_trading CXX)
 
 include(cmake/common.cmake)
@@ -11,14 +11,7 @@ find_package(Protobuf REQUIRED)
 find_package(nlohmann_json REQUIRED)
 find_package(toml11 REQUIRED)
 find_package(PkgConfig REQUIRED)
-pkg_check_modules(CASS REQUIRED IMPORTED_TARGET cassandra)
-# Make it optional
-# pkg_check_modules(CASS QUIET cassandra)
-# if (CASS_FOUND)
-#     message(STATUS "Found Cassandra: ${CASS_VERSION}")
-# else()
-#     message(WARNING "Cassandra not found, building without it")
-# endif()
+# pkg_check_modules(CASS REQUIRED IMPORTED_TARGET cassandra)
 
 ###############
 # Proto stuff #
@@ -48,8 +41,7 @@ add_custom_command(
 
 include_directories("${CMAKE_SOURCE_DIR}/include")
 
-###################
-# Proto stuff end #
+################### # Proto stuff end #
 ###################
 
 # Glob all source files in src/
@@ -92,7 +84,7 @@ target_link_libraries(client PRIVATE
   trading_grpc_proto
   nlohmann_json::nlohmann_json
   toml11::toml11
-  PkgConfig::CASS
+  # PkgConfig::CASS
   ${_REFLECTION}
   ${_GRPC_GRPCPP}
   ${_PROTOBUF_LIBPROTOBUF}
@@ -126,7 +118,7 @@ add_library(trading_grpc_proto
 
 
 
-target_compile_features(server PRIVATE cxx_std_23)
-target_compile_features(client PRIVATE cxx_std_23)
+#target_compile_features(server PRIVATE cxx_std_23)
+# target_compile_features(client PRIVATE cxx_std_23)
 add_compile_options(-O1 -g -fno-omit-frame-pointer -fsanitize=address,undefined,leak)
 add_link_options(-fsanitize=address,undefined,leak)

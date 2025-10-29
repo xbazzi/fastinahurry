@@ -4,23 +4,26 @@
 #include <iostream>
 
 namespace io {
-Config::Config(std::filesystem::path& config_path)
+Config::Config(const std::filesystem::path& config_path) noexcept
  : _config_path{config_path}
 { }
+
+std::string& Config::get_market_ip() noexcept { return _market_ip; }
+
+uint16_t Config::get_market_port() noexcept { return _market_port; }
 
 bool Config::parse_config() noexcept
 {
     const auto root = toml::parse(_config_path);
-    // assert(root.is_table());
-    assert(root.at("title").as_string() == "TOML Example");
+    assert(root.at("title").as_string() == "HFT Config");
 
-    std::cout << _config_path << std::endl;
-    // std::cout << "COmments size: " << root.comments().size() << std::endl;
-    // const toml::value& keys = root.at("key");
-    const auto dob = root.at("owner").at("dob" ).as_offset_datetime();
+    const toml::value& market = root.at("servers").at("market");
 
+    const auto& market_ip = market.at("ip").as_string();
+    const auto& market_port = market.at("port").as_integer();
 
-    std::cout << root.at("owner").at("name").as_string() << std::endl;
-    return 1;
+    _market_port = market_port;
+    _market_ip = market_ip;
+    return true;
 }
 } // End io namespace

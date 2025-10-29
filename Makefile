@@ -9,15 +9,18 @@ help: ## Show this help message
 
 # Default target: build everything
 all: configure ## Build all targets
-	cmake --build $(BUILD_DIR)
+	cmake --build $(BUILD_DIR) 
 
 # Build only the "options" target
 options: configure ## Build options target
 	cmake --build $(BUILD_DIR) --target options
 
 # Configure step (only runs once unless CMakeLists.txt changes)
+#-DCMAKE_CXX_COMPILER=clang++
+#blah-DCMAKE_CXX_FLAGS="--gcc-toolchain=${pkgs.gcc} -isystem ${pkgs.llvmPackages_18.libcxx}/include/c++/v1"
 configure: ## Configure build directory
 	cmake -S . -B $(BUILD_DIR)
+
 
 # Clean build files
 clean:

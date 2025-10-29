@@ -2,34 +2,39 @@
 #include <cstdint>
 #include <cassert>
 #include <iostream>
+#include <cxxabi.h>
+#include <filesystem>
 
 // FastInAHurry Includes
-#include <Controller.hh>
-#include <Algo.hh>
-#include <io/Cassandra.hpp>
-#include <io/Config.hh>
+#include "Controller.hh"
+#include "io/Config.hh"
 
-
-
-int main(int argc, char* argv[]) {
-
-  for (uint8_t i = 0; i < argc; i++) {
-      std::printf("argument[%d]: %s\n", i, argv[i]);
-  }
-
-  // Create Scylla db, tables
-  io::init_db(argc, argv);
+int main(int argc, char* argv[]) 
+{
+  #ifdef _LIBCPP_VERSION
+    std::cout << "Using libc++ " << _LIBCPP_VERSION << '\n';
+  #elif defined(__GLIBCXX__)
+    std::cout << "Using libstdc++ " << __GLIBCXX__ << '\n';
+  #else
+    std::cout << "Unknown standard library\n";
+  #endif
 
   // Load config
-  auto path = std::filesystem::path(argv[2]);
-  bool result = std::filesystem::exists(path);
-  std::cout << "Exists: " << result << std::endl;
-  io::Config config(path);
-  std::cout << "hi" << std::endl;
-  config.parse_config();
-  std::cout << "hi" << std::endl;
+  const auto& path = std::filesystem::path(argv[2]);
+  if (!std::filesystem::exists(path))
+  {
+    std::cout << "Path doesn't exist: " << path << '\n';
+    return 1;
+  }
 
-  Controller ctlr(argc, argv);
+  io::Config config{path};
+  if (!config.parse_config())
+  {
+    std::cout << "Unable to parse config" << '\n';
+    return 1;
+  }
+
+  Controller ctlr(std::move(config));
   ctlr.start();
 
   return 0;

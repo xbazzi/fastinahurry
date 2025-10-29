@@ -1,18 +1,18 @@
 #include "Controller.hh"
+#include "io/Config.hh"
+#include "Algo.hh"
 // #include <thread>
 
-Controller::Controller(int argc, char* argv[]) 
- : _algo(new Algo()), _count(0) {
-}
+Controller::Controller(io::Config&& config) 
+    noexcept(noexcept(std::make_unique<Algo>()))
+ : p_algo{std::make_unique<Algo>(config)}
+{ }
 
-void Controller::start() {
-    if (!_algo->initialized()) _algo->initialize();
-    
-    _algo->start_market_data_streaming();
-    
-    while(_algo->is_running()) {
-        std::this_thread::sleep_for(std::chrono::seconds(1));
-        _count++;
-        if (_count >= 10) _algo->stop();
-    }
+void Controller::start_server() {
+    if (!p_algo->is_initialized()) p_algo->initialize();
+    p_algo->work_market();
+}
+void Controller::start_client() {
+    if (!p_algo->is_initialized()) p_algo->initialize();
+    p_algo->work_client();
 }
