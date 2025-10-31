@@ -2,6 +2,7 @@
 #include "io/Config.hh"
 #include <filesystem>
 #include <iostream>
+#include "utils/Timer.hpp"
 
 namespace io {
 Config::Config(const std::filesystem::path& config_path) noexcept
@@ -14,6 +15,7 @@ uint16_t Config::get_market_port() noexcept { return _market_port; }
 
 bool Config::parse_config() noexcept
 {
+    utils::Timer{"Config::parse_config()"};
     const auto root = toml::parse(_config_path);
     assert(root.at("title").as_string() == "HFT Config");
 

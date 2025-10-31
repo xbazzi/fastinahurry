@@ -3,14 +3,23 @@
 #include <unistd.h>
 
 class SocketRAII {
+private:
+
     int _fd{-1};
 public:
     SocketRAII() = default;
-    explicit SocketRAII(int fd) : _fd(fd) {}
+    explicit SocketRAII(int fd) : _fd{fd} 
+    {
+        static_assert(!std::is_copy_constructible_v<SocketRAII>);
+        static_assert(!std::is_copy_assignable<SocketRAII>::value);
+    }
     SocketRAII(const SocketRAII&) = delete; // No copy ctor
     SocketRAII& operator=(const SocketRAII&) = delete; // No copy assg
-    SocketRAII(SocketRAII&& other) noexcept : _fd{other._fd} { other._fd = -1; } // Move ctor
-    SocketRAII& operator=(SocketRAII&& other) noexcept // Move assg
+    SocketRAII(SocketRAII&& other) 
+        noexcept(std::is_move_constructible_v<SocketRAII>) 
+        : _fd{other._fd} { other._fd = -1; } // Move ctor
+    SocketRAII& operator=(SocketRAII&& other) 
+        noexcept(std::is_move_assignable_v<SocketRAII>) // Move assg
     {
         if (this != &other) {
             if (_fd >= 0) close(_fd);
@@ -27,7 +36,7 @@ public:
     // Assignment from raw socket
     SocketRAII& operator=(int newfd) noexcept 
     {
-        if (_fd >= 0) close(_fd);
+        if (_fd >= 0) ::close(_fd);
         _fd = newfd;
         return *this;
     }

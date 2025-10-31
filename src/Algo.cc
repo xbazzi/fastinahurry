@@ -2,12 +2,14 @@
 #include <sstream>
 #include <cstdint>
 #include <chrono>
+#include <chrono>
 
 // FastInAHurry Includes
 #include "Algo.hh"
 #include "io/JSONReader.hh"
-#include "MarketData.hh"
+#include "market/MarketData.hh"
 #include "io/TcpClient.hh"
+#include "utils/Timer.hpp"
 
 // Third Party Includes
 #include <nlohmann/json.hpp>
@@ -21,27 +23,34 @@ Algo::Algo(const io::Config& config) noexcept
 
 void Algo::initialize() 
 {
-    if (_initialized.load(std::memory_order_acquire))
+    utils::Timer{"Algo::initialize()"};
+    if (m_initialized.load(std::memory_order_acquire))
         return;
     p_tcp_server = std::make_unique<io::TcpServer>(
         p_config->get_market_ip(), p_config->get_market_port()
     );
     p_tcp_server->start();
-    _initialized.store(true, std::memory_order_release);
+    m_server_started.store(true, std::memory_order_release);
+    m_initialized.store(true, std::memory_order_release);
 }
 
 void Algo::work_client()
 {
-    if (!_initialized.load(std::memory_order_acquire))
+    utils::Timer{"Algo::work_client()"};
+    if (!m_initialized.load(std::memory_order_acquire) 
+        || !m_client_started.load(std::memory_order_acquire)) [[unlikely]]
         initialize();
+        
     io::TcpClient client{};
-    if (!client.connect_to_server().value())
+    char buf[1024];
+    if (!client.connect_to_server())
         std::cout << "Could not connect to server." << '\n';
-
+    std::cout << client.recv(&buf, sizeof(buf));
 }
 void Algo::work_server()
 {
-    if (!_initialized.load(std::memory_order_acquire))
+    utils::Timer{"Algo::work_server()"};
+    if (!m_initialized.load(std::memory_order_acquire))
         initialize();
 
     for (size_t i{1}; i <= 100; ++i)
@@ -64,7 +73,7 @@ void Algo::work_server()
 }
 
 bool Algo::is_running() {
-    return _running.load(std::memory_order_relaxed);
+    return m_running.load(std::memory_order_relaxed);
 }
 
 // void Algo::stop() {

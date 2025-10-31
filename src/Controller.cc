@@ -5,14 +5,16 @@
 
 Controller::Controller(io::Config&& config) 
     noexcept(noexcept(std::make_unique<Algo>()))
- : p_algo{std::make_unique<Algo>(config)}
-{ }
+ : p_algo{std::make_unique<Algo>(std::move(config))}
+{}
 
-void Controller::start_server() {
+void Controller::start_server() 
+{
     if (!p_algo->is_initialized()) p_algo->initialize();
-    p_algo->work_market();
+    p_algo->work_server();
 }
-void Controller::start_client() {
+void Controller::start_client() 
+{
     if (!p_algo->is_initialized()) p_algo->initialize();
     p_algo->work_client();
 }

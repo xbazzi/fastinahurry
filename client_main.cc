@@ -4,10 +4,20 @@
 #include <iostream>
 #include <cxxabi.h>
 #include <filesystem>
+#include <sstream>
 
 // FastInAHurry Includes
 #include "Controller.hh"
 #include "io/Config.hh"
+
+void print_help()
+{
+  std::ostringstream ss;
+  ss << "Usage: "                     << '\n'
+     << "\tclient <config_file_path>" << '\n'
+     << "\tEx: client config.toml"    << '\n';
+  std::cout << ss.str() << std::endl;
+}
 
 int main(int argc, char* argv[]) 
 {
@@ -19,8 +29,12 @@ int main(int argc, char* argv[])
     std::cout << "Unknown standard library\n";
   #endif
 
-  // Load config
-  const auto& path = std::filesystem::path(argv[2]);
+  if (argc < 2)
+  {
+    print_help();
+    return 1;
+  }
+  const auto& path = std::filesystem::path(argv[1]);
   if (!std::filesystem::exists(path))
   {
     std::cout << "Path doesn't exist: " << path << '\n';
@@ -35,7 +49,7 @@ int main(int argc, char* argv[])
   }
 
   Controller ctlr(std::move(config));
-  ctlr.start();
+  ctlr.start_client();
 
   return 0;
 }

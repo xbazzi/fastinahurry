@@ -1,27 +1,19 @@
 #pragma once
 
-#include <string>
-#include <optional>
 #include <cstdint>
-#include <atomic>
-#include <sys/types.h>
-#include "io/SocketRAII.hpp"
+#include "io/Tcp.hh"
 
 namespace io {
-class TcpServer {
-private:
-    std::string _ip{};
-    uint16_t _port{};
-    SocketRAII _sock{-1};
 
+class TcpServer : public Tcp
+{
 public:
     TcpServer() = default;
-    explicit TcpServer(const std::string&, uint16_t);
+    explicit TcpServer(const std::string&, std::uint16_t);
 
     bool start();
+    SocketRAII accept_client();
     ssize_t send(SocketRAII&, const void*, size_t);
     ssize_t recv(SocketRAII&, void*, size_t);
-    SocketRAII accept_client();
-    bool _running{false};
 };
 } // End namespace io

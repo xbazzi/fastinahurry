@@ -68,7 +68,7 @@ list(REMOVE_ITEM COMMON_SRC "${CMAKE_SOURCE_DIR}/src/options/main.cc")
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-add_executable(client ${COMMON_SRC} main.cc)
+add_executable(client ${COMMON_SRC} client_main.cc)
 set_target_properties(client PROPERTIES
   CXX_STANDARD 23
   CXX_STANDARD_REQUIRED YES

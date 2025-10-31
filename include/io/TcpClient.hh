@@ -1,21 +1,21 @@
 #pragma once 
 
-#include <string>
 #include <cstdint>
-#include <optional>
-#include "io/SocketRAII.hpp"
+#include "io/Tcp.hh"
 
 namespace io {
 
-class TCPSubscriber
+class TcpClient : public Tcp
 {
-private:
-    std::string _ip;
-    uint16_t _port;
-    SocketRAII _sock;
 public:
-    TCPSubscriber();
-    TCPSubscriber(const std::string& ip, const uint16_t _port);
-    std::optional<bool> init_socket();
+    using Tcp::send_data;
+    using Tcp::recv_data;
+
+    TcpClient() = default;
+    explicit TcpClient(const std::string&, const uint16_t);
+
+    bool connect_to_server();
+    ssize_t send(const void*, size_t);
+    ssize_t recv(void*, size_t);
 };
 } // End namespace io

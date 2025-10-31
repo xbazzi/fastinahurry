@@ -8,8 +8,8 @@
 
 // FastInAHurry includes
 // #include "Publisher.hh"
-#include "utils/ThreadSafeQueue.hpp"
-#include "utils/ThreadPool.hpp"
+// #include "structs/ThreadSafeQueue.hpp"
+#include "ThreadPool.hpp"
 #include "io/TcpServer.hh"
 #include "io/Config.hh"
 
@@ -19,9 +19,11 @@ private:
     // std::queue<trading::Order> _orders;
     std::unique_ptr<io::Config> p_config;
 
-    std::atomic<bool> _initialized{false};
-    std::atomic<bool> _stopping{false};
-    std::atomic<bool> _running{false};
+    std::atomic<bool> m_initialized{false};
+    std::atomic<bool> m_server_started{false};
+    std::atomic<bool> m_client_started{false};
+    std::atomic<bool> m_stopping{false};
+    std::atomic<bool> m_running{false};
 
     // utils::ThreadSafeQueue<trading::Order> _order_queue;
     // utils::ThreadPool                      _thread_pool;
@@ -45,7 +47,7 @@ public:
     // grpc::Status send(trading::Order&);
     __attribute__ ((__always_inline__))
     inline bool is_initialized() {
-        return _initialized.load(std::memory_order_acquire);
+        return m_initialized.load(std::memory_order_acquire);
     }
     void stop();
     bool is_running();
