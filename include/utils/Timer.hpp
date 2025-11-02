@@ -1,37 +1,56 @@
+#pragma once
+
 #include <chrono>
-#include <iostream>
+#include <cstdint>
+#include <print>
 #include <string_view>
+#include <ratio>
+#include <iostream>
+
 
 namespace utils {
+using namespace std::literals::chrono_literals;
 
 class Timer
 {
 private:
-    std::chrono::time_point<std::chrono::high_resolution_clock> m_start_timepoint;
+    using clock = std::chrono::steady_clock;
+    using time_point = std::chrono::time_point<clock>;
+    time_point m_start_timepoint;
     std::string_view m_scope_name;
+
+
+    [[nodiscard]] auto elapsed() const
+    {
+        return std::chrono::duration_cast<std::chrono::microseconds>
+            (clock::now() - m_start_timepoint);
+    }
+
+    void stop()
+    {
+        std::chrono::microseconds dur = elapsed();
+        // operator<<(((std::cout, dur), std::cout, " took a minute pham"));
+        std::cout << "[Timer] " << m_scope_name
+                << " took ≈ "
+                << dur / 1us << "us\n";
+        // std::print("{}[Timer] {} took {}ns", 
+        //     std::chrono::utc_clock::now(),
+        //     m_scope_name,
+        //     dur.count());
+    }
+    void reset() { m_start_timepoint = clock::now(); }
 public:
-Timer(const std::string_view scope_name) 
-    : m_scope_name{scope_name}
-{ 
-    start(); 
-}
+    Timer() noexcept 
+        : m_scope_name{"Unspecified"}, m_start_timepoint{clock::now()}
+    {}
+    Timer(const std::string_view scope_name) noexcept
+        : m_scope_name{scope_name}, m_start_timepoint{clock::now()}
+    {}
+    Timer(const Timer&)            = delete;
+    Timer(Timer&&)                 = delete;
+    Timer& operator=(const Timer&) = delete;
+    Timer& operator=(Timer&&)      = delete;
 
-void start()
-{
-    m_start_timepoint = std::chrono::high_resolution_clock::now();
-}
-
-void stop()
-{
-    auto end_timepoint = std::chrono::high_resolution_clock::now();
-    auto start = std::chrono::time_point_cast<std::chrono::microseconds>(m_start_timepoint).time_since_epoch().count();
-    auto end = std::chrono::time_point_cast<std::chrono::microseconds>(end_timepoint).time_since_epoch().count();
-    std::cout << "[" << m_scope_name << "] Took " << 1e-3 * (end - start) << " ms" << std::endl;
-}
-
-~Timer()
-{
-    stop();
-}
+    ~Timer() noexcept { stop(); }
 };
 } // End namespace utils 

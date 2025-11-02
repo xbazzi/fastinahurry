@@ -1,18 +1,21 @@
 #pragma once
 
-#include <string>
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
-#include <cstdint>
 #include <sys/types.h>
+
+#include <string>
+#include <cstdint>
+
 #include "io/SocketRAII.hpp"
+#include "io/TcpError.hh"
 
 namespace io {
+
 class Tcp
 {
 protected:
-
     std::string _ip{};
     std::uint16_t _port{};
     SocketRAII _sock{-1};
@@ -27,24 +30,29 @@ protected:
         static_assert(std::is_move_constructible_v<Tcp>);
         static_assert(std::is_move_assignable_v<Tcp>);
     }
-    bool create_socket()
+
+    auto create_socket()
+        -> std::expected<void, TcpError>
     {
         int fd = ::socket(AF_INET, SOCK_STREAM, 0);
         if (fd < 0)
-            return false;
+            return std::unexpected(TcpError::BAD_SOCKET);
         _sock = SocketRAII{fd};
-        return true;
+        return {};
     }
+
     [[gnu::hot]] ssize_t send_data(const void* buf, size_t len, int flags = 0) 
     {
         return ::send(_sock, buf, len, flags);
     }
+
     [[gnu::hot]] ssize_t recv_data(void* buf, size_t len, int flags = 0) 
     {
         return ::recv(_sock, buf, len, flags);
     }
+
 public:
-    Tcp(const Tcp&) = delete;
+    Tcp(const Tcp&)             = delete;
     Tcp& operator=(const Tcp&)  = delete;
 
     Tcp(Tcp&&)                  = default;

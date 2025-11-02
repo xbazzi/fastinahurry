@@ -11,7 +11,9 @@
 // #include "structs/ThreadSafeQueue.hpp"
 #include "ThreadPool.hpp"
 #include "io/TcpServer.hh"
+#include "io/TcpClient.hh"
 #include "io/Config.hh"
+#include "AlgoException.hh"
 
 
 class Algo {
@@ -35,12 +37,20 @@ private:
     std::vector<std::jthread>       _worker_threads;
     std::vector<std::future<bool>>  _futures;
     std::unique_ptr<io::TcpServer>  p_tcp_server;
+    std::unique_ptr<io::TcpClient>  p_tcp_client;
 public:
     explicit Algo(const io::Config&) noexcept;
     void initialize();
     void generate_orders();
     void process();
     void work_server();
+    bool start_work();
+    bool start_work1();
+    bool start_work2();
+    bool start_work3();
+    bool start_work4();
+    bool start_work5();
+    bool start_work6();
     void work_client();
     void start_background_processing();
     void start_market_data_streaming();

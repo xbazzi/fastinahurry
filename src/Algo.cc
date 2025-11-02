@@ -1,6 +1,7 @@
 // C++ Includes
 #include <sstream>
 #include <cstdint>
+#include <cstddef>
 #include <chrono>
 #include <chrono>
 
@@ -21,42 +22,65 @@ Algo::Algo(const io::Config& config) noexcept
     : p_config{std::make_unique<io::Config>(config)}
 { }
 
-void Algo::initialize() 
+void Algo::initialize()
 {
-    utils::Timer{"Algo::initialize()"};
+    // utils::Timer timer{"Algo::initialize()"};
     if (m_initialized.load(std::memory_order_acquire))
         return;
+
+    std::string market_ip = p_config->get_market_ip();
+    std::uint16_t market_port = p_config->get_market_port();
+
     p_tcp_server = std::make_unique<io::TcpServer>(
-        p_config->get_market_ip(), p_config->get_market_port()
+        market_ip, market_port
     );
-    p_tcp_server->start();
+    p_tcp_client = std::make_unique<io::TcpClient>(
+        market_ip, market_port
+    );
+
+    auto result = p_tcp_server->start();
+    if (!result.has_value()) {
+        throw AlgoInitializationException(
+            "Failed to start TCP server on " + market_ip + ":" + std::to_string(market_port),
+            result.error()
+        );
+    }
+
     m_server_started.store(true, std::memory_order_release);
     m_initialized.store(true, std::memory_order_release);
 }
 
 void Algo::work_client()
 {
-    utils::Timer{"Algo::work_client()"};
+    utils::Timer timer{"Algo::work_client()"};
     if (!m_initialized.load(std::memory_order_acquire) 
         || !m_client_started.load(std::memory_order_acquire)) [[unlikely]]
         initialize();
         
-    io::TcpClient client{};
-    char buf[1024];
-    if (!client.connect_to_server())
-        std::cout << "Could not connect to server." << '\n';
-    std::cout << client.recv(&buf, sizeof(buf));
+    std::byte buf[1024];
+    if (!p_tcp_client->connect_to_server())
+        std::cerr << "Could not connect to server." << '\n';
+
+    
+    std::cout << "Read "
+              << p_tcp_client->recv(buf, sizeof(buf))
+              << " bytes.\n";
 }
+
 void Algo::work_server()
 {
-    utils::Timer{"Algo::work_server()"};
-    if (!m_initialized.load(std::memory_order_acquire))
-        initialize();
+    utils::Timer timer{"Algo::work_server()"};
+    // if (!m_initialized.load(std::memory_order_acquire))
+    //     initialize();
 
-    for (size_t i{1}; i <= 100; ++i)
+    std::cout << "Server listening on port " << p_config->get_market_port();
+    std::cout << "Accepting client connections...\n";
+    for (size_t i{1}; i <= 1; ++i)
     {
         SocketRAII client = p_tcp_server->accept_client();
         if (!client.valid()) continue;
+        std::cout << "Incoming connection from "
+                    << static_cast<int>(client);
 
         for (size_t seq{1}; seq <= 5; ++seq)
         {
@@ -220,3 +244,13 @@ bool Algo::is_running() {
 //     // return _sub->receive_order(order);
 
 // }
+
+bool Algo::start_work()
+{
+    return false;
+}
+
+bool Algo::start_work1()
+{
+    return false;
+}

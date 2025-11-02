@@ -86,6 +86,12 @@
             protobuf
             # llvm.libcxx
           ];
+        shell = pkgs.zsh;
+        shellHook = ''
+          echo "Welcome to the FastInAHurry flake dev shell" 
+          export CC=gcc
+          export CXX=g++
+        '';
 
           # CPATH = builtins.concatStringsSep ":" [
           #   (lib.makeSearchPathOutput "dev" "include" [ llvm.libcxx ])

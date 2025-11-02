@@ -14,8 +14,8 @@ void print_help()
 {
   std::ostringstream ss;
   ss << "Usage: "                     << '\n'
-     << "\tclient <config_file_path>" << '\n'
-     << "\tEx: client config.toml"    << '\n';
+     << "\tserver <config_file_path>" << '\n'
+     << "\tEx: server config.toml"    << '\n';
   std::cout << ss.str() << std::endl;
 }
 
@@ -34,6 +34,7 @@ int main(int argc, char* argv[])
     print_help();
     return 1;
   }
+
   // Load config
   const auto& path = std::filesystem::path(argv[1]);
   if (!std::filesystem::exists(path))

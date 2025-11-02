@@ -1,36 +1,47 @@
 #include <arpa/inet.h>
+#include <expected>
 
 #include "market/MarketData.hh"
 #include "io/TcpClient.hh"
+#include "io/TcpError.hh"
 
 namespace io {
 
 TcpClient::TcpClient(const std::string& ip, const uint16_t port)
     : Tcp{ip, port} {}
 
-bool TcpClient::connect_to_server()
+auto TcpClient::connect_to_server() 
+    -> std::expected<void, TcpError>
 {
     if (!create_socket())
-        return false;
-    
+        return std::unexpected(TcpError::BAD_SOCKET);
+
     sockaddr_in server{};
     server.sin_family = AF_INET;
     server.sin_port = ::htons(_port);
     if (::inet_pton(AF_INET, _ip.c_str(), &server.sin_addr) <= 0)
-        return false;
+        return std::unexpected(TcpError::INVALID_IP);
 
-    if (::connect(_sock, reinterpret_cast<sockaddr*>(&server), sizeof(server)) <= 0)
-        return false;
-    return true;
+    if (::connect(_sock, reinterpret_cast<sockaddr*>(&server), sizeof(server)) < 0)
+        return std::unexpected(TcpError::CONNECT_FAIL);
+    return {};
 }
 
-[[gnu::hot]] ssize_t TcpClient::send(const void* buf, size_t len)
+[[gnu::hot]] auto TcpClient::send(const void* buf, size_t len)
+    -> std::expected<std::uint64_t, TcpError>
 {
-    return send_data(buf, len);
+    ssize_t result = Tcp::send_data(buf, len);
+    if (result < 0) [[unlikely]]
+        return std::unexpected(TcpError::SEND_FAIL);
+    return static_cast<std::uint64_t>(result);
 }
 
-[[gnu::hot]] ssize_t TcpClient::recv(void* buf, size_t len)
+[[gnu::hot]] auto TcpClient::recv(void* buf, size_t len)
+    -> std::expected<std::uint64_t, TcpError>
 {
-    return recv_data(buf, len);
+    ssize_t result = Tcp::recv_data(buf, len);
+    if (result < 0) [[unlikely]]
+        return std::unexpected(TcpError::RECV_FAIL);
+    return static_cast<std::uint64_t>(result);
 }
 } // End namespace io

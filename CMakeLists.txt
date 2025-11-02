@@ -116,9 +116,12 @@ add_library(trading_grpc_proto
   ${trading_proto_hdrs}
 )
 
+target_compile_features(server PRIVATE cxx_std_23)
+target_compile_features(client PRIVATE cxx_std_23)
 
+# Debug build settings with full debug symbols
+# set(CMAKE_CXX_FLAGS_DEBUG "-g3 -O0 -fno-omit-frame-pointer")
 
-#target_compile_features(server PRIVATE cxx_std_23)
-# target_compile_features(client PRIVATE cxx_std_23)
-add_compile_options(-O1 -g -fno-omit-frame-pointer -fsanitize=address,undefined,leak)
-add_link_options(-fsanitize=address,undefined,leak)
+# Enable sanitizers for all builds
+add_compile_options(-fno-omit-frame-pointer -g3 -O0 -fsanitize=address,undefined,leak)
+# add_link_options(-fsanitize=address,undefined,leak)
