@@ -1,7 +1,7 @@
 #pragma once
 
 // C++ Includes
-#include <memory>
+// #include <memory>
 #include <atomic>
 #include <thread>
 #include <future>
@@ -18,19 +18,25 @@
 #include "fiah/structs/SPSCQueue.hh"
 #include "fiah/market/MarketData.hh"
 #include "fiah/structs/Structs.hh"
+#include "fiah/memory/unique_ptr.hh"
 
 namespace fiah {
 
 
-using Signal = fiah::structs::Signal;
-using Order = fiah::structs::Order;
 
+/// @brief You need to catch exceptions from Algo methods!
 class Algo 
 {
+    using Signal = structs::Signal;
+    using Order = structs::Order;
+    using ConfigUniquePtr = memory::unique_ptr<io::Config>;
+    using TcpServerUniquePtr = memory::unique_ptr<io::TcpServer>;
+    using TcpClientUniquePtr = memory::unique_ptr<io::TcpClient>;
+
 private:
 
-    std::unique_ptr<io::Config> p_config;
-    static inline utils::Logger<Algo>& m_logger{utils::Logger<Algo>::get_instance()};
+    ConfigUniquePtr p_config;
+    static inline utils::Logger<Algo>& m_logger{utils::Logger<Algo>::get_instance("Algo")};
 
     std::atomic<bool> m_server_started{false};
     std::atomic<bool> m_client_started{false};
@@ -55,10 +61,10 @@ private:
     std::jthread                    m_reader_thread;
 
     /// @brief TCP server handle
-    std::unique_ptr<io::TcpServer>  p_tcp_server;
+    TcpServerUniquePtr p_tcp_server;
 
     /// @brief TCP client handle
-    std::unique_ptr<io::TcpClient>  p_tcp_client;
+    TcpClientUniquePtr p_tcp_client;
 
     /// @brief Performance counters (lock-free)
     alignas(64) std::atomic<uint64_t> m_ticks_received{0};
@@ -85,6 +91,7 @@ private:
     std::vector<std::jthread>       _worker_threads;
     std::vector<std::future<bool>>  _futures;
 public:
+
     explicit Algo(io::Config&&);
     ~Algo();
 
@@ -95,7 +102,7 @@ public:
     bool is_client_stopped() const noexcept;
     void work_server();
     void work_client();
-    void start_client();
+    // void start_client();
     void stop_client();
     void print_client_stats() const;
     void process_market_data();

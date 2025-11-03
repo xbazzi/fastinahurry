@@ -11,6 +11,7 @@
 #include "fiah/io/TcpClient.hh"
 #include "fiah/utils/Timer.hpp"
 #include "fiah/utils/Logger.hh"
+#include "fiah/AlgoException.hh"
 #include "fiah/io/Config.hh"
 
 // Third Party Includes
@@ -21,12 +22,11 @@ using namespace std::chrono_literals;
 namespace fiah {
 
 Algo::Algo(io::Config&& config)
-    : p_config{std::make_unique<io::Config>(std::move(config))}
+    : p_config{memory::make_unique<io::Config>(std::move(config))}
 {}
 
 Algo::~Algo()
-{
-}
+{}
 
 // ============================================================================
 // THREAD 1: Network Loop - Receives market data 
@@ -52,12 +52,12 @@ void Algo::_execution_loop()
 {
 }
 
-Signal Algo::_compute_signal(const MarketData &md)
+Algo::Signal Algo::_compute_signal(const MarketData &md)
 {
     return Signal{};
 }
 
-Order Algo::_generate_order(const Signal &signal)
+Algo::Order Algo::_generate_order(const Algo::Signal &signal)
 {
     return Order{};
 }
@@ -78,46 +78,6 @@ void Algo::_set_thread_affinity(std::thread::native_handle_type thread, int cpu_
 #endif
 }
 
-void Algo::start_client()
-{
-    utils::Timer timer{"Algo::start_client"};
-
-    if(!is_client_initialized())
-    {
-        auto result = initialize_client();
-        if (!result.has_value())
-            throw AlgoException("Failed to initialize client before starting");
-    }
-    m_client_running.store(true, std::memory_order_release);
-    m_client_stopping.store(false, std::memory_order_release);
-
-    LOG_INFO("Starting multithreaded client pipeline...");
-
-
-    // Launch threads --------------
-    m_network_thread = std::jthread(
-        [this] (std::stop_token stoken) {
-            this->_network_loop();
-        }
-    );
-
-    m_strategy_thread = std::jthread(
-        [this] (std::stop_token stoken) {
-            this->_strategy_loop();
-        }
-    );
-
-    m_execution_thread = std::jthread(
-        [this] (std::stop_token stoken) {
-            this->_execution_loop();
-        }
-    );
-    _set_thread_affinity(m_network_thread.native_handle(), 0);
-    _set_thread_affinity(m_network_thread.native_handle(), 1);
-    _set_thread_affinity(m_network_thread.native_handle(), 2);
-
-    LOG_INFO("All threads started with CPU affinity.");
-}
 
 void Algo::stop_client()
 {
@@ -159,15 +119,17 @@ auto Algo::initialize_server()
     std::string market_ip = p_config->get_market_ip();
     std::uint16_t market_port = p_config->get_market_port();
 
-    p_tcp_server = std::make_unique<io::TcpServer>(
+    p_tcp_server = memory::make_unique<io::TcpServer>(
         market_ip, market_port
     );
 
     auto result = p_tcp_server->start();
     if (!result.has_value()) 
     {
-        throw AlgoInitializationException(
-            "Failed to start TCP server on " + market_ip + ':' + std::to_string(market_port),
+        throw AlgoException(
+            "Failed to start TCP server on " 
+            + market_ip + ':' + std::to_string(market_port)
+            + ", with error: ",
             result.error()
         );
     }
@@ -196,22 +158,22 @@ auto Algo::initialize_client()
     utils::Timer timer{"Algo::initialize_client()"};
     if (is_client_initialized())
     {
-        LOG_INFO("TCP client already initialized");
+        LOG_WARN("TCP client already initialized");
         return {};
     }
 
+    // const std::string& market_ip = p_config->get_market_ip();
     std::string market_ip = p_config->get_market_ip();
+
     std::uint16_t market_port = p_config->get_market_port();
 
-    p_tcp_client = std::make_unique<io::TcpClient>(
-        market_ip, market_port
+    p_tcp_client = memory::make_unique<io::TcpClient>(
+        std::move(market_ip), market_port
     );
 
     LOG_INFO(
         "Client initialized with market server ip: ",
-        market_ip, 
-        ", and port: ",
-        market_port
+        market_ip, ", and port: ", market_port
     );
 
     // Connect immediately if possible
@@ -240,7 +202,7 @@ void Algo::work_client()
         if (!result.has_value())
         {
             LOG_ERROR("Failed to initialize client.");
-            throw AlgoException("Client pooped.");
+            throw AlgoException("Client initialization failed.", result.error());
         }
     }
 
@@ -275,17 +237,11 @@ void Algo::work_server()
     utils::Timer timer{"Algo::work_server()"};
     if (!is_server_initialized()) [[unlikely]]
     {
-        try 
+        auto result = initialize_server();
+        if (!result.has_value())
         {
-            auto result = initialize_server();
-            if (!result.has_value())
-            {
-                LOG_ERROR("Failed to initialize client.");
-                throw AlgoException("Server pooped.");
-            }
-
-        } catch(AlgoException& e) {
-            LOG_ERROR("U done goofed.");
+            LOG_ERROR("Failed to initialize client.");
+            throw AlgoException("Server pooped: ", result.error());
         }
     }
 

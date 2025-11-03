@@ -8,7 +8,7 @@ class Controller {
 public:
     Controller() = default;
     explicit Controller(io::Config&&) noexcept(noexcept(std::make_unique<Algo>()));
-    Controller(const io::Config&);
+    explicit Controller(const io::Config&) = delete;
     void start_server();
     void start_client();
 private:

@@ -21,6 +21,9 @@ namespace fiah::io {
 TcpServer::TcpServer(const std::string& ip, uint16_t port)
     : Tcp{ip, port} {}
 
+TcpServer::TcpServer(std::string&& ip, uint16_t port)
+    : Tcp{std::move(ip), port} {}
+
 auto TcpServer::start()     
     -> std::expected<void, TcpError>
 {

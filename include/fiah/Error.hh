@@ -9,6 +9,7 @@ enum class AlgoError : std::uint8_t
     SERVER_NOT_ONLINE,
     INIT_SERVER_FAIL,
 };
+
 enum class Error : std::uint8_t
 {
     USER_ERROR,

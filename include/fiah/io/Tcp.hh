@@ -31,6 +31,15 @@ protected:
         static_assert(std::is_move_assignable_v<Tcp>);
     }
 
+    explicit Tcp(std::string&& ip, std::uint16_t port)
+        : _ip{std::move(ip)}, _port{port} 
+    {
+        static_assert(!std::is_copy_constructible_v<Tcp>);
+        static_assert(!std::is_copy_assignable<Tcp>::value);
+        static_assert(std::is_move_constructible_v<Tcp>);
+        static_assert(std::is_move_assignable_v<Tcp>);
+    }
+
     auto create_socket()
         -> std::expected<void, TcpError>
     {

@@ -2,74 +2,80 @@
 
 #include <stdexcept>
 #include <string>
-#include <optional>
+#include <variant>
+#include <type_traits>
+#include <sstream>
 
-#include "io/TcpError.hh"
+#include "fiah/io/TcpError.hh"
+#include "fiah/Error.hh"
 
-namespace fiah
-{
+namespace fiah {
 
-/// @brief Runtime exception for the Algo class
+using ErrorVariant = std::variant<std::monostate, TcpError, AlgoError, Error>;
+
 class AlgoException : public std::runtime_error
 {
-protected:
-    std::optional<TcpError> m_tcp_error;
-    std::optional<Error> m_error;
+private:
+    ErrorVariant m_error_variant;
 
 public:
     explicit AlgoException(const std::string& message)
-        : std::runtime_error(message)
-        , m_tcp_error(std::nullopt)
-    {}
+        : std::runtime_error(message), m_error_variant(std::monostate{}) {}
 
-    AlgoException(const std::string& message, TcpError tcp_err)
-        : std::runtime_error(message + " (TcpError: " + tcp_error_to_string(tcp_err) + ")")
-        , m_tcp_error(tcp_err)
-    {}
+    template <typename EnumType>
+    requires std::is_enum_v<EnumType>
+    AlgoException(const std::string& message, EnumType error)
+        : std::runtime_error(format_error(message, error)), m_error_variant(error) {}
 
-    std::optional<TcpError> get_tcp_error() const noexcept 
-    {
-        return m_tcp_error;
-    }
+    const ErrorVariant& get_error() const noexcept { return m_error_variant; }
 
 private:
-    static std::string tcp_error_to_string(TcpError err) 
+    template <typename EnumType>
+    static std::string format_error(const std::string& message, EnumType error)
     {
-        switch (err) 
-        {
-            case TcpError::BAD_SOCKET:   return "BAD_SOCKET";
-            case TcpError::BIND_FAIL:    return "BIND_FAIL";
-            case TcpError::LISTEN_FAIL:  return "LISTEN_FAIL";
-            case TcpError::CONNECT_FAIL: return "CONNECT_FAIL";
-            case TcpError::ACCEPT_FAIL:  return "ACCEPT_FAIL";
-            case TcpError::SEND_FAIL:    return "SEND_FAIL";
-            case TcpError::RECV_FAIL:    return "RECV_FAIL";
-            case TcpError::INVALID_IP:   return "INVALID_IP";
-            default:                     return "UNKNOWN";
+        std::ostringstream oss;
+        oss << message << " (" << enum_to_string(error) << ")";
+        return oss.str();
+    }
+
+    static std::string enum_to_string(TcpError e)
+    {
+        switch (e) {
+            case TcpError::BAD_SOCKET:   return "TcpError::BAD_SOCKET";
+            case TcpError::BIND_FAIL:    return "TcpError::BIND_FAIL";
+            case TcpError::LISTEN_FAIL:  return "TcpError::LISTEN_FAIL";
+            case TcpError::CONNECT_FAIL: return "TcpError::CONNECT_FAIL";
+            case TcpError::ACCEPT_FAIL:  return "TcpError::ACCEPT_FAIL";
+            case TcpError::SEND_FAIL:    return "TcpError::SEND_FAIL";
+            case TcpError::RECV_FAIL:    return "TcpError::RECV_FAIL";
+            case TcpError::INVALID_IP:   return "TcpError::INVALID_IP";
         }
+        return "TcpError::UNKNOWN";
+    }
+
+    static std::string enum_to_string(AlgoError e)
+    {
+        switch (e) {
+            case AlgoError::INIT_CLIENT_FAIL: return "AlgoError::INIT_CLIENT_FAIL";
+            case AlgoError::SERVER_NOT_ONLINE: return "AlgoError::SERVER_NOT_ONLINE";
+            case AlgoError::INIT_SERVER_FAIL: return "AlgoError::INIT_SERVER_FAIL";
+        }
+        return "AlgoError::UNKNOWN";
+    }
+
+    static std::string enum_to_string(Error e)
+    {
+        switch (e) {
+            case Error::USER_ERROR:       return "Error::USER_ERROR";
+            case Error::CONFIG_ERROR:     return "Error::CONFIG_ERROR";
+            case Error::UNKNOWN_ERROR:    return "Error::UNKNOWN_ERROR";
+            case Error::INIT_ERROR:       return "Error::INIT_ERROR";
+            case Error::CONTROLLER_ERROR: return "Error::CONTROLLER_ERROR";
+            case Error::ALGO_ERORR:       return "Error::ALGO_ERROR";
+            case Error::THREAD_ERROR:     return "Error::THREAD_ERROR";
+        }
+        return "Error::UNKNOWN";
     }
 };
 
-
-/// @brief Exception type for initialization in Algo
-class AlgoInitializationException : public AlgoException
-{
-public:
-    explicit AlgoInitializationException(const std::string& message)
-        : AlgoException("Initialization failed: " + message)
-    {}
-
-    AlgoInitializationException(const std::string& message, TcpError tcp_err)
-        : AlgoException("Initialization failed: " + message, tcp_err)
-    {}
-};
-
-class AlgoConfigException : public AlgoException
-{
-public:
-    explicit AlgoConfigException(const std::string& message)
-        : AlgoException("Configuration error: " + message)
-    {}
-};
-
-} // End namespace fiah
+} // namespace fiah

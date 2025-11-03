@@ -10,6 +10,9 @@ namespace fiah::io {
 TcpClient::TcpClient(const std::string& ip, const uint16_t port)
     : Tcp{ip, port} {}
 
+TcpClient::TcpClient(std::string&& ip, const uint16_t port)
+    : Tcp{std::move(ip), port} {}
+
 auto TcpClient::connect_to_server() 
     -> std::expected<void, TcpError>
 {

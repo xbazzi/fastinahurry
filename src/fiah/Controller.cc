@@ -5,6 +5,7 @@
 
 namespace fiah
 {
+
 Controller::Controller(io::Config&& config) 
   noexcept(noexcept(std::make_unique<Algo>()))
     : p_algo{std::make_unique<Algo>(std::move(config))}
@@ -35,7 +36,7 @@ void Controller::start_client()
         p_algo->stop_client();
 
     } catch(AlgoException& e) {
-        LOG_ERROR("Controller failed to start client");
+        LOG_ERROR("Controller failed to start client: ", e.what());
     }
 }
 

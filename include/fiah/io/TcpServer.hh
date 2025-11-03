@@ -13,7 +13,7 @@ class TcpServer : public Tcp
 {
 private:
     static constexpr std::uint16_t MAX_LISTEN_NUM{10};
-    static inline utils::Logger<TcpServer>& m_logger{utils::Logger<TcpServer>::get_instance()};
+    static inline utils::Logger<TcpServer>& m_logger{utils::Logger<TcpServer>::get_instance("TcpServer")};
 public:
     TcpServer() = default;
     explicit TcpServer(const std::string&, std::uint16_t);

@@ -16,6 +16,7 @@ public:
 
     TcpClient() = default;
     explicit TcpClient(const std::string&, const std::uint16_t);
+    explicit TcpClient(std::string&&, const std::uint16_t);
 
     std::expected<void,          TcpError> connect_to_server();
     std::expected<std::uint64_t, TcpError> send(const void*, size_t);
