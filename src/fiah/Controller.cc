@@ -1,43 +1,62 @@
+// FastInAHurry Includes
+#include "fiah/utils/Timer.hpp"
+#include "fiah/utils/Logger.hh"
 #include "fiah/Controller.hh"
 #include "fiah/io/Config.hh"
 #include "fiah/Algo.hh"
-#include "fiah/Algo.hh"
+#include "fiah/memory/unique_ptr.hh"
 
 namespace fiah
 {
 
-Controller::Controller(io::Config&& config) 
-  noexcept(noexcept(std::make_unique<Algo>()))
-    : p_algo{std::make_unique<Algo>(std::move(config))}
-{}
+    Controller::Controller(io::Config &&config) 
+      noexcept(noexcept(AlgoUniquePtr()))
+        : p_algo{memory::make_unique<Algo>(std::move(config))}
+    {}
 
-void Controller::start_server() 
-{
-    try 
+    bool Controller::start_server() 
+      noexcept
     {
-        if (!p_algo->is_server_initialized()) p_algo->initialize_server();
-        p_algo->work_server();
-    } 
-    catch(AlgoException& e) 
-    {
-        LOG_ERROR("Controller failed to start server in Algo: ", e.what()) ;
+        try
+        {
+            if (!p_algo->is_server_initialized())
+                p_algo->initialize_server();
+            p_algo->work_server();
+            return 0;
+        }
+        catch (AlgoException &e)
+        {
+            LOG_ERROR("Controller failed to start server (AlgoException): ", e.what());
+            return 1;
+        }
+        catch (std::exception &e)
+        {
+            LOG_ERROR("Controller failed to start server (std::exception): ", e.what());
+            return 1;
+        }
     }
-    catch(std::exception& e) 
-    {
-        LOG_ERROR("Controller failed to start client for some reason: ", e.what());
-    }
-}
-void Controller::start_client() 
-{
-    try 
-    {
-        if (!p_algo->is_client_initialized()) p_algo->initialize_client();
-        p_algo->work_client();
-        p_algo->stop_client();
 
-    } catch(AlgoException& e) {
-        LOG_ERROR("Controller failed to start client: ", e.what());
+    bool Controller::start_client()
+      noexcept
+    {
+        try
+        {
+            if (!p_algo->is_client_initialized())
+                p_algo->initialize_client();
+            p_algo->start_client();
+            p_algo->stop_client();
+            return 0;
+        }
+        catch (AlgoException &e)
+        {
+            LOG_ERROR("Controller failed to start client (AlgoException): ", e.what());
+            return 1;
+        }
+        catch (std::exception &e)
+        {
+            LOG_ERROR("Controller failed to start client (std::exception): ", e.what());
+            return 1;
+        }
     }
-}
 
 } // End namespace fiah

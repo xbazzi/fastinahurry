@@ -69,6 +69,10 @@ list(REMOVE_ITEM COMMON_SRC "${CMAKE_SOURCE_DIR}/src/fiah/options/main.cc")
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Compiler flags and other goodies
+add_compile_options(-Wno-interference-size -fno-omit-frame-pointer -g3 -O1 -fsanitize=address,undefined,leak)
+add_link_options(-Wno-interference-size -fsanitize=address,undefined,leak)
+
 add_executable(client ${COMMON_SRC} client_main.cc)
 set_target_properties(client PROPERTIES
   CXX_STANDARD 23
@@ -124,5 +128,3 @@ target_compile_features(client PRIVATE cxx_std_23)
 # Debug build settings with full debug symbols
 # set(CMAKE_CXX_FLAGS_DEBUG "-g3 -O0 -fno-omit-frame-pointer")
 
-add_compile_options(-Wno-interference-size -fno-omit-frame-pointer -g3 -O0 -fsanitize=address,undefined,leak)
-add_link_options(-Wno-interference-size -fsanitize=address,undefined,leak)

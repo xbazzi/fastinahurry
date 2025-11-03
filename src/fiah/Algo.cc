@@ -3,12 +3,13 @@
 #include <cstdint>
 #include <cstddef>
 #include <expected>
+#include <stop_token>
 
 // FastInAHurry Includes
 #include "fiah/Algo.hh"
 #include "fiah/io/JSONReader.hh"
-#include "fiah/market/MarketData.hh"
 #include "fiah/io/TcpClient.hh"
+#include "fiah/structs/Structs.hh"
 #include "fiah/utils/Timer.hpp"
 #include "fiah/utils/Logger.hh"
 #include "fiah/AlgoException.hh"
@@ -29,88 +30,8 @@ Algo::~Algo()
 {}
 
 // ============================================================================
-// THREAD 1: Network Loop - Receives market data 
+// INITIALIZATION
 // ============================================================================
-void Algo::_network_loop()
-{
-    LOG_INFO("Network thread started (Core 0)");
-
-}
-
-void Algo::_strategy_loop()
-{
-    LOG_INFO("Strategy thread started (Core 1)");
-    MarketData md;
-
-    while (m_client_running.load(std::memory_order_relaxed))
-    {
-        return;
-    }
-}
-
-void Algo::_execution_loop()
-{
-}
-
-Algo::Signal Algo::_compute_signal(const MarketData &md)
-{
-    return Signal{};
-}
-
-Algo::Order Algo::_generate_order(const Algo::Signal &signal)
-{
-    return Order{};
-}
-
-void Algo::_set_thread_affinity(std::thread::native_handle_type thread, int cpu_id)
-{
-#ifdef __linux__
-    cpu_set_t cpuset;
-    CPU_ZERO(&cpuset);
-    CPU_SET(cpu_id, &cpuset);
-    int result = pthread_setaffinity_np(thread, sizeof(cpu_set_t), &cpuset);
-    if (result != 0)
-        LOG_WARN("Failed to set thread affinity to CPU ID ", cpu_id);
-    else
-        LOG_INFO("Thread pinned to CPU ", cpu_id);
-#else
-    LOG_WARN("Get on Linux so I can give your threads some affinity...")
-#endif
-}
-
-
-void Algo::stop_client()
-{
-    if (is_client_stopped()) 
-    {
-        LOG_DEBUG("Client already stopped.");
-        return;
-    }
-
-    LOG_INFO("Stopping client...");
-    m_client_running.store(false, std::memory_order_release);
-    m_client_stopping.store(true, std::memory_order_release);
-    m_client_stopped.store(true, std::memory_order_release);
-
-    print_client_stats();
-    LOG_INFO("Client stopped.");
-    // jthread dtor handles joining
-}
-
-void Algo::print_client_stats() const
-{
-    LOG_INFO("=== Algo Statistics ===");
-    LOG_INFO("Ticks received: ",    m_ticks_received.load(std::memory_order_relaxed));
-    LOG_INFO("Signals generated: ", m_signals_generated.load(std::memory_order_relaxed));
-    LOG_INFO("Orders sent: ",       m_orders_sent.load(std::memory_order_relaxed));
-    LOG_INFO("Queue full events: ", m_queue_full_count.load(std::memory_order_relaxed));
-    
-    // Queue status
-    LOG_INFO("Market data queue size: ", m_market_data_queue.size());
-    LOG_INFO("Signal queue size: ",      m_signal_queue.size());
-    LOG_INFO("Order queue size: ",       m_order_queue.size());
-}
-
 auto Algo::initialize_server()
     -> std::expected<void, AlgoError>
 {
@@ -127,7 +48,7 @@ auto Algo::initialize_server()
     if (!result.has_value()) 
     {
         throw AlgoException(
-            "Failed to start TCP server on " 
+            "Algo failed to start TCP server on " 
             + market_ip + ':' + std::to_string(market_port)
             + ", with error: ",
             result.error()
@@ -135,21 +56,6 @@ auto Algo::initialize_server()
     }
     m_server_started.store(true, std::memory_order_release);
     return {};
-}
-
-bool Algo::is_server_initialized() const noexcept
-{
-    return m_server_started;
-}
-
-bool Algo::is_client_initialized() const noexcept
-{
-    return m_client_started;
-}
-
-bool Algo::is_client_stopped() const noexcept
-{
-    return m_client_stopped;
 }
 
 auto Algo::initialize_client()
@@ -192,19 +98,277 @@ auto Algo::initialize_client()
     return {};
 }
 
-void Algo::work_client()
+void Algo::start_client()
 {
-    utils::Timer timer{"Algo::work_client()"};
-    LOG_INFO("Client working");
-    if (!is_client_initialized()) [[unlikely]]
+    utils::Timer timer{"Algo::start_client()"};
+
+    if (is_client_running())
+    {
+        LOG_WARN("Client already running.");
+        return;
+    }
+    if (!is_client_initialized())
     {
         auto result = initialize_client();
         if (!result.has_value())
         {
-            LOG_ERROR("Failed to initialize client.");
+            LOG_ERROR("Failed to initialize client while starting.");
+            throw AlgoException("Failed to initialize client while starting: "
+                , result.error()
+            );
+        }
+    }
+
+    m_client_running.store(true, std::memory_order_release);
+    m_client_stopping.store(false, std::memory_order_release);
+    m_client_stopped.store(false, std::memory_order_release);
+    LOG_INFO("Starting multithreaded pipeline...");
+
+    m_network_thread = std::jthread([this](std::stop_token){
+        this->_network_loop();
+    });
+    LOG_INFO("Started network thread with id: ", m_network_thread.get_id());
+
+    m_strategy_thread = std::jthread([this](std::stop_token){
+        this->_strategy_loop();
+    });
+    LOG_INFO("Started strategy thread with id: ", m_strategy_thread.get_id());
+
+    m_execution_thread = std::jthread([this](std::stop_token){
+        this->_execution_loop();
+    });
+    LOG_INFO("Started execution thread with id: ", m_execution_thread.get_id());
+
+    // Attempt to set affinity (prints warnings if it can't)
+    _set_thread_affinity(m_network_thread.native_handle(), 0);
+    _set_thread_affinity(m_strategy_thread.native_handle(), 1);
+    _set_thread_affinity(m_execution_thread.native_handle(), 2);
+}
+
+///
+/// @brief THREAD 1: Network Loop - Receives market data 
+///
+void Algo::_network_loop()
+{
+    utils::Timer timer("Algo::network_loop");
+
+    LOG_INFO("Network thread started (Core 0)");
+    std::byte buffer[sizeof(MarketData)];
+
+    while (m_client_running.load(std::memory_order_acquire))
+    {
+        auto recv_result = p_tcp_client->recv(buffer, sizeof(buffer));
+        if (!recv_result.has_value())
+        {
+            LOG_WARN("Did not receive a market data packet. Trying again...");
+            continue;
+        }
+
+        if (recv_result.value() != sizeof(MarketData))
+        {
+            LOG_WARN("Received incomplete market data packet. Discarding...");
+            continue;
+        }
+
+        MarketData md;
+        std::memcpy(&md, buffer, sizeof(MarketData));
+        m_ticks_received.fetch_add(1, std::memory_order_relaxed);
+
+        if (!m_market_data_queue.push(md))
+        {
+            // Queue full
+            m_queue_full_count.fetch_add(1, std::memory_order_relaxed);
+
+            // Try to push with timeout to avoid infinite spin if shutting down
+            while (m_client_running.load(std::memory_order_acquire))
+            {
+                if (m_market_data_queue.push(md))
+                    break;
+                std::this_thread::yield();
+            }
+        }
+    }
+    LOG_INFO("Network thread exiting...");
+}
+
+void Algo::_strategy_loop()
+{
+    LOG_INFO("Strategy thread started (Core 1)");
+    MarketData md;
+
+    while (m_client_running.load(std::memory_order_acquire))
+    {
+        if (m_market_data_queue.pop(md))
+        {
+            Signal signal = _compute_signal(md);
+            if (signal.type != Signal::Type::HOLD)
+            {
+                if (!m_signal_queue.push(signal))
+                    LOG_WARN("Signal queue full for ", signal.symbol);
+                // dropping signal for now
+                else
+                    m_signals_generated.fetch_add(1, std::memory_order_relaxed);
+            }
+        } else {
+            // Queue empty
+            /// @todo benchmark against busy-spinning
+            std::this_thread::yield();
+        }
+    }
+    LOG_INFO("Strategy thread exiting.");
+}
+
+void Algo::_execution_loop()
+{
+    LOG_INFO("Execution thread started (Core 2)");
+    Signal signal;
+
+    while (m_client_running.load(std::memory_order_acquire))
+    {
+        if (m_signal_queue.pop(signal))
+        {
+            Order order = _generate_order(signal);
+
+            // Send order out
+            LOG_INFO(
+                "Executing order: ",
+                order.symbol, " ",
+                (order.side == Order::Side::BUY ? "BUY" : "SELL"), " ",
+                order.quantity, " @ ", order.price
+            );
+
+            m_orders_sent.fetch_add(1, std::memory_order_relaxed);
+
+            /// @todo send order to market through the gateway
+            ///         tcp_client->send or something
+        } else {
+            std::this_thread::yield();
+        }
+    }
+    LOG_INFO("Execution thread exiting.");
+}
+
+Algo::Signal Algo::_compute_signal(const MarketData &md)
+{
+    Signal signal;
+    std::memcpy(signal.symbol, md.symbol, sizeof(signal.symbol));
+    signal.timestamp_ns = md.timestamp_ns;
+
+    // Spread check
+    double spread = md.ask - md.bid;
+    double mid = (md.ask + md.bid) / 2.0;
+
+    if (spread < 0.05) // Tight spread
+    {
+        if (mid < 190.0)
+        {
+            signal.type = Signal::Type::BUY;
+            signal.price = md.ask;
+            signal.quantity = 100;
+        } else if (mid > 195.0) {
+            signal.type = Signal::Type::SELL;
+            signal.price = md.bid;
+            signal.quantity = 100;
+        } else {
+            signal.type = Signal::Type::HOLD;
+        }
+    }
+    return signal;
+}
+
+Algo::Order Algo::_generate_order(const Algo::Signal &signal)
+{
+    static std::atomic<uint64_t> order_id_counter{1};
+    Order order;
+    std::memcpy(order.symbol, signal.symbol, sizeof(order.symbol));
+    order.side = (signal.type == Signal::Type::BUY)
+                 ? Order::Side::BUY
+                 : Order::Side::SELL;
+    order.price = signal.price;
+    order.quantity = signal.quantity;
+    order.order_id = order_id_counter.fetch_add(1, std::memory_order_relaxed);
+
+    auto now = std::chrono::steady_clock::now();
+    order.timestamp_ns = now.time_since_epoch().count();
+    return order;
+}
+
+void Algo::_set_thread_affinity(std::thread::native_handle_type thread, int cpu_id)
+{
+#ifdef __linux__
+    cpu_set_t cpuset;
+    CPU_ZERO(&cpuset);
+    CPU_SET(cpu_id, &cpuset);
+    int result = pthread_setaffinity_np(thread, sizeof(cpu_set_t), &cpuset);
+    if (result != 0)
+        LOG_WARN("Algo failed to set thread affinity to CPU ID ", cpu_id);
+    else
+        LOG_INFO("Thread pinned to CPU ", cpu_id);
+#else
+    LOG_WARN("Get on Linux so I can give your threads some affinity...")
+#endif
+}
+
+
+void Algo::stop_client()
+{
+    if (is_client_stopped())
+    {
+        LOG_WARN("Client already stopped.");
+        return;
+    }
+
+    LOG_INFO("Stopping client...");
+    m_client_running.store(false, std::memory_order_release);
+    m_client_stopping.store(true, std::memory_order_release);
+
+    // Request cooperative cancellation
+    if (m_network_thread.joinable())
+        m_network_thread.request_stop();
+    if (m_strategy_thread.joinable())
+        m_strategy_thread.request_stop();
+    if (m_execution_thread.joinable())
+        m_execution_thread.request_stop();
+
+    m_client_stopped.store(true, std::memory_order_release);
+
+    print_client_stats();
+    LOG_INFO("Client stopped.");
+    // jthread dtor handles joining
+}
+
+void Algo::print_client_stats() const
+{
+    LOG_INFO("=== Algo Statistics ===");
+    LOG_INFO("Ticks received: ",    m_ticks_received.load(std::memory_order_relaxed));
+    LOG_INFO("Signals generated: ", m_signals_generated.load(std::memory_order_relaxed));
+    LOG_INFO("Orders sent: ",       m_orders_sent.load(std::memory_order_relaxed));
+    LOG_INFO("Queue full events: ", m_queue_full_count.load(std::memory_order_relaxed));
+    
+    // Queue status
+    LOG_INFO("Market data queue size: ", m_market_data_queue.size());
+    LOG_INFO("Signal queue size: ",      m_signal_queue.size());
+    LOG_INFO("Order queue size: ",       m_order_queue.size());
+}
+
+
+/// @brief Receives MarketData structs from market
+void Algo::work_client()
+{
+    utils::Timer timer{"Algo::work_client()"};
+    LOG_INFO("Client working");
+    LOG_DEBUG("");
+    if (!is_client_initialized()) [[unlikely]]
+    {
+        utils::Timer timer{"client not init"};
+        auto result = initialize_client();
+        if (!result.has_value())
+        {
+            LOG_ERROR("Algo failed to initialize client.");
             throw AlgoException("Client initialization failed.", result.error());
         }
     }
+    LOG_DEBUG("client is initialized");
 
     std::byte buf[1024];
     auto connect_result = p_tcp_client->connect_to_server();
@@ -221,15 +385,9 @@ void Algo::work_client()
         " bytes: \n",
         "Symbol: ", market_data->symbol,
         "\n\tBid: ", market_data->ask,
-        "\n\tAsk: ", market_data->bid
+        "\n\tAsk: ", market_data->bid,
+        "\ntimestamp: ", market_data->timestamp_ns
     );
-    // m_market_data_queue;
-}
-
-void Algo::process_market_data()
-{
-
-
 }
 
 void Algo::work_server()
@@ -240,7 +398,7 @@ void Algo::work_server()
         auto result = initialize_server();
         if (!result.has_value())
         {
-            LOG_ERROR("Failed to initialize client.");
+            LOG_ERROR("Algo failed to initialize server.");
             throw AlgoException("Server pooped: ", result.error());
         }
     }
@@ -250,175 +408,31 @@ void Algo::work_server()
         p_config->get_market_port()
     );
     LOG_INFO("Accepting client connections...");
-    for (std::uint16_t i{1}; i <= 1; ++i)
+
+    // for (uint64_t i{0}; i <= 1; ++i)
+    std::uint64_t i{0};
+    do
     {
+        /// Blocks while waiting for clients!
         auto client_socket = p_tcp_server->accept_client();
         if (!client_socket.has_value())
         {
             LOG_ERROR("Could not accept client with fd: ", client_socket.value());
-            continue;
+            // continue;
         }
         LOG_INFO("Got client with fd: ", client_socket.value());
-
-        MarketData tick{
-            i, "AAPL", 
-            190.1 + 0.01*i, 
-            190.2 + 0.01*i, 
-            i
-        };
-        p_tcp_server->send(client_socket.value(), std::addressof(tick), sizeof(tick));
-        std::this_thread::sleep_for(800ms);
-    }
+        for (;;)
+        {
+            if (client_socket.value() < 1) break;
+            MarketData tick{
+                i, "AAPL", 
+                190.1 + 0.01*i, 
+                190.2 + 0.01*i, 
+                ++i
+            };
+            p_tcp_server->send(client_socket.value(), std::addressof(tick), sizeof(tick));
+            std::this_thread::sleep_for(800ms);
+        }
+    } while (true);
 }
 } // End namespace fiah
-
-/// @brief Old implementation of thread workers
-// bool Algo::is_running() 
-// {
-//     return m_running.load(std::memory_order_relaxed);
-// }
-
-// void Algo::stop() {
-//     _stopping.store(true, std::memory_order_release);
-//     _running.store(false, std::memory_order_release);
-
-//     _reader_thread.request_stop();
-//     for (auto& t : _worker_threads) {
-//         t.request_stop();
-//     }
-
-//     if (_reader_thread.joinable()) {
-//         _reader_thread.join();
-//     }
-//     for (auto& t : _worker_threads) {
-//         if (t.joinable()) {
-//             t.join();
-//         }
-//     }
-
-//     {
-//         std::lock_guard<std::mutex> lk(_futures_mutex);
-//         for (auto& future : _futures) {
-//             bool ok = future.get();
-//             if (!ok) {
-//                 std::cerr << "[Warning] Some orders failed to send" << std::endl;
-//             }
-//         }
-//         _futures.clear();
-//     }
-// }
-
-// void Algo::generate_orders() {
-//     std::lock_guard<std::mutex> lock(_orders_mutex);
-//     // _orders = io::read_orders_from_json("orders.json");
-// }
-
-
-// void Algo::process() {
-//     this->generate_orders();
-//     std::lock_guard<std::mutex> lock(_orders_mutex);
-//     while (!_orders.empty()) {
-//         auto order = _orders.front();
-//         _orders.pop();
-//         auto status = send(order);
-//         if (status.ok()) {
-//             std::ostringstream ss;
-//             ss << "[Success] Sent order to buy " << order.quantity()
-//                       << " shares of " << order.symbol() << " at $" 
-//                       << order.price() << std::endl;
-//             std::cout << ss.str();
-//         } else {
-//             std::cout << "[Error] Failed to send order for " << order.symbol() 
-//                       << " - " << status.error_message() << std::endl;
-//         }
-//     }
-// }
-
-// void Algo::start_market_data_streaming() {
-//     if (!_pub) {
-//         std::cerr << "[Error] Publisher not initialized. Call initialize() first." << std::endl;
-//         return;
-//     }
-    
-//     _pub->start_market_data_stream("AAPL");
-// }
-
-// void Algo::start_background_processing() {
-//     // Thread to read from file source and enqueue
-//     _reader_thread = std::jthread([this](std::stop_token stoken) {
-//         while (!stoken.stop_requested()) {
-//             auto orders = io::read_orders_from_json("orders.json");
-//             while(!orders.empty()) {
-//                 _order_queue.push(orders.front());
-//                 orders.pop();
-//             }
-//         }
-//     });
-
-//     std::size_t num_workers = 1;
-//     for (std::size_t i = 0; i < num_workers; ++i) {
-//         _worker_threads.emplace_back([this] (std::stop_token stoken) {
-//             while(!stoken.stop_requested()) {
-//                 trading::Order order = _order_queue.wait_and_pop();
-
-//                 auto future = _thread_pool.enqueue([this, order]() -> bool {
-//                     grpc::Status status;
-//                     {
-//                         std::lock_guard lock(_send_mutex);
-//                         status = _pub->send_order(order);
-//                         std:: cout << "WOAH!" << std::endl;
-//                     }
-
-//                     if (!status.ok()) {
-//                         std::cerr << "[Error] Failed to send order: "
-//                                   << order.symbol() << "\n";
-//                         return false;
-//                     }
-
-//                     std::cout << "[Success] Sent order for "
-//                               << order.symbol() << "\n";
-//                     return true;
-//                 });
-
-//                 if (future.wait_for(std::chrono::milliseconds(10)) == std::future_status::ready) {
-//                     bool ok = future.get();
-//                     if (!ok) {
-//                         std::cerr << "[Inline] Order failed immediately for " << order.symbol() << '\n';
-//                     }
-//                 } else {
-//                     if (_stopping.load(std::memory_order_relaxed)) {
-//                         bool ok = future.get();
-//                         if (!ok) std::cerr << "[Late] Order failed for " << order.symbol() << std::endl;
-//                     } else {
-//                         std::cout << "future got pushed brah" << std::endl;
-//                         {
-//                             std::lock_guard<std::mutex> lk(_futures_mutex);
-//                             _futures.emplace_back(std::move(future));
-//                         }
-//                     }
-//                 }
-//             }
-//         });
-//     }
-// }
-
-// void Algo::cleanup_completed_futures() {
-//     std::lock_guard<std::mutex> lk(_futures_mutex);
-//     auto it = _futures.begin();
-//     while (it != _futures.end()) {
-//         if (it->wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
-//             bool ok = it->get();
-//             if (!ok) {
-//                 std::cerr << "[Background] Future failed" << std::endl;
-//             }
-//             it = _futures.erase(it);
-//         } else {
-//             ++it;
-//         }
-//     }
-// }
-
-// Order& Algo::receive() {
-//     // return _sub->receive_order(order);
-
-// }

@@ -9,6 +9,9 @@
 
 namespace fiah::io {
 
+/// @brief TCP server implementation using POSIX internet sockets.
+///        There is no Windows support; currently or ever.
+/// @attention Guaranteed to not throw
 class TcpServer : public Tcp
 {
 private:
@@ -16,7 +19,8 @@ private:
     static inline utils::Logger<TcpServer>& m_logger{utils::Logger<TcpServer>::get_instance("TcpServer")};
 public:
     TcpServer() = default;
-    explicit TcpServer(const std::string&, std::uint16_t);
+    explicit TcpServer(const std::string&, std::uint16_t) noexcept;
+    explicit TcpServer(std::string&&, std::uint16_t);
 
     std::expected<void,        TcpError> start();
     std::expected<SocketRAII,  TcpError> accept_client();

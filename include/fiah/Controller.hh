@@ -1,19 +1,26 @@
-#include "fiah/Algo.hh"
 #include "fiah/io/Config.hh"
 #include "fiah/utils/Logger.hh"
+#include "fiah/Algo.hh"
+#include "fiah/memory/unique_ptr.hh"
 
 namespace fiah {
 
+/// @brief Initializes Algo and orchestrates high-level work, such as 
+///        starting the server and client comms and strategies.
+/// @attention Controller is a termination point, and as such it catches 
+///            all exceptions without throwing back to the calling method (usually main).
 class Controller {
 public:
-    Controller() = default;
-    explicit Controller(io::Config&&) noexcept(noexcept(std::make_unique<Algo>()));
+    Controller() noexcept = default;
+    explicit Controller(io::Config&&) noexcept(noexcept(AlgoUniquePtr()));
     explicit Controller(const io::Config&) = delete;
-    void start_server();
-    void start_client();
+    bool start_server() noexcept;
+    bool start_client() noexcept;
 private:
-    std::unique_ptr<Algo> p_algo;
-    static inline utils::Logger<Controller>& m_logger{utils::Logger<Controller>::get_instance()};
+    using AlgoUniquePtr = memory::unique_ptr<Algo>;
+    AlgoUniquePtr p_algo;
+    static inline utils::Logger<Controller>& 
+        m_logger{utils::Logger<Controller>::get_instance("Controller")};
 };
 
 } // End namespace fiah

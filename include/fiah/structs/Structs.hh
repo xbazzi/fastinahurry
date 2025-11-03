@@ -2,12 +2,12 @@
 
 // C++ Includes
 #include <cstdint>
+#include <thread>
 
 // Third Party Includes
 
 // FastInAHurry Includes
 #include "fiah/structs/SPSCQueue.hh"
-#include "fiah/market/MarketData.hh"
 
 namespace fiah::structs {
 
@@ -15,6 +15,17 @@ namespace fiah::structs {
 /// @brief General purpose structs
 /// @todo remove magic numbers
 ///
+
+#pragma pack(push, 1)
+/// @brief Incoming data from market
+struct MarketData {
+    std::uint64_t seq_num;
+    char symbol[8];
+    double bid;
+    double ask;
+    std::uint64_t timestamp_ns;
+};
+#pragma pack(pop)
 
 /// @brief Market signal
 struct Signal
@@ -27,8 +38,8 @@ struct Signal
         HOLD
     } type;
     double price;
-    uint64_t quantity;
-    uint64_t timestamp_ns;
+    std::uint64_t quantity;
+    std::uint64_t timestamp_ns;
 };
 
 struct Order

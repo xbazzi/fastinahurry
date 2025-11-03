@@ -1,7 +1,7 @@
 #include <arpa/inet.h>
 #include <expected>
 
-#include "fiah/market/MarketData.hh"
+#include "fiah/structs/Structs.hh"
 #include "fiah/io/TcpClient.hh"
 #include "fiah/io/TcpError.hh"
 

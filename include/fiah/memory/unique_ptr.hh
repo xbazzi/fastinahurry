@@ -191,9 +191,11 @@ public:
     // Observers
     // ============================================================================
 
-    /// @brief Get the raw Pointer_T without releasing ownership
+    /// @brief  *Read attention below!* Get the raw Pointer_T without releasing ownership
+    /// @attention Deleted because y'all don't know how to act
     /// @return The managed raw Pointer_T (may be nullptr)
-    // [[nodiscard]] Pointer_T get() const noexcept {
+    [[nodiscard]] Pointer_T get() const noexcept = delete;
+    // {
     //     return m_ptr;
     // }
 

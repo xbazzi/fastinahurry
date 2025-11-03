@@ -8,11 +8,18 @@
 #include <chrono>
 #include <source_location>
 #include <ctime>
+#include <mutex>
 
 
-using namespace std::literals::string_literals;
 namespace fiah::utils {
 
+/// @brief Logging implementation. You need to provide a `Tag` template parameter 
+///        (usually just the class name that needs this Logger)to instantiate a maximum of 
+///        one `Logger` per class. Uses Meyer's Singleton pattern.
+/// @attention Instances must be exactly named `m_logger` for the 
+///            macros to work properly (`LOG_INFO()`, `LOG_ERROR()`, etc...)
+/// @tparam Tag 
+/// @warning Made u look, u good tho.
 template <class Tag>
 class Logger
 {
@@ -30,7 +37,7 @@ public:
 
     /// @brief Singleton-returning method
     /// @param location 
-    /// @return Singleton per `Tag`, which is the class that uses this Logger
+    /// @return Singleton per name, which is the class that uses this Logger
     inline static Logger& get_instance(std::string&& name = "GenericLogger")
     {
         static Logger instance{std::move(name)};
@@ -76,9 +83,10 @@ public:
 private:
 
     std::string m_name;
+    mutable std::mutex m_log_mutex;
 
-    Logger(std::string&& name) 
-        : m_name{std::move(name)} 
+    Logger(std::string&& name)
+        : m_name{std::move(name)}
     {}
 
     Logger(const Logger&)            = delete;
@@ -110,8 +118,8 @@ private:
                 //    << std::setw(4) 
                 //    << std::setfill('0') 
                    << ms.count()                            << ']' 
-            << '[' << m_name << "::" << func << ':' << line << ']'
-            << '[' << _level_to_string(level)               << "] ";
+            << '[' << _level_to_string(level)               << ']' 
+            << '[' << m_name << "::" << func << ':' << line << "] ";
 
         std::cout << _level_to_color(level)
                   << oss.str();
@@ -127,6 +135,7 @@ private:
             case Level::INFO:  return "INFO";
             case Level::DEBUG: return "DEBUG";
             case Level::ERROR: return "ERROR";
+            case Level::WARN:  return "WARN";
             default:           return "UNKNOWN";
         }
     }

@@ -1,12 +1,14 @@
 # FastInAHurry🏃‍♀️‍➡️
-Financial market client/server orders simulator written in C++.
+Financial market streaming and order execution simulator written in C++.
 
 Low latency, data locality, and high performance are paramount.
+
+
+<mark>Only tested on Linux</mark>, and it  works on any distro as long as you have `nix`. Currently, there is no Windows support. Or ever.
 
 # Build n' Run
 ## Build
 Install nix (and optionally direnv) and run the `flake.nix` to load all dependencies in your local environment:
-
 ```bash
 nix develop
 ```
@@ -19,7 +21,6 @@ make all
 ## Run
 
 First, run the server:
-
 ```bash
 ./build/bin/server &
 ```

@@ -1,5 +1,6 @@
 #pragma once
 
+// C++ Includes
 #include <atomic>
 #include <cstddef>
 #include <new>
@@ -8,13 +9,16 @@
 #include <cassert>
 #include <cstdint>
 
+// FastInAHurry Includes
+
+
 namespace fiah::structs
 {
 
 #if defined(__cpp_lib_hardware_interference_size)
 using cacheline_t = std::integral_constant<std::uint64_t, std::hardware_destructive_interference_size>;
 #else
-constexpr std::uint16_t CACHE_LINE_SIZE_BYTES{64}
+constexpr std::uint16_t CACHE_LINE_SIZE_BYTES{64};
 using cacheline_t = std::integral_constant<std::uint64_t, CACHE_LINE_SIZE_BYTES>;
 #endif
 
@@ -54,11 +58,23 @@ public:
         }
     }
 
-    // Non-copyable types are fine as long as they are movable/constructible.
-    // push by value+move is often a tad faster than const& for small trivially movable T.
+    /// @brief Copy push. Try moving instead of you can. Calls `emplace(arg)`.
+    /// @note Non-copyable types are fine as long as they are movable/constructible.
+    /// @warning Push by value+move is often a tad faster than const& for small trivially movable T.
+    /// @param x 
+    /// @return Success or failure as a bool.
     bool push(const T &x) { return emplace(x); }
+
+    /// @brief Move push. Just calls `emplace(std::move(item))`.
+    /// @return Success or failure as a bool.
+    /// @param x 
+    /// @return 
     bool push(T &&x) { return emplace(std::move(x)); }
 
+    /// @brief Actually constructs objects in the queue. 
+    /// @tparam ...Args 
+    /// @param ...args 
+    /// @return Success or failure as a bool.
     template <class... Args>
     bool emplace(Args&&... args)
     {

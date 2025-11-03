@@ -1,27 +1,30 @@
+// C Includes
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
 
+// C++ Includes
 #include <cstring>
 #include <iostream>
 #include <thread>
-#include <exception>
 #include <expected>
 
-#include "fiah/io/TcpServer.hh"
-#include "fiah/io/TcpError.hh"
-#include "fiah/market/MarketData.hh"
+// FastInAHurry Includes
 #include "fiah/utils/Timer.hpp"
 #include "fiah/utils/Logger.hh"
+#include "fiah/io/TcpServer.hh"
+#include "fiah/io/TcpError.hh"
 
 namespace fiah::io {
 
 TcpServer::TcpServer(const std::string& ip, uint16_t port)
+ noexcept
     : Tcp{ip, port} {}
 
 TcpServer::TcpServer(std::string&& ip, uint16_t port)
+ noexcept(noexcept(std::string{std::move("Hi mom!")}))
     : Tcp{std::move(ip), port} {}
 
 auto TcpServer::start()     
@@ -61,6 +64,7 @@ auto TcpServer::start()
 auto TcpServer::accept_client() 
     -> std::expected<SocketRAII, TcpError>
 {
+    utils::Timer timer{"accept_client"};
     int client_fd = ::accept(m_sock, nullptr, nullptr);
     if (client_fd < 0)
         return std::unexpected(TcpError::BAD_SOCKET);

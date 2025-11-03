@@ -16,27 +16,31 @@
 #include "fiah/Error.hh"
 #include "fiah/utils/Logger.hh"
 #include "fiah/structs/SPSCQueue.hh"
-#include "fiah/market/MarketData.hh"
 #include "fiah/structs/Structs.hh"
 #include "fiah/memory/unique_ptr.hh"
 
 namespace fiah {
 
-
-
-/// @brief You need to catch exceptions from Algo methods!
+/// @brief Handles orchestration of the entire system 
+/// @attention This mf throws. You need to catch exceptions from Algo methods!
 class Algo 
 {
+
+private:
+
+    /// @brief We're gonna need these
     using Signal = structs::Signal;
     using Order = structs::Order;
+    using MarketData = structs::MarketData;
+
+    /// @brief Drop-in replacement for std::unique_ptr<> and std::make_unique<>
     using ConfigUniquePtr = memory::unique_ptr<io::Config>;
     using TcpServerUniquePtr = memory::unique_ptr<io::TcpServer>;
     using TcpClientUniquePtr = memory::unique_ptr<io::TcpClient>;
 
-private:
-
     ConfigUniquePtr p_config;
-    static inline utils::Logger<Algo>& m_logger{utils::Logger<Algo>::get_instance("Algo")};
+    static inline utils::Logger<Algo>& 
+        m_logger{utils::Logger<Algo>::get_instance("Algo")};
 
     std::atomic<bool> m_server_started{false};
     std::atomic<bool> m_client_started{false};
@@ -44,7 +48,8 @@ private:
     std::atomic<bool> m_client_stopped{false};
     std::atomic<bool> m_client_running{false};
 
-    structs::SPSCQueue<MarketData, 4096UL> m_market_data_queue;
+    // Lock-free single-producer, single-consumer queues 
+    structs::SPSCQueue<structs::MarketData, 4096UL> m_market_data_queue;
     structs::SPSCQueue<Signal,     2048UL> m_signal_queue;
     structs::SPSCQueue<Order,      2048UL> m_order_queue;
 
@@ -81,15 +86,10 @@ private:
     Signal _compute_signal(const MarketData &md);
     Order  _generate_order(const Signal &signal);
 
-    // Thread affinity helper
+    /// @brief Attempt to set thread affinity. Prints logs if it was unsuccessful.
+    /// @param thread 
+    /// @param cpu_id 
     void _set_thread_affinity(std::thread::native_handle_type thread, int cpu_id);
-
-    std::mutex                      _orders_mutex;
-    std::mutex                      _send_mutex;
-    std::mutex                      _futures_mutex;
-    std::jthread                    _network_thread;
-    std::vector<std::jthread>       _worker_threads;
-    std::vector<std::future<bool>>  _futures;
 public:
 
     explicit Algo(io::Config&&);
@@ -97,15 +97,36 @@ public:
 
     std::expected<void, AlgoError> initialize_client();
     std::expected<void, AlgoError> initialize_server();
-    bool is_server_initialized() const noexcept;
-    bool is_client_initialized() const noexcept;
-    bool is_client_stopped() const noexcept;
+
+    __always_inline
+    bool is_server_initialized() const noexcept
+    {
+        return m_server_started.load(std::memory_order_relaxed);
+    }
+
+    __always_inline
+    bool is_client_initialized() const noexcept
+    {
+        return m_client_started.load(std::memory_order_relaxed);
+    }
+
+    __always_inline
+    bool is_client_running() const noexcept
+    {
+        return m_client_running.load(std::memory_order_relaxed);
+    }
+
+    // Same as `__always_inline` GCC helper macro
+    inline __attribute__ ((__always_inline__)) 
+    bool is_client_stopped() const noexcept
+    {
+        return m_client_stopped.load(std::memory_order_relaxed);
+    }
+
     void work_server();
     void work_client();
-    // void start_client();
+    void start_client();
     void stop_client();
     void print_client_stats() const;
-    void process_market_data();
-    // grpc::Status send(trading::Order&);
 };
 } // End namespace fiah

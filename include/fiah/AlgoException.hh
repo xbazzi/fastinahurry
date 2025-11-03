@@ -1,11 +1,13 @@
 #pragma once
 
+// C++ Includes
 #include <stdexcept>
 #include <string>
 #include <variant>
 #include <type_traits>
 #include <sstream>
 
+// FastInAHurry includes
 #include "fiah/io/TcpError.hh"
 #include "fiah/Error.hh"
 
@@ -25,9 +27,13 @@ public:
     template <typename EnumType>
     requires std::is_enum_v<EnumType>
     AlgoException(const std::string& message, EnumType error)
-        : std::runtime_error(format_error(message, error)), m_error_variant(error) {}
+        : std::runtime_error(format_error(message, error)), m_error_variant(error) 
+    {}
 
-    const ErrorVariant& get_error() const noexcept { return m_error_variant; }
+    const ErrorVariant& get_error() const noexcept 
+    {
+        return m_error_variant;
+    }
 
 private:
     template <typename EnumType>
