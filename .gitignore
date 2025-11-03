@@ -3,5 +3,6 @@ build/
 .vscode
 html/
 latex/
-.cache
-.cachegrind*
+*cache*
+perf*
+vtune*

@@ -16,7 +16,7 @@ Config::Config(const std::filesystem::path& path)
 const std::string& Config::get_market_ip() const noexcept { return m_market_ip; }
 
 
-uint16_t Config::get_market_port() noexcept { return m_market_port; }
+const std::uint16_t Config::get_market_port() const noexcept { return m_market_port; }
 
 bool Config::parse_config() noexcept
 {

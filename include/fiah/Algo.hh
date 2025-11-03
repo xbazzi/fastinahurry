@@ -97,6 +97,7 @@ public:
     void work_client();
     void start_client();
     void stop_client();
+    void print_client_stats() const;
     void process_market_data();
     // grpc::Status send(trading::Order&);
 };

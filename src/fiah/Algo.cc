@@ -15,13 +15,10 @@
 
 // Third Party Includes
 #include <nlohmann/json.hpp>
-#include "fiah/Algo.hh"
-#include "fiah/Algo.hh"
 
 using namespace std::chrono_literals;
 
 namespace fiah {
-
 
 Algo::Algo(io::Config&& config)
     : p_config{std::make_unique<io::Config>(std::move(config))}
@@ -31,13 +28,24 @@ Algo::~Algo()
 {
 }
 
-
+// ============================================================================
+// THREAD 1: Network Loop - Receives market data 
+// ============================================================================
 void Algo::_network_loop()
 {
+    LOG_INFO("Network thread started (Core 0)");
+
 }
 
 void Algo::_strategy_loop()
 {
+    LOG_INFO("Strategy thread started (Core 1)");
+    MarketData md;
+
+    while (m_client_running.load(std::memory_order_relaxed))
+    {
+        return;
+    }
 }
 
 void Algo::_execution_loop()
@@ -56,6 +64,18 @@ Order Algo::_generate_order(const Signal &signal)
 
 void Algo::_set_thread_affinity(std::thread::native_handle_type thread, int cpu_id)
 {
+#ifdef __linux__
+    cpu_set_t cpuset;
+    CPU_ZERO(&cpuset);
+    CPU_SET(cpu_id, &cpuset);
+    int result = pthread_setaffinity_np(thread, sizeof(cpu_set_t), &cpuset);
+    if (result != 0)
+        LOG_WARN("Failed to set thread affinity to CPU ID ", cpu_id);
+    else
+        LOG_INFO("Thread pinned to CPU ", cpu_id);
+#else
+    LOG_WARN("Get on Linux so I can give your threads some affinity...")
+#endif
 }
 
 void Algo::start_client()
@@ -101,12 +121,34 @@ void Algo::start_client()
 
 void Algo::stop_client()
 {
-    if (!is_client_stopped()) return;
+    if (is_client_stopped()) 
+    {
+        LOG_DEBUG("Client already stopped.");
+        return;
+    }
 
     LOG_INFO("Stopping client...");
     m_client_running.store(false, std::memory_order_release);
     m_client_stopping.store(true, std::memory_order_release);
+    m_client_stopped.store(true, std::memory_order_release);
 
+    print_client_stats();
+    LOG_INFO("Client stopped.");
+    // jthread dtor handles joining
+}
+
+void Algo::print_client_stats() const
+{
+    LOG_INFO("=== Algo Statistics ===");
+    LOG_INFO("Ticks received: ",    m_ticks_received.load(std::memory_order_relaxed));
+    LOG_INFO("Signals generated: ", m_signals_generated.load(std::memory_order_relaxed));
+    LOG_INFO("Orders sent: ",       m_orders_sent.load(std::memory_order_relaxed));
+    LOG_INFO("Queue full events: ", m_queue_full_count.load(std::memory_order_relaxed));
+    
+    // Queue status
+    LOG_INFO("Market data queue size: ", m_market_data_queue.size());
+    LOG_INFO("Signal queue size: ",      m_signal_queue.size());
+    LOG_INFO("Order queue size: ",       m_order_queue.size());
 }
 
 auto Algo::initialize_server()
@@ -252,7 +294,7 @@ void Algo::work_server()
         p_config->get_market_port()
     );
     LOG_INFO("Accepting client connections...");
-    for (std::size_t i{1}; i <= 5; ++i)
+    for (std::uint16_t i{1}; i <= 1; ++i)
     {
         auto client_socket = p_tcp_server->accept_client();
         if (!client_socket.has_value())
@@ -262,17 +304,14 @@ void Algo::work_server()
         }
         LOG_INFO("Got client with fd: ", client_socket.value());
 
-        for (size_t seq{1}; seq <= 5; ++seq)
-        {
-            MarketData tick{
-                seq, "AAPL", 
-                190.1 + 0.01*i, 
-                190.2 + 0.01*seq*i, 
-                seq
-            };
-            p_tcp_server->send(client_socket.value(), std::addressof(tick), sizeof(tick));
-            std::this_thread::sleep_for(800ms);
-        }
+        MarketData tick{
+            i, "AAPL", 
+            190.1 + 0.01*i, 
+            190.2 + 0.01*i, 
+            i
+        };
+        p_tcp_server->send(client_socket.value(), std::addressof(tick), sizeof(tick));
+        std::this_thread::sleep_for(800ms);
     }
 }
 } // End namespace fiah

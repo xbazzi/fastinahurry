@@ -21,7 +21,6 @@ public:
 
     bool parse_config() noexcept;
     const std::string& get_market_ip() const noexcept;
-    uint16_t get_market_port() noexcept;
-
+    const std::uint16_t get_market_port() const noexcept;
 };
 } // End io namespace

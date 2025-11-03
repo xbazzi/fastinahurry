@@ -7,6 +7,7 @@
 #include <type_traits>
 #include <chrono>
 #include <source_location>
+#include <ctime>
 
 
 using namespace std::literals::string_literals;
@@ -22,6 +23,7 @@ public:
         INFO,
         DEBUG,
         ERROR,
+        WARN
     };
 
     using Location = std::source_location;
@@ -29,9 +31,9 @@ public:
     /// @brief Singleton-returning method
     /// @param location 
     /// @return Singleton per `Tag`, which is the class that uses this Logger
-    static Logger& get_instance(Location location = Location::current())
+    inline static Logger& get_instance(std::string&& name = "GenericLogger")
     {
-        static Logger instance{typeid(Tag).name()};
+        static Logger instance{std::move(name)};
         return instance;
     }
 
@@ -40,6 +42,7 @@ public:
     {
         _log(Level::INFO, func, line, std::forward<Args>(args)...);
     }
+
 
     template <class... Args>
     void error(const char* func, int line, Args&&... args) 
@@ -53,9 +56,16 @@ public:
         _log(Level::DEBUG, func, line, std::forward<Args>(args)...); 
     }
 
+    template <class... Args>
+    void warn(const char* func, int line, Args&&... args) 
+    { 
+        _log(Level::WARN, func, line, std::forward<Args>(args)...); 
+    }
+
     #define LOG_INFO(...) m_logger.info(__func__, __LINE__, __VA_ARGS__)
     #define LOG_DEBUG(...) m_logger.debug(__func__, __LINE__, __VA_ARGS__)
     #define LOG_ERROR(...) m_logger.error(__func__, __LINE__, __VA_ARGS__)
+    #define LOG_WARN(...) m_logger.warn(__func__, __LINE__, __VA_ARGS__)
 
     /// @todo Research this. Could potentially break stuff
     // friend std::ostream &operator<<(std::ostream &os, const Logger &rhs) {
@@ -66,10 +76,6 @@ public:
 private:
 
     std::string m_name;
-
-    Logger()
-        : m_name{"GenericLogger"} 
-    {}
 
     Logger(std::string&& name) 
         : m_name{std::move(name)} 
@@ -93,14 +99,19 @@ private:
         auto curr_time = std::chrono::system_clock::to_time_t(now);
         auto formatted_time = std::put_time(
             std::localtime(std::addressof(curr_time)),
-            "%H:%M:%S.00"
+            "%H:%M:%S."
         );
-        // auto now = std::chrono::utc_clock::to_time_t(now);
-        std::ostringstream oss;
+        auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+            now.time_since_epoch() % std::chrono::milliseconds(1000)
+        );
 
-        oss << '[' << formatted_time                            << ']' 
-            << '[' << m_name << "::" << func << ':' << line     << ']'
-            << '[' << _level_to_string(level)                   << "] ";
+        std::ostringstream oss;
+        oss << '[' << formatted_time 
+                //    << std::setw(4) 
+                //    << std::setfill('0') 
+                   << ms.count()                            << ']' 
+            << '[' << m_name << "::" << func << ':' << line << ']'
+            << '[' << _level_to_string(level)               << "] ";
 
         std::cout << _level_to_color(level)
                   << oss.str();
@@ -127,10 +138,9 @@ private:
             case Level::INFO:  return "\033[32m"; // Green
             case Level::DEBUG: return "\033[36m"; // Cyan
             case Level::ERROR: return "\033[31m"; // Red
+            case Level::WARN:  return "\033[33m"; // Red
             default:           return "\033[0m";
         }
     }
-
-
 };
 } // End namespace fiah::utils

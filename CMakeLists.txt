@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 4.0)
-project(grpc_trading CXX)
+project(FastInAHurry CXX)
 
 include(cmake/common.cmake)
 
@@ -8,7 +8,7 @@ add_subdirectory(src/fiah/options)
 
 find_package(gRPC REQUIRED)
 # find_package(Boost 1.83 COMPONENTS program_options REQUIRED)
-find_package(Protobuf REQUIRED)
+# find_package(Protobuf REQUIRED)
 find_package(nlohmann_json REQUIRED)
 find_package(toml11 REQUIRED)
 find_package(PkgConfig REQUIRED)
@@ -17,28 +17,28 @@ find_package(PkgConfig REQUIRED)
 ###############
 # Proto stuff #
 ###############
-include_directories(${Protobuf_INCLUDE_DIRS})
+# include_directories(${Protobuf_INCLUDE_DIRS})
 
 # Proto file
-get_filename_component(trading_proto "proto/trading.proto" ABSOLUTE)
-get_filename_component(trading_proto_path "${trading_proto}" PATH)
+# get_filename_component(trading_proto "proto/trading.proto" ABSOLUTE)
+# get_filename_component(trading_proto_path "${trading_proto}" PATH)
 
 # Generate sources
-set(trading_proto_srcs "${CMAKE_CURRENT_BINARY_DIR}/trading.pb.cc")
-set(trading_proto_hdrs "${CMAKE_CURRENT_BINARY_DIR}/trading.pb.h")
-set(trading_grpc_srcs "${CMAKE_CURRENT_BINARY_DIR}/trading.grpc.pb.cc")
-set(trading_grpc_hdrs "${CMAKE_CURRENT_BINARY_DIR}/trading.grpc.pb.h")
+# set(trading_proto_srcs "${CMAKE_CURRENT_BINARY_DIR}/trading.pb.cc")
+# set(trading_proto_hdrs "${CMAKE_CURRENT_BINARY_DIR}/trading.pb.h")
+# set(trading_grpc_srcs "${CMAKE_CURRENT_BINARY_DIR}/trading.grpc.pb.cc")
+# set(trading_grpc_hdrs "${CMAKE_CURRENT_BINARY_DIR}/trading.grpc.pb.h")
 
-add_custom_command(
-      OUTPUT "${trading_proto_srcs}" "${trading_proto_hdrs}" "${trading_grpc_srcs}" "${trading_grpc_hdrs}"
-      COMMAND ${_PROTOBUF_PROTOC}
-      ARGS --grpc_out "${CMAKE_CURRENT_BINARY_DIR}"
-        --cpp_out "${CMAKE_CURRENT_BINARY_DIR}"
-        -I "${trading_proto_path}"
-        --plugin=protoc-gen-grpc="${_GRPC_CPP_PLUGIN_EXECUTABLE}"
-        "${trading_proto}"
-      DEPENDS "${trading_proto}"
-)
+# add_custom_command(
+#       OUTPUT "${trading_proto_srcs}" "${trading_proto_hdrs}" "${trading_grpc_srcs}" "${trading_grpc_hdrs}"
+#       COMMAND ${_PROTOBUF_PROTOC}
+#       ARGS --grpc_out "${CMAKE_CURRENT_BINARY_DIR}"
+#         --cpp_out "${CMAKE_CURRENT_BINARY_DIR}"
+#         -I "${trading_proto_path}"
+#         --plugin=protoc-gen-grpc="${_GRPC_CPP_PLUGIN_EXECUTABLE}"
+#         "${trading_proto}"
+#       DEPENDS "${trading_proto}"
+# )
 
 include_directories("${CMAKE_SOURCE_DIR}/include")
 
@@ -82,23 +82,23 @@ set_target_properties(server PROPERTIES
 )
 
 target_link_libraries(client PRIVATE
-  trading_grpc_proto
+  # trading_grpc_proto
   nlohmann_json::nlohmann_json
   toml11::toml11
   # boost
   # PkgConfig::CASS
   ${_REFLECTION}
-  ${_GRPC_GRPCPP}
-  ${_PROTOBUF_LIBPROTOBUF}
+  # ${_GRPC_GRPCPP}
+  # ${_PROTOBUF_LIBPROTOBUF}
 )
 
 target_link_libraries(server PRIVATE
-  trading_grpc_proto
+  # trading_grpc_proto
   nlohmann_json::nlohmann_json
   toml11::toml11
   ${_REFLECTION}
   ${_GRPC_GRPCPP}
-  ${_PROTOBUF_LIBPROTOBUF}
+  # ${_PROTOBUF_LIBPROTOBUF}
 )
 
 target_include_directories(server PRIVATE 
@@ -111,12 +111,12 @@ target_include_directories(client PRIVATE
   ${CMAKE_CURRENT_BINARY_DIR} # For generated *.pb.h
 )
 
-add_library(trading_grpc_proto
-  ${trading_grpc_srcs}
-  ${trading_grpc_hdrs}
-  ${trading_proto_srcs}
-  ${trading_proto_hdrs}
-)
+# add_library(trading_grpc_proto
+#   ${trading_grpc_srcs}
+#   ${trading_grpc_hdrs}
+#   ${trading_proto_srcs}
+#   ${trading_proto_hdrs}
+# )
 
 target_compile_features(server PRIVATE cxx_std_23)
 target_compile_features(client PRIVATE cxx_std_23)
@@ -124,6 +124,5 @@ target_compile_features(client PRIVATE cxx_std_23)
 # Debug build settings with full debug symbols
 # set(CMAKE_CXX_FLAGS_DEBUG "-g3 -O0 -fno-omit-frame-pointer")
 
-# Enable sanitizers for all builds
-add_compile_options(-fno-omit-frame-pointer -g3 -O0 -fsanitize=address,undefined,leak)
-# add_link_options(-fsanitize=address,undefined,leak)
+add_compile_options(-Wno-interference-size -fno-omit-frame-pointer -g3 -O0 -fsanitize=address,undefined,leak)
+add_link_options(-Wno-interference-size -fsanitize=address,undefined,leak)

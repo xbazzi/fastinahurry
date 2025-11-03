@@ -6,6 +6,7 @@
 #include <type_traits>
 #include <utility>
 #include <cassert>
+#include <cstdint>
 
 namespace fiah::structs
 {
@@ -13,7 +14,8 @@ namespace fiah::structs
 #if defined(__cpp_lib_hardware_interference_size)
 using cacheline_t = std::integral_constant<std::uint64_t, std::hardware_destructive_interference_size>;
 #else
-using cacheline_t = std::integral_constant<std::uint64_t, 64>;
+constexpr std::uint16_t CACHE_LINE_SIZE_BYTES{64}
+using cacheline_t = std::integral_constant<std::uint64_t, CACHE_LINE_SIZE_BYTES>;
 #endif
 
 template <class T, std::uint64_t CapacityPow2>

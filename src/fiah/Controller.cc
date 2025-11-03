@@ -32,6 +32,7 @@ void Controller::start_client()
     {
         if (!p_algo->is_client_initialized()) p_algo->initialize_client();
         p_algo->work_client();
+        p_algo->stop_client();
 
     } catch(AlgoException& e) {
         LOG_ERROR("Controller failed to start client");
