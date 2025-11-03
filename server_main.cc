@@ -6,8 +6,8 @@
 #include <filesystem>
 
 // FastInAHurry Includes
-#include "Controller.hh"
-#include "io/Config.hh"
+#include "fiah/Controller.hh"
+#include "fiah/io/Config.hh"
 
 // void RunServer(std::string);
 void print_help()
@@ -43,14 +43,14 @@ int main(int argc, char* argv[])
     return 1;
   }
 
-  io::Config config{path};
+  fiah::io::Config config{path};
   if (!config.parse_config())
   {
     std::cout << "Unable to parse config" << '\n';
     return 1;
   }
 
-  Controller ctlr(std::move(config));
+  fiah::Controller ctlr(std::move(config));
   ctlr.start_server();
 
   return 0;

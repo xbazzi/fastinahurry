@@ -4,9 +4,10 @@ project(grpc_trading CXX)
 include(cmake/common.cmake)
 
 # Add `options` project
-add_subdirectory(src/options)
+add_subdirectory(src/fiah/options)
 
 find_package(gRPC REQUIRED)
+# find_package(Boost 1.83 COMPONENTS program_options REQUIRED)
 find_package(Protobuf REQUIRED)
 find_package(nlohmann_json REQUIRED)
 find_package(toml11 REQUIRED)
@@ -58,12 +59,12 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
 # Common (non-main) sources
 file(GLOB_RECURSE COMMON_SRC CONFIGURE_DEPENDS
-    "${CMAKE_SOURCE_DIR}/src/*.cc"
-    "${CMAKE_SOURCE_DIR}/src/options/*.cc"
+    "${CMAKE_SOURCE_DIR}/src/fiah/*.cc"
+    "${CMAKE_SOURCE_DIR}/src/fiah/options/*.cc"
 )
 
 # Exclude mains from the common sources
-list(REMOVE_ITEM COMMON_SRC "${CMAKE_SOURCE_DIR}/src/options/main.cc")
+list(REMOVE_ITEM COMMON_SRC "${CMAKE_SOURCE_DIR}/src/fiah/options/main.cc")
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -84,6 +85,7 @@ target_link_libraries(client PRIVATE
   trading_grpc_proto
   nlohmann_json::nlohmann_json
   toml11::toml11
+  # boost
   # PkgConfig::CASS
   ${_REFLECTION}
   ${_GRPC_GRPCPP}

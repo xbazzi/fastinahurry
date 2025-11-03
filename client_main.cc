@@ -7,8 +7,8 @@
 #include <sstream>
 
 // FastInAHurry Includes
-#include "Controller.hh"
-#include "io/Config.hh"
+#include "fiah/Controller.hh"
+#include "fiah/io/Config.hh"
 
 void print_help()
 {
@@ -34,6 +34,7 @@ int main(int argc, char* argv[])
     print_help();
     return 1;
   }
+
   const auto& path = std::filesystem::path(argv[1]);
   if (!std::filesystem::exists(path))
   {
@@ -41,14 +42,14 @@ int main(int argc, char* argv[])
     return 1;
   }
 
-  io::Config config{path};
+  fiah::io::Config config{path};
   if (!config.parse_config())
   {
     std::cout << "Unable to parse config" << '\n';
     return 1;
   }
 
-  Controller ctlr(std::move(config));
+  fiah::Controller ctlr(std::move(config));
   ctlr.start_client();
 
   return 0;
