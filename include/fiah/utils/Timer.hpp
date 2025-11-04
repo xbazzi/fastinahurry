@@ -6,6 +6,7 @@
 #include <string_view>
 #include <ratio>
 #include <iostream>
+#include <sstream>
 
 
 namespace fiah::utils {
@@ -29,16 +30,21 @@ private:
     void stop()
     {
         std::chrono::microseconds dur = elapsed();
-        // operator<<(((std::cout, dur), std::cout, " took a minute pham"));
-        std::cout << "[Timer] " << m_scope_name
-                << " took ≈ "
-                << dur / 1us         << "us"
-                << " ≈ " << std::chrono::duration_cast<std::chrono::seconds>(dur).count() << "s\n";
+        std::ostringstream oss;
+        oss << "\033[35m"
+            << "[TIMER] " << m_scope_name
+            << " took ≈ "
+            << dur / 1us  << "us"
+            << " ≈ " << std::chrono::duration_cast<std::chrono::seconds>(dur).count() << "s\n"
+            << "\033[0m";
+        std::cout << oss.str() << std::flush;
+        /// @todo Switch to C++23 print
         // std::print("{}[Timer] {} took {}ns", 
         //     std::chrono::utc_clock::now(),
         //     m_scope_name,
         //     dur.count());
     }
+
     void reset() { m_start_timepoint = clock::now(); }
 public:
     Timer() noexcept 

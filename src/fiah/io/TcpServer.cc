@@ -71,23 +71,4 @@ auto TcpServer::accept_client()
     return SocketRAII{client_fd};
 }
 
-[[gnu::hot]] auto TcpServer::send(SocketRAII& client, const void* buf, size_t len)
-    -> std::expected<std::uint64_t, TcpError>
-{
-    utils::Timer timer{"TcpServer::send()"};
-    ssize_t result = ::send(client, buf, len, MSG_NOSIGNAL);
-    if (result < 0) [[unlikely]]
-        return std::unexpected(TcpError::SEND_FAIL);
-    return static_cast<std::uint64_t>(result);
-}
-
-[[gnu::hot]] auto TcpServer::recv(SocketRAII& client, void* buf, size_t len)
-    -> std::expected<std::uint64_t, TcpError>
-{
-    utils::Timer timer{"TcpServer::recv()"};
-    ssize_t result = ::recv(client, buf, len, 0);
-    if (result < 0) [[unlikely]]
-        return std::unexpected(TcpError::RECV_FAIL);
-    return static_cast<std::uint64_t>(result);
-}
 } // End namespace io
