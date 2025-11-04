@@ -8,8 +8,10 @@ enum class AlgoError : std::uint8_t
     INIT_CLIENT_FAIL,
     SERVER_NOT_ONLINE,
     INIT_SERVER_FAIL,
+    INVALID_STATE
 };
 
+#pragma pack(push, 1)
 enum class Error : std::uint8_t
 {
     USER_ERROR,
@@ -20,6 +22,7 @@ enum class Error : std::uint8_t
     ALGO_ERORR,
     THREAD_ERROR
 };
+#pragma pack(pop)
 
 enum class TcpError : std::uint8_t
 {
