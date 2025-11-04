@@ -1,3 +1,5 @@
+#pragma once
+
 #include "fiah/io/Config.hh"
 #include "fiah/utils/Logger.hh"
 #include "fiah/Algo.hh"
@@ -16,6 +18,8 @@ public:
     explicit Controller(const io::Config&) = delete;
     bool start_server() noexcept;
     bool start_client() noexcept;
+    bool init_client() noexcept;
+    bool init_server() noexcept;
 private:
     using AlgoUniquePtr = memory::unique_ptr<Algo>;
     AlgoUniquePtr p_algo;

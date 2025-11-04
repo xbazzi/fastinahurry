@@ -1,3 +1,7 @@
+// C++ Includes
+#include <expected>
+#include <chrono>
+
 // FastInAHurry Includes
 #include "fiah/utils/Timer.hpp"
 #include "fiah/utils/Logger.hh"
@@ -14,19 +18,51 @@ namespace fiah
         : p_algo{memory::make_unique<Algo>(std::move(config))}
     {}
 
+    bool Controller::init_client() noexcept
+    {
+        auto result = p_algo->initialize_client();
+        if (!result.has_value())
+        {
+            /// @todo print error as string in the log
+            LOG_ERROR("Failed to init client in Controller: <ErrorFromAlgo>");
+            return 1;
+        }
+        LOG_INFO("Controller successfully initialized the client.");
+        return 0;
+    }
+
+    bool Controller::init_server() noexcept
+    {
+        auto result = p_algo->initialize_server();
+        if (!result.has_value())
+        {
+            /// @todo print error as string in the log
+            LOG_ERROR("Failed to init server in Controller: <ErrorFromAlgo>");
+            return 1;
+        }
+        LOG_INFO("Controller successfully initialized the server.");
+        return 0;
+    }
+
     bool Controller::start_server() 
       noexcept
     {
         try
         {
             if (!p_algo->is_server_initialized())
-                p_algo->initialize_server();
+            {
+                if (init_server() != 0)
+                {
+                    LOG_ERROR("Failed to initialize server. Aborting start!");
+                    return 1;
+                }
+            }
             p_algo->work_server();
             return 0;
         }
         catch (AlgoException &e)
         {
-            LOG_ERROR("Controller failed to start server (AlgoException): ", e.what());
+            LOG_ERROR("Controller failed to start server (fiah::AlgoException): ", e.what());
             return 1;
         }
         catch (std::exception &e)
@@ -41,15 +77,30 @@ namespace fiah
     {
         try
         {
-            if (!p_algo->is_client_initialized())
-                p_algo->initialize_client();
-            p_algo->start_client();
+            using namespace std::chrono_literals;
+            if (init_client() != 0)
+            {
+                LOG_ERROR("Failed to initialize client. Aborting start!");
+                return 1;
+            }
+            auto work_result = p_algo->work_client();
+            if (!work_result.has_value())
+            {
+                LOG_ERROR("Client work failed");
+                return 1;
+            }
+
+            // Let client run for a significant amount of time to process many ticks
+            /// @todo control with signal handlers or events instead of time
+            LOG_INFO("Client running. Press Ctrl+C to stop...");
+            std::this_thread::sleep_for(600s); // Run for 10 minutes
+
             p_algo->stop_client();
             return 0;
         }
         catch (AlgoException &e)
         {
-            LOG_ERROR("Controller failed to start client (AlgoException): ", e.what());
+            LOG_ERROR("Controller failed to start client (fiah::AlgoException): ", e.what());
             return 1;
         }
         catch (std::exception &e)

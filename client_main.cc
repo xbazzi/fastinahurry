@@ -12,6 +12,7 @@
 #include "fiah/io/Config.hh"
 #include "fiah/utils/Timer.hpp"
 #include "fiah/utils/Logger.hh"
+#include "fiah/structs/Structs.hh"
 
 
 void print_help()
@@ -49,12 +50,14 @@ int main(int argc, char* argv[])
   #endif
   static auto& m_logger{
     fiah::utils::Logger<DummyStructForMainLoggerTag>::get_instance("main") };
-  LOG_INFO("Client entrypoint (client_main.cc) started.");
+  LOG_DEBUG("Client entrypoint (client_main.cc) started.");
 
   // FastInAHurry Includes
   #include "fiah/structs/Structs.hh"
   fiah::structs::Signal signal;
   fiah::structs::MarketData md;
+
+  LOG_DEBUG("Boo");
   
   if (argc < 2)
   {
