@@ -264,19 +264,21 @@ template <typename T, typename... Args>
 // ================================================================================
 
 template <typename T1, typename D1, typename T2, typename D2>
-[[nodiscard]] bool operator==(const unique_ptr<T1, D1>& lhs, const unique_ptr<T2, D2>& rhs) noexcept {
-    return lhs.get() == rhs.get();
+[[nodiscard]] bool operator==(const unique_ptr<T1, D1>& lhs, const unique_ptr<T2, D2>& rhs) noexcept 
+{
+    return lhs.m_ptr == rhs.m_ptr;
 }
 
 template <typename T1, typename D1, typename T2, typename D2>
-[[nodiscard]] bool operator!=(const unique_ptr<T1, D1>& lhs, const unique_ptr<T2, D2>& rhs) noexcept {
-    return lhs.get() != rhs.get();
+[[nodiscard]] bool operator!=(const unique_ptr<T1, D1>& lhs, const unique_ptr<T2, D2>& rhs) noexcept 
+{
+    return lhs.m_ptr != rhs.m_ptr;
 }
 
 template <typename T1, typename D1, typename T2, typename D2>
 [[nodiscard]] bool operator<(const unique_ptr<T1, D1>& lhs, const unique_ptr<T2, D2>& rhs) noexcept {
     using CT = std::common_type_t<typename unique_ptr<T1, D1>::Pointer_T, typename unique_ptr<T2, D2>::Pointer_T>;
-    return std::less<CT>{}(lhs.get(), rhs.get());
+    return std::less<CT>{}(lhs.m_ptr, rhs.m_ptr);
 }
 
 template <typename T1, typename D1, typename T2, typename D2>

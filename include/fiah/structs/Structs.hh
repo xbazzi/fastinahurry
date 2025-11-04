@@ -14,6 +14,7 @@ namespace fiah::structs {
 ///
 /// @brief General purpose structs
 /// @todo remove magic numbers
+/// @todo Align to 64 bytes? -> (measure first)
 ///
 
 #pragma pack(push, 1)
@@ -24,7 +25,7 @@ struct MarketData {
     double bid;
     double ask;
     std::uint64_t timestamp_ns;
-};
+}; 
 #pragma pack(pop)
 
 /// @brief Market signal

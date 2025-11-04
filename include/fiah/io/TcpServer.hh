@@ -5,6 +5,7 @@
 
 #include "fiah/io/Tcp.hh"
 #include "fiah/utils/Logger.hh"
+#include "fiah/utils/Timer.hpp"
 #include "fiah/io/TcpError.hh"
 
 namespace fiah::io {
@@ -24,7 +25,28 @@ public:
 
     std::expected<void,        TcpError> start();
     std::expected<SocketRAII,  TcpError> accept_client();
-    std::expected<std::uint64_t, TcpError> send(SocketRAII&, const void*, size_t);
-    std::expected<std::uint64_t, TcpError> recv(SocketRAII&, void*, size_t);
+
+    __always_inline
+    [[gnu::hot]] auto send(SocketRAII& client, const void* buf, size_t len)
+        -> std::expected<std::uint64_t, TcpError>
+    {
+        utils::Timer timer{"TcpServer::send()"};
+        ssize_t result = ::send(client, buf, len, MSG_NOSIGNAL);
+        if (result < 0) [[unlikely]]
+            return std::unexpected(TcpError::SEND_FAIL);
+        return static_cast<std::uint64_t>(result);
+    }
+
+    __always_inline
+    [[gnu::hot]] auto recv(SocketRAII& client, void* buf, size_t len)
+        -> std::expected<std::uint64_t, TcpError>
+    {
+        utils::Timer timer{"TcpServer::recv()"};
+        ssize_t result = ::recv(client, buf, len, 0);
+        if (result < 0) [[unlikely]]
+            return std::unexpected(TcpError::RECV_FAIL);
+        return static_cast<std::uint64_t>(result);
+    }
+
 };
 } // End namespace fiah::io
