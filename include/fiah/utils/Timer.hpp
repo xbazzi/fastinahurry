@@ -17,8 +17,9 @@ class Timer
 private:
     using clock = std::chrono::steady_clock;
     using time_point = std::chrono::time_point<clock>;
-    time_point m_start_timepoint;
+    /// @brief 
     std::string_view m_scope_name;
+    time_point m_start_timepoint;
 
 
     [[nodiscard]] auto elapsed() const
