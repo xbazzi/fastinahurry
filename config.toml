@@ -2,13 +2,37 @@
 
 title = "HFT Config"
 
+[logging]
+enabled = true
+level = "INFO"  # DEBUG, INFO, WARN, ERROR
+log_to_file = true
+log_path = "/var/log/fiah/trading.log"
+max_file_size_mb = 100
+rotation_count = 5
 
-# [database]
-# enabled = true
-# host = "10.133.7.202"
-# port = [ 5000 ]
-# data = [ ["delta", "phi"], [3.14] ]
-# temp_targets = { cpu = 79.5, case = 72.0 }
+[trading]
+enabled = true
+strategy = "market_making"
+max_position_size = 10000
+max_order_size = 500
+risk_limit_usd = 50000.0
+tick_size = 0.01
+latency_threshold_us = 100
+
+[network]
+tcp_buffer_size = 65536
+udp_buffer_size = 8192
+socket_timeout_ms = 5000
+keepalive_interval_s = 30
+max_connections = 100
+enable_nagle = false
+
+[system]
+num_threads = 4
+cpu_affinity = [0, 1, 2, 3]
+use_huge_pages = true
+priority = "realtime"
+watchdog_timeout_s = 60
 
 [servers]
 
@@ -16,7 +40,25 @@ title = "HFT Config"
 ip = "127.0.0.1"
 port = 1337
 role = "publisher"
+protocol = "tcp"
 
 [servers.beta]
 ip = "10.0.0.2"
+port = 8080
 role = "backend"
+protocol = "tcp"
+
+[servers.risk]
+ip = "10.0.0.3"
+port = 9090
+role = "risk_manager"
+protocol = "udp"
+
+[database]
+enabled = false
+host = "10.133.7.202"
+port = 5432
+name = "trading_db"
+user = "trader"
+password = "secure_password"
+connection_pool_size = 10
