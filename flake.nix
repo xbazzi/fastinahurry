@@ -32,29 +32,14 @@
       {
         # devShell = pkgs.mkShell.override { stdenv = pkgs.clangStdenv; } rec {
         devShell = pkgs.mkShell {
-
           nativeBuildInputs = pyPkgs ++ (with pkgs; [
+            gbenchmark
             gcc
-            # clang-tools
-            # clang
-            # bear
-            # llvm.lldb
-            # llvm.clang
-            # llvmPackages_18.libcxxStdenv
-
-            # llvmPackages_18.libcxxClang
-            # llvmPackages_18.compiler-rt
-
-            # gtest
-            # llvmPackages_latest.lldb
-            # llvmPackages_latest.libllvm
-            # llvmPackages_latest.libcxx
-            # llvmPackages_latest.clang
-
+            gtest
             binutils
             cmake
             gdb 
-            # pkg-config 
+            pkg-config 
             boost 
             toml11 
             openssl

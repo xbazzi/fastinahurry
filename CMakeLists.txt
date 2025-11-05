@@ -1,49 +1,45 @@
 cmake_minimum_required(VERSION 4.0)
 project(FastInAHurry CXX)
+enable_testing()
+include(CTest)
+include(GoogleTest)
 
-include(cmake/common.cmake)
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Debug)
+    message("*** Build type not set.  defaulting to Debug")
+endif()
 
-# Add `options` project
-add_subdirectory(src/fiah/options)
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    add_compile_options( 
+        -g3 
+        -Og
+        -fsanitize=address,undefined,leak
+        -fno-omit-frame-pointer 
+        -Wall
+        -Wno-interference-size
+    )
+else()
+    add_compile_options(
+        -O3
+        -g
+        -march=native
+        -Wall
+    )
+endif()
+add_link_options(-Wno-interference-size -fsanitize=address,undefined,leak)
 
-find_package(gRPC REQUIRED)
-# find_package(Boost 1.83 COMPONENTS program_options REQUIRED)
-# find_package(Protobuf REQUIRED)
+
+# Compiler flags and other goodies
+set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+
 find_package(nlohmann_json REQUIRED)
 find_package(toml11 REQUIRED)
 find_package(PkgConfig REQUIRED)
-# pkg_check_modules(CASS REQUIRED IMPORTED_TARGET cassandra)
-
-###############
-# Proto stuff #
-###############
-# include_directories(${Protobuf_INCLUDE_DIRS})
-
-# Proto file
-# get_filename_component(trading_proto "proto/trading.proto" ABSOLUTE)
-# get_filename_component(trading_proto_path "${trading_proto}" PATH)
-
-# Generate sources
-# set(trading_proto_srcs "${CMAKE_CURRENT_BINARY_DIR}/trading.pb.cc")
-# set(trading_proto_hdrs "${CMAKE_CURRENT_BINARY_DIR}/trading.pb.h")
-# set(trading_grpc_srcs "${CMAKE_CURRENT_BINARY_DIR}/trading.grpc.pb.cc")
-# set(trading_grpc_hdrs "${CMAKE_CURRENT_BINARY_DIR}/trading.grpc.pb.h")
-
-# add_custom_command(
-#       OUTPUT "${trading_proto_srcs}" "${trading_proto_hdrs}" "${trading_grpc_srcs}" "${trading_grpc_hdrs}"
-#       COMMAND ${_PROTOBUF_PROTOC}
-#       ARGS --grpc_out "${CMAKE_CURRENT_BINARY_DIR}"
-#         --cpp_out "${CMAKE_CURRENT_BINARY_DIR}"
-#         -I "${trading_proto_path}"
-#         --plugin=protoc-gen-grpc="${_GRPC_CPP_PLUGIN_EXECUTABLE}"
-#         "${trading_proto}"
-#       DEPENDS "${trading_proto}"
-# )
+find_package(GTest REQUIRED)
 
 include_directories("${CMAKE_SOURCE_DIR}/include")
-
-################### # Proto stuff end #
-###################
 
 # Glob all source files in src/
 # file(GLOB_RECURSE SRC_FILES CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/src/*.cc")
@@ -56,9 +52,16 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
+message("************************************************************")
+message("**** Building in ${CMAKE_BUILD_TYPE} mode ")
+message("************************************************************")
+
+
+# Add `options` project
+add_subdirectory(src/fiah/options)
 
 # Common (non-main) sources
-file(GLOB_RECURSE COMMON_SRC CONFIGURE_DEPENDS
+file(GLOB_RECURSE COMMON_SRC
     "${CMAKE_SOURCE_DIR}/src/fiah/*.cc"
     "${CMAKE_SOURCE_DIR}/src/fiah/options/*.cc"
 )
@@ -66,43 +69,44 @@ file(GLOB_RECURSE COMMON_SRC CONFIGURE_DEPENDS
 # Exclude mains from the common sources
 list(REMOVE_ITEM COMMON_SRC "${CMAKE_SOURCE_DIR}/src/fiah/options/main.cc")
 
-set(CMAKE_CXX_STANDARD 23)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+# Create a shared library for common sources (compiled once, linked multiple times)
+add_library(fiah_common STATIC ${COMMON_SRC})
+set_target_properties(fiah_common PROPERTIES
+  CXX_STANDARD 23
+  CXX_STANDARD_REQUIRED YES
+)
+target_compile_features(fiah_common PRIVATE cxx_std_23)
+target_include_directories(fiah_common PUBLIC
+  ${CMAKE_SOURCE_DIR}/include
+  ${CMAKE_CURRENT_BINARY_DIR}
+)
+target_link_libraries(fiah_common PUBLIC
+  nlohmann_json::nlohmann_json
+  toml11::toml11
+)
 
-# Compiler flags and other goodies
-add_compile_options(-Wno-interference-size -fno-omit-frame-pointer -g3 -O1 -fsanitize=address,undefined,leak)
-add_link_options(-Wno-interference-size -fsanitize=address,undefined,leak)
-
-add_executable(client ${COMMON_SRC} client_main.cc)
+add_executable(client client_main.cc)
 set_target_properties(client PROPERTIES
   CXX_STANDARD 23
   CXX_STANDARD_REQUIRED YES
 )
 
-add_executable(server ${COMMON_SRC} server_main.cc)
+add_executable(server server_main.cc)
 set_target_properties(server PROPERTIES
   CXX_STANDARD 23
   CXX_STANDARD_REQUIRED YES
 )
 
+# Make sure we have C++23
+target_compile_features(server PRIVATE cxx_std_23)
+target_compile_features(client PRIVATE cxx_std_23)
+
 target_link_libraries(client PRIVATE
-  # trading_grpc_proto
-  nlohmann_json::nlohmann_json
-  toml11::toml11
-  # boost
-  # PkgConfig::CASS
-  ${_REFLECTION}
-  # ${_GRPC_GRPCPP}
-  # ${_PROTOBUF_LIBPROTOBUF}
+  fiah_common
 )
 
 target_link_libraries(server PRIVATE
-  # trading_grpc_proto
-  nlohmann_json::nlohmann_json
-  toml11::toml11
-  ${_REFLECTION}
-  ${_GRPC_GRPCPP}
-  # ${_PROTOBUF_LIBPROTOBUF}
+  fiah_common
 )
 
 target_include_directories(server PRIVATE 
@@ -110,21 +114,88 @@ target_include_directories(server PRIVATE
   ${CMAKE_CURRENT_BINARY_DIR} # For generated *.pb.h
 )
 
+
 target_include_directories(client PRIVATE 
   ${CMAKE_SOURCE_DIR}/include
   ${CMAKE_CURRENT_BINARY_DIR} # For generated *.pb.h
 )
 
-# add_library(trading_grpc_proto
-#   ${trading_grpc_srcs}
-#   ${trading_grpc_hdrs}
-#   ${trading_proto_srcs}
-#   ${trading_proto_hdrs}
-# )
+# ============================================================================
+# Testing Configuration
+# ============================================================================
 
-target_compile_features(server PRIVATE cxx_std_23)
-target_compile_features(client PRIVATE cxx_std_23)
+# Collect all test source files
+file(GLOB_RECURSE TEST_SOURCES
+    "${CMAKE_SOURCE_DIR}/tests/*_test.cc"
+    "${CMAKE_SOURCE_DIR}/tests/test.cc"
+)
 
-# Debug build settings with full debug symbols
-# set(CMAKE_CXX_FLAGS_DEBUG "-g3 -O0 -fno-omit-frame-pointer")
+# Create the test executable
+add_executable(unit_tests
+    ${TEST_SOURCES}
+)
 
+# Set C++ standard for tests
+set_target_properties(unit_tests PROPERTIES
+    CXX_STANDARD 23
+    CXX_STANDARD_REQUIRED YES
+)
+
+# Include directories for tests
+target_include_directories(unit_tests PRIVATE
+    ${CMAKE_SOURCE_DIR}/include
+    ${CMAKE_SOURCE_DIR}/tests        # For test utilities and headers
+    ${CMAKE_CURRENT_BINARY_DIR}      # For generated files
+)
+
+# Link test dependencies
+target_link_libraries(unit_tests PRIVATE
+    fiah_common
+    GTest::gtest
+    GTest::gtest_main
+)
+
+# Register tests with CTest
+add_test(NAME unit_tests COMMAND unit_tests)
+
+# ============================================================================
+# Benchmarking Configuration
+# ============================================================================
+
+find_package(benchmark REQUIRED)
+
+# Collect all benchmark source files
+file(GLOB_RECURSE BENCHMARK_SOURCES
+    "${CMAKE_SOURCE_DIR}/benchmarks/*_benchmark.cc"
+)
+
+# Only create benchmark executable if benchmark files exist
+# Add an "and" benchmark flag set
+if(BENCHMARK_SOURCES)
+    add_executable(benchmarks
+        ${BENCHMARK_SOURCES}
+    )
+
+    # Set C++ standard for benchmarks
+    set_target_properties(benchmarks PROPERTIES
+        CXX_STANDARD 23
+        CXX_STANDARD_REQUIRED YES
+    )
+
+    # Include directories for benchmarks
+    target_include_directories(benchmarks PRIVATE
+        ${CMAKE_SOURCE_DIR}/include
+        ${CMAKE_SOURCE_DIR}/benchmarks   # For benchmark utilities
+        ${CMAKE_CURRENT_BINARY_DIR}      # For generated files
+    )
+
+    # Link benchmark dependencies
+    target_link_libraries(benchmarks PRIVATE
+        fiah_common
+        benchmark::benchmark
+        benchmark::benchmark_main
+    )
+endif()
+
+# Optional: Use gtest_discover_tests for better test reporting
+# gtest_discover_tests(unit_tests)
