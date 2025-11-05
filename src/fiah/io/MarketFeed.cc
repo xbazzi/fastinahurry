@@ -4,7 +4,11 @@
 #include <chrono>
 
 // FastInAHurry Includes
+<<<<<<< HEAD
 #include "fiah/feed/MarketFeed.hh"
+=======
+#include "fiah/io/MarketFeed.hh"
+>>>>>>> c10256add7b9b7a628486ce38b6a16e7fe1243ea
 #include "fiah/AlgoException.hh"
 #include "fiah/utils/Timer.hpp"
 
