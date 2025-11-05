@@ -62,9 +62,10 @@ private:
     static std::string enum_to_string(AlgoError e)
     {
         switch (e) {
-            case AlgoError::INIT_CLIENT_FAIL: return "AlgoError::INIT_CLIENT_FAIL";
+            case AlgoError::INIT_CLIENT_FAIL:  return "AlgoError::INIT_CLIENT_FAIL";
             case AlgoError::SERVER_NOT_ONLINE: return "AlgoError::SERVER_NOT_ONLINE";
-            case AlgoError::INIT_SERVER_FAIL: return "AlgoError::INIT_SERVER_FAIL";
+            case AlgoError::INIT_SERVER_FAIL:  return "AlgoError::INIT_SERVER_FAIL";
+            case AlgoError::INVALID_STATE:     return "AlgoError::INIT_SERVER_FAIL" ;
         }
         return "AlgoError::UNKNOWN";
     }

@@ -335,9 +335,10 @@ void Algo::_strategy_loop()
                 if (signal.type != Signal::Type::HOLD)
                 {
                     if (!m_signal_queue.push(signal))
+                    {
                         LOG_WARN("Signal queue full for ", signal.symbol);
-                    // dropping signal for now
-                    else
+                        // dropping signal for now
+                    } else {
                         LOG_DEBUG("Pushed into signal queue. " 
                             , signal.price, ", "
                             , signal.quantity, ", "
@@ -345,6 +346,7 @@ void Algo::_strategy_loop()
                             , static_cast<uint64_t>(signal.type), ", "
                         );
                         m_signals_generated.fetch_add(1, std::memory_order_relaxed);
+                    }
                 }
             } else {
                 // Queue empty

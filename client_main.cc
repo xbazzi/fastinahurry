@@ -49,13 +49,11 @@ int main(int argc, char* argv[])
     std::cout << "Unknown standard library\n";
   #endif
   static auto& m_logger{
-    fiah::utils::Logger<DummyStructForMainLoggerTag>::get_instance("main") };
+   fiah::utils::Logger<DummyStructForMainLoggerTag>::get_instance("main") };
   LOG_DEBUG("Client entrypoint (client_main.cc) started.");
 
   // FastInAHurry Includes
   #include "fiah/structs/Structs.hh"
-  fiah::structs::Signal signal;
-  fiah::structs::MarketData md;
 
   LOG_DEBUG("Boo");
   
