@@ -22,6 +22,17 @@ constexpr std::uint16_t CACHE_LINE_SIZE_BYTES{64};
 using cacheline_t = std::integral_constant<std::uint64_t, CACHE_LINE_SIZE_BYTES>;
 #endif
 
+/// @brief  Lock free single-producer, single-consumer queue (constexpr constructed)
+/// @attention Not liable for damages if you have more than ONE consumer/producer 
+///            pair of threads accessing this queue. Undefined behavior, data races,
+///            all the good things...
+/// @tparam T No array types pls
+/// @tparam CapacityPow2 Capacity should be power of two for logical indexing
+///
+/// @todo I should make it so that old values are overwritten
+/// @todo Maintain pointers (handles) to preallocated buckets for pre-constructed 
+///       slots (instead of doing malloc and placement new on every push).
+/// @todo Use `tcmalloc` instead
 template <class T, std::uint64_t CapacityPow2>
 class SPSCQueue
 {
@@ -36,13 +47,13 @@ class SPSCQueue
     alignas(cacheline_t::value) std::byte m_storage[kCapacity * sizeof(T)];
 
     // Helpers to index into ring without branching
-    static T *slot_ptr(std::byte *base, std::uint64_t idx) noexcept
+    static T* slot_ptr(std::byte *base, std::uint64_t idx) noexcept
     {
-        return std::launder(reinterpret_cast<T *>(base + (idx & kMask) * sizeof(T)));
+        return std::launder(reinterpret_cast<T*>(base + (idx & kMask) * sizeof(T)));
     }
 
 public:
-    SPSCQueue() = default;
+    constexpr SPSCQueue() = default;
     SPSCQueue(const SPSCQueue &) = delete;
     SPSCQueue &operator=(const SPSCQueue &) = delete;
 
@@ -95,7 +106,7 @@ public:
         return true;
     }
 
-    // Pop into out-param to avoid extra moves/optionals.
+    /// @brief Pop into the passed argument (by reference) to prevent moves
     bool pop(T &out)
     {
         // Consumer thread only mutates m_tail
@@ -140,32 +151,7 @@ public:
 
     static constexpr std::uint64_t capacity() noexcept { return kCapacity; }
 };
-
-    // --- Example usage ---
-    // #include "spsc_queue.hpp"
-    // #include <thread>
-    // #include <vector>
-    // #include <iostream>
-    //
-    // int main() {
-    //   SPSCQueue<int, 1024> q;
-    //
-    //   std::thread prod([&]{
-    //     for (int i = 0; i < 100000; ++i) {
-    //       while (!q.emplace(i)) { /* spin/yield if you want */ }
-    //     }
-    //   });
-    //
-    //   std::thread cons([&]{
-    //     int v;
-    //     std::uint64_t cnt = 0;
-    //     while (cnt < 100000) {
-    //       if (q.pop(v)) { ++cnt; /* consume v */ }
-    //     }
-    //     std::cout << "Got: " << cnt << " items\n";
-    //   });
-    //
-    //   prod.join(); cons.join();
-    // }
+/// @example spsc_queue_example.cc
+/// An example in unique_ptr (delete this )
 
 } // End namespace fiah::structs
