@@ -15,17 +15,14 @@ all: configure ## Build all targets
 options: configure ## Build options target
 	cmake --build $(BUILD_DIR) --target options
 
+build-test: configure ## Build test target
+	cmake --build $(BUILD_DIR) --target unit_tests
+
 # Configure step (only runs once unless CMakeLists.txt changes)
 $(BUILD_DIR)/CMakeCache.txt: CMakeLists.txt ## Configure build directory
 	cmake -S . -B $(BUILD_DIR) 
 
-# 		-DCMAKE_CXX_COMPILER=g++ 
-# 		-DCMAKE_BUILD_TYPE=Debug 
-# 		-DCMAKE_EXPORT_COMPILE_COMMANDS=1 
-
 configure: $(BUILD_DIR)/CMakeCache.txt 
-
-# 		 -DCMAKE_CXX_FLAGS="--gcc-toolchain=${pkgs.gcc} -isystem ${pkgs.llvmPackages_18.libcxx}/include/c++/v1"
 
 # Clean build files
 clean:

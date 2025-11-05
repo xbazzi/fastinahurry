@@ -6,3 +6,5 @@ latex/
 *cache*
 perf*
 vtune*
+LastTest.log
+CTest*
