@@ -49,7 +49,7 @@ private:
     static_assert(!std::is_array_v<T>, "Array types not supported. Use unique_ptr<T[]> specialization.");
 
     T* m_ptr;
-    [[no_unique_address]] Deleter m_deleter;
+    [[no_unique_address]] Deleter m_deleter; // EBO
 
 public:
     using Pointer_T = T*;

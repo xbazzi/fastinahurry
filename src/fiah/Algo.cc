@@ -86,7 +86,7 @@ auto Algo::initialize_client()
     utils::Timer timer{"Algo::initialize_client()"};
     if (is_client_initialized())
     {
-        LOG_WARN("TCP client already initialized");
+        LOG_WARN("MarketFeed already initialized");
         return {};
     }
 
@@ -97,70 +97,27 @@ auto Algo::initialize_client()
                           AlgoError::INVALID_STATE);
     }
 
-    const std::string& market_ip = p_config->get_market_ip();
-
-    std::uint16_t market_port = p_config->get_market_port();
-
-    p_tcp_client = memory::make_unique<io::TcpClient>(
-        market_ip, market_port
+    // Create MarketFeed with reference to our market data queue
+    p_market_feed = memory::make_unique<io::MarketFeed>(
+        *p_config,
+        m_market_data_queue
     );
 
-    LOG_INFO(
-        "Client initialized with market server ip: ",
-        market_ip, ", and port: ", market_port
-    );
-
-    // Connect immediately if possible
-    auto connect_result = p_tcp_client->connect_to_server();
-    if(!connect_result.has_value())
+    // Initialize and connect
+    auto init_result = p_market_feed->initialize();
+    if (!init_result.has_value())
     {
         LOG_ERROR(
-            "Couldn't connect to server during initialization. ",
+            "Couldn't initialize MarketFeed. ",
             "Maybe the server is not online yet."
         );
-        // Clean up the partially initialized client to prevent segfault
-        p_tcp_client.reset();
+        p_market_feed.reset();
         m_client_started.store(false, std::memory_order_release);
-        return std::unexpected(AlgoError::SERVER_NOT_ONLINE);
+        return std::unexpected(init_result.error());
     }
 
     m_client_started.store(true, std::memory_order_release);
-    LOG_INFO("Client initialized and connected to market.");
-    return {};
-}
-
-auto Algo::reconnect_client()
-    -> std::expected<void, AlgoError>
-{
-    LOG_INFO("Attempting to reconnect client...");
-
-    // Invariant check
-    if (!p_config) [[unlikely]]
-    {
-        throw AlgoException("FATAL: p_config is null during reconnect",
-                          AlgoError::INVALID_STATE);
-    }
-
-    const std::string& market_ip = p_config->get_market_ip();
-    std::uint16_t market_port = p_config->get_market_port();
-
-    // Clean up old client
-    p_tcp_client.reset();
-    m_client_started.store(false, std::memory_order_release);
-
-    // Create new client and attempt connection
-    p_tcp_client = memory::make_unique<io::TcpClient>(market_ip, market_port);
-
-    auto connect_result = p_tcp_client->connect_to_server();
-    if (!connect_result.has_value())
-    {
-        LOG_WARN("Reconnection attempt failed - server not available");
-        p_tcp_client.reset();
-        return std::unexpected{AlgoError::SERVER_NOT_ONLINE};
-    }
-
-    m_client_started.store(true, std::memory_order_release);
-    LOG_INFO("Client successfully reconnected to market.");
+    LOG_INFO("MarketFeed initialized and connected.");
     return {};
 }
 
@@ -213,99 +170,24 @@ auto Algo::work_client()
 }
 
 ///
-/// @brief THREAD 1: Network Loop - Receives market data 
+/// @brief THREAD 1: Network Loop - Delegates to MarketFeed
 ///
 void Algo::_network_loop() {
-    using namespace std::chrono_literals;
     try
     {
-
         LOG_INFO("Network thread started (Core 0)");
-        std::byte buffer[sizeof(MarketData)];
 
-        while (m_client_running.load(std::memory_order_acquire))
+        // Invariant check: MarketFeed must exist
+        if (!p_market_feed) [[unlikely]]
         {
-            utils::Timer timer("Algo::network_loop");
-            // Critical: Validate p_tcp_client exists before dereferencing
-            if (!p_tcp_client)
-            {
-                LOG_WARN("TCP client is null - attempting reconnection...");
-
-                // Attempt to reconnect with exponential backoff
-                int retry_count = 0;
-                const int max_retries = 5;
-
-                while (retry_count < max_retries && m_client_running.load(std::memory_order_acquire))
-                {
-                    auto reconnect_result = reconnect_client();
-                    if (reconnect_result.has_value())
-                    {
-                        LOG_INFO("Reconnection successful!");
-                        break;
-                    }
-
-                    retry_count++;
-                    if (retry_count < max_retries)
-                    {
-                        auto backoff = std::chrono::milliseconds(100 * (1 << retry_count)); // 200ms, 400ms, 800ms, 1600ms, 3200ms
-                        LOG_WARN("Reconnection attempt ", retry_count, " failed. Retrying in ", backoff.count(), "ms...");
-                        std::this_thread::sleep_for(backoff);
-                    }
-                }
-
-                if (!p_tcp_client)
-                {
-                    LOG_ERROR("Failed to reconnect after ", max_retries, " attempts. Thread exiting.");
-                    m_client_running.store(false, std::memory_order_release);
-                    return;
-                }
-
-                continue; // Retry recv with new connection
-            }
-
-            auto recv_result = p_tcp_client->recv(buffer, sizeof(buffer));
-            if (!recv_result.has_value())
-            {
-                LOG_WARN("Failed to receive market data packet. Socket disconnected - will attempt reconnect.");
-                // Don't exit - clean up and let the null check above handle reconnection
-                p_tcp_client.reset();
-                m_client_started.store(false, std::memory_order_release);
-                continue;
-            }
-
-            if (recv_result.value() != sizeof(MarketData))
-            {
-                LOG_WARN("Received incomplete market data packet. Discarding...");
-                continue;
-            }
-
-            MarketData md;
-            std::memcpy(&md, buffer, sizeof(MarketData));
-            m_ticks_received.fetch_add(1, std::memory_order_relaxed);
-
-            LOG_DEBUG("Got md (raw): " 
-                , "Symbol: ", md.symbol, ", "
-                , "Seq: ", md.seq_num, ", "
-                , "ASk: ", md.ask, ", "
-                , "Bid: ", md.bid, ", "
-                , "CountStamp: ", static_cast<uint64_t>(md.timestamp_ns), ", "
-                , "ticksReceived: ", m_ticks_received.load(std::memory_order_acquire)
-            );
-
-            if (!m_market_data_queue.push(md))
-            {
-                // Queue full
-                m_queue_full_count.fetch_add(1, std::memory_order_relaxed);
-
-                // Try to push with timeout to avoid infinite spin if shutting down
-                while (m_client_running.load(std::memory_order_acquire))
-                {
-                    if (m_market_data_queue.push(md))
-                        break;
-                    std::this_thread::yield();
-                }
-            }
+            LOG_ERROR("FATAL: MarketFeed is null in network loop");
+            m_client_running.store(false, std::memory_order_release);
+            return;
         }
+
+        // Delegate all market data receiving to MarketFeed
+        p_market_feed->receive_loop(m_client_running);
+
         LOG_INFO("Network thread exiting...");
     }
     catch (const std::exception& e)
@@ -518,12 +400,15 @@ void Algo::stop_client()
 
 void Algo::print_client_stats() const
 {
+    uint64_t ticks_received = p_market_feed ? p_market_feed->ticks_received() : 0;
+    uint64_t queue_full_events = p_market_feed ? p_market_feed->queue_full_count() : 0;
+
     LOG_DEBUG(
         "\n=== Algo Statistics ==="
-        , "\n\tTicks received: ",    m_ticks_received.load(std::memory_order_relaxed)
+        , "\n\tTicks received: ",    ticks_received
         , "\n\tSignals generated: ", m_signals_generated.load(std::memory_order_relaxed)
         , "\n\tOrders sent: ",       m_orders_sent.load(std::memory_order_relaxed)
-        , "\n\tQueue full events: ", m_queue_full_count.load(std::memory_order_relaxed)
+        , "\n\tQueue full events: ", queue_full_events
     // Queue status
         , "\n\tMarket data queue size: ", m_market_data_queue.size()
         , "\n\tSignal queue size: ",      m_signal_queue.size()
@@ -622,9 +507,10 @@ auto Algo::work_server()
                 break;
             }
 
-            MarketData tick{
+            MarketData tick
+            {
                 i,
-                "AAPL",
+                "ACME",
                 190.0 + i * 0.001,
                 190.0 + i * 0.001 + 0.01,
                 ++i

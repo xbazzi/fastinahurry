@@ -38,10 +38,10 @@ class MarketFeed
 {
 private:
     using MarketData = structs::MarketData;
-    using TcpClientUniquePtr = memory::unique_ptr<io::TcpClient>;
+    using TcpClientUniquePtr = memory::unique_ptr<TcpClient>;
 
     /// @brief Configuration reference
-    const io::Config& m_config;
+    const Config& m_config;
 
     /// @brief TCP client for receiving market data
     TcpClientUniquePtr p_tcp_client;
@@ -71,7 +71,7 @@ public:
     /// @param config Configuration containing market server details
     /// @param queue Reference to the market data queue to push into
     explicit MarketFeed(
-        const io::Config& config,
+        const Config& config,
         structs::SPSCQueue<MarketData, 4096UL>& queue
     );
 

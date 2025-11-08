@@ -4,18 +4,14 @@
 #include <chrono>
 
 // FastInAHurry Includes
-<<<<<<< HEAD
-#include "fiah/feed/MarketFeed.hh"
-=======
 #include "fiah/io/MarketFeed.hh"
->>>>>>> c10256add7b9b7a628486ce38b6a16e7fe1243ea
 #include "fiah/AlgoException.hh"
 #include "fiah/utils/Timer.hpp"
 
 namespace fiah::io {
 
 MarketFeed::MarketFeed(
-    const io::Config& config,
+    const Config& config,
     structs::SPSCQueue<MarketData, 4096UL>& queue
 )
     : m_config(config)
@@ -44,7 +40,7 @@ auto MarketFeed::initialize()
     const std::string& market_ip = m_config.get_market_ip();
     std::uint16_t market_port = m_config.get_market_port();
 
-    p_tcp_client = memory::make_unique<io::TcpClient>(
+    p_tcp_client = memory::make_unique<TcpClient>(
         market_ip, market_port
     );
 
@@ -85,7 +81,7 @@ auto MarketFeed::_reconnect()
     m_initialized.store(false, std::memory_order_release);
 
     // Create new client and attempt connection
-    p_tcp_client = memory::make_unique<io::TcpClient>(market_ip, market_port);
+    p_tcp_client = memory::make_unique<TcpClient>(market_ip, market_port);
 
     auto connect_result = p_tcp_client->connect_to_server();
     if (!connect_result.has_value())

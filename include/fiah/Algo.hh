@@ -10,7 +10,7 @@
 // FastInAHurry includes
 // #include "fiah/ThreadPool.hpp"
 #include "fiah/io/TcpServer.hh"
-#include "fiah/io/TcpClient.hh"
+#include "fiah/io/MarketFeed.hh"
 #include "fiah/io/Config.hh"
 #include "fiah/AlgoException.hh"
 #include "fiah/Error.hh"
@@ -69,7 +69,7 @@ private:
     /// @brief Drop-in replacement for std::unique_ptr<> and std::make_unique<>
     using ConfigUniquePtr = memory::unique_ptr<io::Config>;
     using TcpServerUniquePtr = memory::unique_ptr<io::TcpServer>;
-    using TcpClientUniquePtr = memory::unique_ptr<io::TcpClient>;
+    using MarketFeedUniquePtr = memory::unique_ptr<io::MarketFeed>;
 
     ConfigUniquePtr p_config;
     static inline utils::Logger<Algo>& 
@@ -101,14 +101,12 @@ private:
     /// @brief TCP server handle
     TcpServerUniquePtr p_tcp_server;
 
-    /// @brief TCP client handle
-    TcpClientUniquePtr p_tcp_client;
+    /// @brief Market data feed handler
+    MarketFeedUniquePtr p_market_feed;
 
     /// @brief Performance counters (lock-free)
-    alignas(64) std::atomic<uint64_t> m_ticks_received{0};
     alignas(64) std::atomic<uint64_t> m_signals_generated{0};
     alignas(64) std::atomic<uint64_t> m_orders_sent{0};
-    alignas(64) std::atomic<uint64_t> m_queue_full_count{0};
 
     /// @brief Thread functions
     void _network_loop();
@@ -130,7 +128,6 @@ public:
 
     std::expected<void, AlgoError> initialize_client();
     std::expected<void, AlgoError> initialize_server();
-    std::expected<void, AlgoError> reconnect_client();
 
     __always_inline
     bool is_server_initialized() const noexcept
