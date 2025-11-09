@@ -32,36 +32,44 @@
       {
         # devShell = pkgs.mkShell.override { stdenv = pkgs.clangStdenv; } rec {
         devShell = pkgs.mkShell {
-          nativeBuildInputs = pyPkgs ++ (with pkgs; [
-            gbenchmark
-            gcc
-            gtest
-            binutils
-            cmake
-            gdb 
-            pkg-config 
-            boost 
-            toml11 
-            openssl
-            valgrind
-            nlohmann_json
-            doxygen
-            graphviz
-            zsh
-            grpc
-            protobuf
-          ]);
+          nativeBuildInputs =
+            pyPkgs
+            ++ (with pkgs; [
+              clang
+              bear
+              llvm.lldb
+              llvm.clang
+              gbenchmark
+              gcc
+              gtest
+              binutils
+              cmake
+              gdb
+              pkg-config
+              boost
+              toml11
+              openssl
+              valgrind
+              nlohmann_json
+              doxygen
+              graphviz
+              zsh
+              grpc
+              protobuf
+              llvmPackages_21.clang-tools
+            ]);
 
           buildInputs = with pkgs; [
             # pkgs.cassandra-cpp-driver
+            llvmPackages_21.clang-tools
             nodejs_22
             gcc
             binutils
             cmake
-            gdb 
-            pkg-config 
-            boost 
-            toml11 
+            gdb
+            pkg-config
+            boost
+            toml11
             openssl
             valgrind
             nlohmann_json
@@ -72,12 +80,12 @@
             protobuf
             # llvm.libcxx
           ];
-        shell = pkgs.zsh;
-        shellHook = ''
-          echo "Welcome to the FastInAHurry flake dev shell" 
-          export CC=gcc
-          export CXX=g++
-        '';
+          shell = pkgs.zsh;
+          shellHook = ''
+            echo "Welcome to the FastInAHurry flake dev shell" 
+            export CC=gcc
+            export CXX=g++
+          '';
 
           # CPATH = builtins.concatStringsSep ":" [
           #   (lib.makeSearchPathOutput "dev" "include" [ llvm.libcxx ])

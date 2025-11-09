@@ -1,0 +1,4 @@
+[logging]
+enabled = true
+max_file_size_mb = 100
+rotation_count = 5

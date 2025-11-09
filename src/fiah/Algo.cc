@@ -1,28 +1,28 @@
 // C++ Includes
-#include <sstream>
-#include <cstdint>
 #include <cstddef>
+#include <cstdint>
 #include <expected>
+#include <sstream>
 #include <stop_token>
 
 // FastInAHurry Includes
 #include "fiah/Algo.hh"
+#include "fiah/AlgoException.hh"
+#include "fiah/io/Config.hh"
 #include "fiah/io/JSONReader.hh"
 #include "fiah/io/TcpClient.hh"
 #include "fiah/structs/Structs.hh"
-#include "fiah/utils/Timer.hpp"
 #include "fiah/utils/Logger.hh"
-#include "fiah/AlgoException.hh"
-#include "fiah/io/Config.hh"
+#include "fiah/utils/Timer.hpp"
 
 // Third Party Includes
 #include <nlohmann/json.hpp>
 
-
-namespace fiah {
+namespace fiah
+{
 
 Algo::Algo(io::Config&& config)
-    : p_config{memory::make_unique<io::Config>(std::move(config))}
+    : p_config{ memory::make_unique<io::Config>(std::move(config)) }
 {}
 
 Algo::~Algo()
@@ -34,10 +34,10 @@ Algo::~Algo()
 // INITIALIZATION
 // ============================================================================
 
-auto Algo::initialize_server()
-    -> std::expected<void, AlgoError>
+auto
+Algo::initialize_server() -> std::expected<void, AlgoError>
 {
-    utils::Timer timer{"Algo::initialize_server()"};
+    utils::Timer timer{ "Algo::initialize_server()" };
 
     if (is_server_initialized())
     {
@@ -48,29 +48,25 @@ auto Algo::initialize_server()
     // Invariant check: p_config must exist (programming error if null)
     if (!p_config) [[unlikely]]
     {
-        throw AlgoException("FATAL: p_config is null - Algo object in invalid state",
-                          AlgoError::INVALID_STATE);
+        throw AlgoException(
+            "FATAL: p_config is null - Algo object in invalid state",
+            AlgoError::INVALID_STATE);
     }
 
     std::string market_ip = p_config->get_market_ip();
     std::uint16_t market_port = p_config->get_market_port();
 
-    p_tcp_server = memory::make_unique<io::TcpServer>(
-        market_ip, market_port
-    );
+    p_tcp_server = memory::make_unique<io::TcpServer>(market_ip, market_port);
 
     auto result = p_tcp_server->start();
-    if (!result.has_value()) 
+    if (!result.has_value())
     {
-        LOG_ERROR(
-            "Algo failed to start TCP server on " 
-            , market_ip , ':' , std::to_string(market_port)
-            , ", with error: "
-        );
+        LOG_ERROR("Algo failed to start TCP server on ", market_ip, ':',
+                  std::to_string(market_port), ", with error: ");
         return std::unexpected(AlgoError::INIT_SERVER_FAIL);
 
         // throw AlgoException(
-        //     "Algo failed to start TCP server on " 
+        //     "Algo failed to start TCP server on "
         //     + market_ip + ':' + std::to_string(market_port)
         //     + ", with error: ",
         //     result.error()
@@ -80,10 +76,10 @@ auto Algo::initialize_server()
     return {};
 }
 
-auto Algo::initialize_client()
-    -> std::expected<void, AlgoError>
+auto
+Algo::initialize_client() -> std::expected<void, AlgoError>
 {
-    utils::Timer timer{"Algo::initialize_client()"};
+    utils::Timer timer{ "Algo::initialize_client()" };
     if (is_client_initialized())
     {
         LOG_WARN("MarketFeed already initialized");
@@ -93,24 +89,21 @@ auto Algo::initialize_client()
     // Invariant check: p_config must exist (programming error if null)
     if (!p_config) [[unlikely]]
     {
-        throw AlgoException("FATAL: p_config is null - Algo object in invalid state",
-                          AlgoError::INVALID_STATE);
+        throw AlgoException(
+            "FATAL: p_config is null - Algo object in invalid state",
+            AlgoError::INVALID_STATE);
     }
 
     // Create MarketFeed with reference to our market data queue
-    p_market_feed = memory::make_unique<io::MarketFeed>(
-        *p_config,
-        m_market_data_queue
-    );
+    p_market_feed
+        = memory::make_unique<io::MarketFeed>(*p_config, m_market_data_queue);
 
     // Initialize and connect
     auto init_result = p_market_feed->initialize();
     if (!init_result.has_value())
     {
-        LOG_ERROR(
-            "Couldn't initialize MarketFeed. ",
-            "Maybe the server is not online yet."
-        );
+        LOG_ERROR("Couldn't initialize MarketFeed. ",
+                  "Maybe the server is not online yet.");
         p_market_feed.reset();
         m_client_started.store(false, std::memory_order_release);
         return std::unexpected(init_result.error());
@@ -121,10 +114,10 @@ auto Algo::initialize_client()
     return {};
 }
 
-auto Algo::work_client()
-    -> std::expected<void, AlgoError>
+auto
+Algo::work_client() -> std::expected<void, AlgoError>
 {
-    utils::Timer timer{"Algo::work_client()"};
+    utils::Timer timer{ "Algo::work_client()" };
 
     if (is_client_running())
     {
@@ -146,19 +139,16 @@ auto Algo::work_client()
     m_client_stopped.store(false, std::memory_order_release);
     LOG_INFO("Starting multithreaded pipeline...");
 
-    m_network_thread = std::jthread([this](std::stop_token){
-        this->_network_loop();
-    });
+    m_network_thread
+        = std::jthread([this](std::stop_token) { this->_network_loop(); });
     LOG_INFO("Started network thread with id: ", m_network_thread.get_id());
 
-    m_strategy_thread = std::jthread([this](std::stop_token){
-        this->_strategy_loop();
-    });
+    m_strategy_thread
+        = std::jthread([this](std::stop_token) { this->_strategy_loop(); });
     LOG_INFO("Started strategy thread with id: ", m_strategy_thread.get_id());
 
-    m_execution_thread = std::jthread([this](std::stop_token){
-        this->_execution_loop();
-    });
+    m_execution_thread
+        = std::jthread([this](std::stop_token) { this->_execution_loop(); });
     LOG_INFO("Started execution thread with id: ", m_execution_thread.get_id());
 
     // Attempt to set affinity (prints warnings if it can't)
@@ -172,7 +162,9 @@ auto Algo::work_client()
 ///
 /// @brief THREAD 1: Network Loop - Delegates to MarketFeed
 ///
-void Algo::_network_loop() {
+void
+Algo::_network_loop()
+{
     try
     {
         LOG_INFO("Network thread started (Core 0)");
@@ -202,7 +194,8 @@ void Algo::_network_loop() {
     }
 }
 
-void Algo::_strategy_loop()
+void
+Algo::_strategy_loop()
 {
     try
     {
@@ -220,17 +213,20 @@ void Algo::_strategy_loop()
                     {
                         LOG_WARN("Signal queue full for ", signal.symbol);
                         // dropping signal for now
-                    } else {
-                        LOG_DEBUG("Pushed into signal queue. " 
-                            , signal.price, ", "
-                            , signal.quantity, ", "
-                            , signal.symbol, ", "
-                            , static_cast<uint64_t>(signal.type), ", "
-                        );
-                        m_signals_generated.fetch_add(1, std::memory_order_relaxed);
+                    }
+                    else
+                    {
+                        LOG_DEBUG("Pushed into signal queue. ", signal.price,
+                                  ", ", signal.quantity, ", ", signal.symbol,
+                                  ", ", static_cast<uint64_t>(signal.type),
+                                  ", ");
+                        m_signals_generated.fetch_add(
+                            1, std::memory_order_relaxed);
                     }
                 }
-            } else {
+            }
+            else
+            {
                 // Queue empty
                 /// @todo benchmark against busy-spinning
                 std::this_thread::yield();
@@ -250,7 +246,8 @@ void Algo::_strategy_loop()
     }
 }
 
-void Algo::_execution_loop()
+void
+Algo::_execution_loop()
 {
     try
     {
@@ -264,18 +261,17 @@ void Algo::_execution_loop()
                 Order order = _generate_order(signal);
 
                 // Send order out
-                LOG_INFO(
-                    "Executing order: ",
-                    order.symbol, " ",
-                    (order.side == Order::Side::BUY ? "BUY" : "SELL"), " ",
-                    order.quantity, " @ ", order.price
-                );
+                LOG_INFO("Executing order: ", order.symbol, " ",
+                         (order.side == Order::Side::BUY ? "BUY" : "SELL"), " ",
+                         order.quantity, " @ ", order.price);
 
                 m_orders_sent.fetch_add(1, std::memory_order_relaxed);
 
                 /// @todo send order to market through the gateway
                 ///         tcp_client->send or something
-            } else {
+            }
+            else
+            {
                 std::this_thread::yield();
             }
         }
@@ -293,9 +289,10 @@ void Algo::_execution_loop()
     }
 }
 
-Algo::Signal Algo::_compute_signal(const MarketData &md)
+Algo::Signal
+Algo::_compute_signal(const MarketData& md)
 {
-    utils::Timer timer{"_compute_signal()"};
+    utils::Timer timer{ "_compute_signal()" };
     Signal signal;
     std::memcpy(signal.symbol, md.symbol, sizeof(signal.symbol));
     signal.timestamp_ns = md.timestamp_ns;
@@ -312,36 +309,35 @@ Algo::Signal Algo::_compute_signal(const MarketData &md)
             signal.type = Signal::Type::BUY;
             signal.price = md.ask;
             signal.quantity = 100;
-        } else if (mid > 190.0005) {
+        }
+        else if (mid > 190.0005)
+        {
             signal.type = Signal::Type::SELL;
             signal.price = md.bid;
             signal.quantity = 100;
-        } else {
+        }
+        else
+        {
             signal.type = Signal::Type::HOLD;
             signal.price = -1;
         }
     }
 
-    LOG_DEBUG("Signal: " 
-        , (signal.type == Signal::Type::BUY)
-          ? "BUY " : "MAYBE-SELL "
-        , signal.symbol, ", "
-        , signal.timestamp_ns, ", "
-        , signal.price, ", "
-        , signal.quantity, ", "
-        , mid, ", "
-    );
+    LOG_DEBUG(
+        "Signal: ", (signal.type == Signal::Type::BUY) ? "BUY " : "MAYBE-SELL ",
+        signal.symbol, ", ", signal.timestamp_ns, ", ", signal.price, ", ",
+        signal.quantity, ", ", mid, ", ");
     return signal;
 }
 
-Algo::Order Algo::_generate_order(const Algo::Signal &signal)
+Algo::Order
+Algo::_generate_order(const Algo::Signal& signal)
 {
-    static std::atomic<uint64_t> s_order_id_counter{1};
+    static std::atomic<uint64_t> s_order_id_counter{ 1 };
     Order order;
     std::memcpy(order.symbol, signal.symbol, sizeof(order.symbol));
-    order.side = (signal.type == Signal::Type::BUY)
-                 ? Order::Side::BUY
-                 : Order::Side::SELL;
+    order.side = (signal.type == Signal::Type::BUY) ? Order::Side::BUY
+                                                    : Order::Side::SELL;
     order.price = signal.price;
     order.quantity = signal.quantity;
     order.order_id = s_order_id_counter.fetch_add(1, std::memory_order_relaxed);
@@ -351,7 +347,8 @@ Algo::Order Algo::_generate_order(const Algo::Signal &signal)
     return order;
 }
 
-void Algo::_set_thread_affinity(std::thread::native_handle_type thread, int cpu_id)
+void
+Algo::_set_thread_affinity(std::thread::native_handle_type thread, int cpu_id)
 {
 #ifdef __linux__
     cpu_set_t cpuset;
@@ -359,10 +356,8 @@ void Algo::_set_thread_affinity(std::thread::native_handle_type thread, int cpu_
     CPU_SET(cpu_id, &cpuset);
     int result = pthread_setaffinity_np(thread, sizeof(cpu_set_t), &cpuset);
     if (result != 0)
-        LOG_WARN(
-            "Algo failed to set thread affinity to CPU ID "
-            , cpu_id, " ", "for thread ", thread
-        );
+        LOG_WARN("Algo failed to set thread affinity to CPU ID ", cpu_id, " ",
+                 "for thread ", thread);
     else
         LOG_INFO("Thread id ", thread, " pinned to CPU ", cpu_id);
 #else
@@ -370,8 +365,8 @@ void Algo::_set_thread_affinity(std::thread::native_handle_type thread, int cpu_
 #endif
 }
 
-
-void Algo::stop_client()
+void
+Algo::stop_client()
 {
     if (is_client_stopped())
     {
@@ -398,24 +393,27 @@ void Algo::stop_client()
     // jthread dtor handles joining
 }
 
-void Algo::print_client_stats() const
+void
+Algo::print_client_stats() const
 {
-    uint64_t ticks_received = p_market_feed ? p_market_feed->ticks_received() : 0;
-    uint64_t queue_full_events = p_market_feed ? p_market_feed->queue_full_count() : 0;
+    uint64_t ticks_received
+        = p_market_feed ? p_market_feed->ticks_received() : 0;
+    uint64_t queue_full_events
+        = p_market_feed ? p_market_feed->queue_full_count() : 0;
 
     LOG_DEBUG(
-        "\n=== Algo Statistics ==="
-        , "\n\tTicks received: ",    ticks_received
-        , "\n\tSignals generated: ", m_signals_generated.load(std::memory_order_relaxed)
-        , "\n\tOrders sent: ",       m_orders_sent.load(std::memory_order_relaxed)
-        , "\n\tQueue full events: ", queue_full_events
-    // Queue status
-        , "\n\tMarket data queue size: ", m_market_data_queue.size()
-        , "\n\tSignal queue size: ",      m_signal_queue.size()
-        , "\n\tOrder queue size: ",       m_order_queue.size()
-    );
+        "\n=== Algo Statistics ===", "\n\tTicks received: ", ticks_received,
+        "\n\tSignals generated: ",
+        m_signals_generated.load(std::memory_order_relaxed),
+        "\n\tOrders sent: ", m_orders_sent.load(std::memory_order_relaxed),
+        "\n\tQueue full events: ",
+        queue_full_events
+        // Queue status
+        ,
+        "\n\tMarket data queue size: ", m_market_data_queue.size(),
+        "\n\tSignal queue size: ", m_signal_queue.size(),
+        "\n\tOrder queue size: ", m_order_queue.size());
 }
-
 
 /// @brief Receives MarketData structs from market
 // void Algo::work_client()
@@ -430,7 +428,8 @@ void Algo::print_client_stats() const
 //         if (!result.has_value())
 //         {
 //             LOG_ERROR("Algo failed to initialize client.");
-//             // throw AlgoException("Client initialization failed.", result.error());
+//             // throw AlgoException("Client initialization failed.",
+//             result.error());
 //         }
 //     }
 //     LOG_DEBUG("client is initialized");
@@ -440,7 +439,7 @@ void Algo::print_client_stats() const
 //     if (!connect_result.has_value())
 //     {
 //         LOG_ERROR("Could not connect to server.");
-//     } 
+//     }
 //     std::uint64_t rec_bytes = p_tcp_client->recv(buf, sizeof(buf)).value();
 //     MarketData* market_data = reinterpret_cast<MarketData*>(buf);
 
@@ -455,10 +454,10 @@ void Algo::print_client_stats() const
 //     );
 // }
 
-auto Algo::work_server()
-    -> std::expected<void, AlgoError>
+auto
+Algo::work_server() -> std::expected<void, AlgoError>
 {
-    utils::Timer timer{"Algo::work_server()"};
+    utils::Timer timer{ "Algo::work_server()" };
     using namespace std::chrono_literals;
 
     if (!is_server_initialized()) [[unlikely]]
@@ -475,17 +474,14 @@ auto Algo::work_server()
     if (!p_tcp_server) [[unlikely]]
     {
         throw AlgoException("FATAL: p_tcp_server is null after initialization",
-                          AlgoError::INVALID_STATE);
+                            AlgoError::INVALID_STATE);
     }
 
-    LOG_INFO(
-        "Server listening on port ",
-        p_config->get_market_port()
-    );
+    LOG_INFO("Server listening on port ", p_config->get_market_port());
     LOG_INFO("Accepting client connections...");
 
     // for (uint64_t i{0}; i <= 1; ++i)
-    std::uint64_t i{0};
+    std::uint64_t i{ 0 };
     do
     {
         /// Blocks while waiting for clients!
@@ -500,33 +496,31 @@ auto Algo::work_server()
         // Send market data continuously to this client until they disconnect
         for (;;)
         {
-            utils::Timer timer{"Algo::work_server::LOOP"};
+            utils::Timer timer{ "Algo::work_server::LOOP" };
             if (client_socket.value() < 1)
             {
                 LOG_WARN("Invalid client socket. Breaking send loop.");
                 break;
             }
 
-            MarketData tick
-            {
-                i,
-                "ACME",
-                190.0 + i * 0.001,
-                190.0 + i * 0.001 + 0.01,
-                ++i
-            };
+            MarketData tick{ i, "ACME", 190.0 + i * 0.001,
+                             190.0 + i * 0.001 + 0.01, ++i };
 
-            auto send_result = p_tcp_server->send(client_socket.value(), std::addressof(tick), sizeof(tick));
+            auto send_result = p_tcp_server->send(
+                client_socket.value(), std::addressof(tick), sizeof(tick));
             if (!send_result.has_value())
             {
-                LOG_INFO("Client fd: ", client_socket.value(), " disconnected. Waiting for next client...");
+                LOG_INFO("Client fd: ", client_socket.value(),
+                         " disconnected. Waiting for next client...");
                 break; // Client disconnected, go back to accept loop
             }
 
-            LOG_DEBUG("Sent tick ", i, " to client fd: ", client_socket.value());
+            LOG_DEBUG("Sent tick ", i,
+                      " to client fd: ", client_socket.value());
             std::this_thread::sleep_for(1s);
         }
-    } while (true);
+    }
+    while (true);
 
     // Unreachable in normal operation, but needed for signature
     return {};

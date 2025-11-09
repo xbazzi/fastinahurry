@@ -11,6 +11,15 @@ enum class AlgoError : std::uint8_t
     INVALID_STATE
 };
 
+enum class TomlParserError : std::uint8_t
+{
+    FILE_NOT_FOUND,
+    PARSE_ERROR,
+    KEY_NOT_FOUND,
+    TYPE_MISMATCH,  
+    INVALID_TOML
+};
+
 #pragma pack(push, 1)
 enum class Error : std::uint8_t
 {

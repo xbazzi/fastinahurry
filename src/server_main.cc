@@ -15,7 +15,7 @@ void print_help()
   std::ostringstream ss;
   ss << "Usage: "                     << '\n'
      << "\tserver <config_file_path>" << '\n'
-     << "\tEx: server config.toml"    << '\n';
+     << "\tEx: server etc/config.toml"    << '\n';
   std::cout << ss.str() << std::endl;
 }
 

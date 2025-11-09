@@ -1,10 +1,24 @@
 #pragma once
 
-#include <limits>
+// C++ Includes
+#include <cstdint>
 
-#include "Order.hh"
+// FastInAHurry Includes
 
-struct Constants
+namespace fiah::utils
 {
-    static const Price InvalidPrice = std::numeric_limits<Price>::quiet_NaN();
-};
+/**
+ * @brief Constants used throughout the FastInAHurry project.
+ */
+#if defined(__cpp_lib_hardware_interference_size)
+{
+    static constexpr const std::uint16_t CACHE_LINE_SIZE
+        = static_cast<std::uint16_t>(
+            std::hardware_destructive_interference_size);
+}
+#else
+{
+    static constexpr const std::uint16_t CACHE_LINE_SIZE = 64;
+}
+#endif // __cpp_lib_hardware_interference_size
+} // namespace fiah::utils
