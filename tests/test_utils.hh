@@ -73,14 +73,64 @@ private:
     {
         auto temp_path = std::filesystem::temp_directory_path() / "fiah_test_config.toml";
 
-        std::ofstream file(temp_path);
-        file << "title = \"HFT Config\"\n\n";
-        file << "[servers]\n\n";
-        file << "[servers.market]\n";
-        file << "ip = \"" << m_market_ip << "\"\n";
-        file << "port = " << m_market_port << "\n";
-        file << "role = \"publisher\"\n";
-        file.close();
+    std::ofstream file(temp_path);
+    file << "title = \"HFT Config\"\n\n";
+
+    // Minimal required sections for Config::parse_config()
+    file << "[logging]\n";
+    file << "enabled = true\n";
+    file << "level = \"INFO\"\n";
+    file << "log_to_file = false\n";
+    file << "log_path = \"/tmp/fiah.log\"\n";
+    file << "max_file_size_mb = 10\n";
+    file << "rotation_count = 3\n\n";
+
+    file << "[trading]\n";
+    file << "enabled = false\n";
+    file << "strategy = \"default\"\n";
+    file << "max_position_size = 0\n";
+    file << "max_order_size = 0\n";
+    file << "risk_limit_usd = 0.0\n";
+    file << "tick_size = 0.01\n";
+    file << "latency_threshold_us = 1000\n\n";
+
+    file << "[network]\n";
+    file << "tcp_buffer_size = 65536\n";
+    file << "udp_buffer_size = 65536\n";
+    file << "socket_timeout_ms = 1000\n";
+    file << "keepalive_interval_s = 60\n";
+    file << "max_connections = 100\n";
+    file << "enable_nagle = false\n\n";
+
+    file << "[system]\n";
+    file << "num_threads = 1\n";
+    file << "cpu_affinity = [0]\n";
+    file << "use_huge_pages = false\n";
+    file << "priority = \"normal\"\n";
+    file << "watchdog_timeout_s = 30\n\n";
+
+    file << "[servers]\n";
+    file << "[servers.market]\n";
+    file << "ip = \"" << m_market_ip << "\"\n";
+    file << "port = " << m_market_port << "\n";
+    file << "protocol = \"tcp\"\n";
+    file << "[servers.beta]\n";
+    file << "ip = \"127.0.0.1\"\n";
+    file << "port = 1338\n";
+    file << "protocol = \"tcp\"\n";
+    file << "[servers.risk]\n";
+    file << "ip = \"127.0.0.1\"\n";
+    file << "port = 1339\n";
+    file << "protocol = \"tcp\"\n";
+    file << "\n[database]\n";
+    file << "enabled = false\n";
+    file << "host = \"127.0.0.1\"\n";
+    file << "port = 5432\n";
+    file << "name = \"fiah_db\"\n";
+    file << "user = \"fiah\"\n";
+    file << "password = \"secret\"\n";
+    file << "connection_pool_size = 1\n";
+    file.close();
 
         return temp_path;
     }
@@ -90,7 +140,7 @@ private:
 inline io::Config create_default_test_config()
 {
     return TestConfigBuilder()
-        .with_config_path("../config.toml")
+        .with_config_path("../etc/config.toml")
         .build();
 }
 

@@ -11,7 +11,8 @@
 #include "fiah/io/SocketRAII.hpp"
 #include "fiah/Error.hh"
 
-namespace fiah::io {
+namespace fiah::io 
+{
 
 class Tcp
 {
@@ -60,7 +61,7 @@ protected:
         return ::send(m_sock, buf, len, flags);
     }
 
-    [[gnu::hot]] ssize_t recv_data(void* buf, size_t len, int flags = 0) 
+    [[nodiscard]] [[gnu::hot]] ssize_t recv_data(void* buf, size_t len, int flags = 0) 
     {
         return ::recv(m_sock, buf, len, flags);
     }

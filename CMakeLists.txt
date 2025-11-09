@@ -41,9 +41,6 @@ find_package(GTest REQUIRED)
 
 include_directories("${CMAKE_SOURCE_DIR}/include")
 
-# Glob all source files in src/
-# file(GLOB_RECURSE SRC_FILES CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/src/*.cc")
-
 # Put all executables in the same directory
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
@@ -85,13 +82,13 @@ target_link_libraries(fiah_common PUBLIC
   toml11::toml11
 )
 
-add_executable(client client_main.cc)
+add_executable(client src/client_main.cc)
 set_target_properties(client PROPERTIES
   CXX_STANDARD 23
   CXX_STANDARD_REQUIRED YES
 )
 
-add_executable(server server_main.cc)
+add_executable(server src/server_main.cc)
 set_target_properties(server PROPERTIES
   CXX_STANDARD 23
   CXX_STANDARD_REQUIRED YES
@@ -124,31 +121,26 @@ target_include_directories(client PRIVATE
 # Testing Configuration
 # ============================================================================
 
-# Collect all test source files
 file(GLOB_RECURSE TEST_SOURCES
     "${CMAKE_SOURCE_DIR}/tests/*_test.cc"
     "${CMAKE_SOURCE_DIR}/tests/test.cc"
 )
 
-# Create the test executable
 add_executable(unit_tests
     ${TEST_SOURCES}
 )
 
-# Set C++ standard for tests
 set_target_properties(unit_tests PROPERTIES
     CXX_STANDARD 23
     CXX_STANDARD_REQUIRED YES
 )
 
-# Include directories for tests
 target_include_directories(unit_tests PRIVATE
     ${CMAKE_SOURCE_DIR}/include
     ${CMAKE_SOURCE_DIR}/tests        # For test utilities and headers
     ${CMAKE_CURRENT_BINARY_DIR}      # For generated files
 )
 
-# Link test dependencies
 target_link_libraries(unit_tests PRIVATE
     fiah_common
     GTest::gtest
@@ -169,27 +161,22 @@ file(GLOB_RECURSE BENCHMARK_SOURCES
     "${CMAKE_SOURCE_DIR}/benchmarks/*_benchmark.cc"
 )
 
-# Only create benchmark executable if benchmark files exist
-# Add an "and" benchmark flag set
 if(BENCHMARK_SOURCES)
     add_executable(benchmarks
         ${BENCHMARK_SOURCES}
     )
 
-    # Set C++ standard for benchmarks
     set_target_properties(benchmarks PROPERTIES
         CXX_STANDARD 23
         CXX_STANDARD_REQUIRED YES
     )
 
-    # Include directories for benchmarks
     target_include_directories(benchmarks PRIVATE
         ${CMAKE_SOURCE_DIR}/include
         ${CMAKE_SOURCE_DIR}/benchmarks   # For benchmark utilities
         ${CMAKE_CURRENT_BINARY_DIR}      # For generated files
     )
 
-    # Link benchmark dependencies
     target_link_libraries(benchmarks PRIVATE
         fiah_common
         benchmark::benchmark
@@ -198,4 +185,4 @@ if(BENCHMARK_SOURCES)
 endif()
 
 # Optional: Use gtest_discover_tests for better test reporting
-# gtest_discover_tests(unit_tests)
+gtest_discover_tests(unit_tests)

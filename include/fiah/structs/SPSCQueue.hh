@@ -36,6 +36,7 @@ using cacheline_t = std::integral_constant<std::uint64_t, CACHE_LINE_SIZE_BYTES>
 template <class T, std::uint64_t CapacityPow2>
 class SPSCQueue
 {
+    static_assert(!std::is_array_v<T>, "SPSCQueue does not support array element types");
     static_assert((CapacityPow2 & (CapacityPow2 - 1)) == 0,
                     "Capacity must be a power of two");
     static constexpr std::uint64_t kCapacity = CapacityPow2;
@@ -44,7 +45,9 @@ class SPSCQueue
     alignas(cacheline_t::value) std::atomic<std::uint64_t> m_head{0}; // written by producer, read by consumer
     alignas(cacheline_t::value) std::atomic<std::uint64_t> m_tail{0}; // written by consumer, read by producer
 
-    alignas(cacheline_t::value) std::byte m_storage[kCapacity * sizeof(T)];
+    // Ensure storage is aligned both to cache-line boundaries (for padding/padding
+    // avoidance) and to the element alignment so placement-new on T is safe.
+    alignas(cacheline_t::value) alignas(alignof(T)) std::byte m_storage[kCapacity * sizeof(T)];
 
     // Helpers to index into ring without branching
     static T* slot_ptr(std::byte *base, std::uint64_t idx) noexcept
@@ -60,8 +63,12 @@ public:
     ~SPSCQueue()
     {
         // Drain any constructed-but-not-popped elements to run destructors.
-        auto tail = m_tail.load(std::memory_order_relaxed);
-        auto head = m_head.load(std::memory_order_relaxed);
+        // NOTE: destructor assumes no other threads are concurrently using the
+        // queue. Calling the destructor while producer/consumer are active is
+        // undefined behavior. We use acquire loads to ensure we observe the
+        // latest published head/tail if called during shutdown synchronization.
+        auto tail = m_tail.load(std::memory_order_acquire);
+        auto head = m_head.load(std::memory_order_acquire);
         while (tail != head)
         {
             std::destroy_at(slot_ptr(m_storage, tail));

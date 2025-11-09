@@ -1,25 +1,27 @@
-#pragma once
+#ifndef FIAH_ALGO_HH
+#define FIAH_ALGO_HH
 
 // C++ Includes
 // #include <memory>
 #include <atomic>
-#include <thread>
-#include <future>
 #include <cstdint>
+#include <future>
+#include <thread>
 
 // FastInAHurry includes
 // #include "fiah/ThreadPool.hpp"
-#include "fiah/io/TcpServer.hh"
-#include "fiah/io/MarketFeed.hh"
-#include "fiah/io/Config.hh"
 #include "fiah/AlgoException.hh"
 #include "fiah/Error.hh"
-#include "fiah/utils/Logger.hh"
+#include "fiah/io/Config.hh"
+#include "fiah/io/MarketFeed.hh"
+#include "fiah/io/TcpServer.hh"
+#include "fiah/memory/unique_ptr.hh"
 #include "fiah/structs/SPSCQueue.hh"
 #include "fiah/structs/Structs.hh"
-#include "fiah/memory/unique_ptr.hh"
+#include "fiah/utils/Logger.hh"
 
-namespace fiah {
+namespace fiah
+{
 
 /// @brief Handles orchestration of the entire system
 ///
@@ -55,12 +57,12 @@ namespace fiah {
 ///   NEVER throw - they catch all exceptions internally and log them
 /// - Atomic flags (m_client_running, etc.) provide thread-safe state
 ///
-/// @attention Always catch exceptions when calling Algo methods from Controller!
+/// @attention Always catch exceptions when calling Algo methods from
+/// Controller!
 class Algo
 {
 
 private:
-
     /// @brief We're gonna need these
     using Signal = structs::Signal;
     using Order = structs::Order;
@@ -72,31 +74,32 @@ private:
     using MarketFeedUniquePtr = memory::unique_ptr<io::MarketFeed>;
 
     ConfigUniquePtr p_config;
-    static inline utils::Logger<Algo>& 
-        m_logger{utils::Logger<Algo>::get_instance("Algo")};
+    static inline utils::Logger<Algo>& m_logger{
+        utils::Logger<Algo>::get_instance("Algo")
+    };
 
-    std::atomic<bool> m_server_started{false};
-    std::atomic<bool> m_client_started{false};
-    std::atomic<bool> m_client_stopping{false};
-    std::atomic<bool> m_client_stopped{false};
-    std::atomic<bool> m_client_running{false};
+    std::atomic<bool> m_server_started{ false };
+    std::atomic<bool> m_client_started{ false };
+    std::atomic<bool> m_client_stopping{ false };
+    std::atomic<bool> m_client_stopped{ false };
+    std::atomic<bool> m_client_running{ false };
 
-    // Lock-free single-producer, single-consumer queues 
+    // Lock-free single-producer, single-consumer queues
     structs::SPSCQueue<structs::MarketData, 4096UL> m_market_data_queue;
-    structs::SPSCQueue<Signal,     2048UL> m_signal_queue;
-    structs::SPSCQueue<Order,      2048UL> m_order_queue;
+    structs::SPSCQueue<Signal, 2048UL> m_signal_queue;
+    structs::SPSCQueue<Order, 2048UL> m_order_queue;
 
     /// @brief Receives market data
-    std::jthread m_network_thread;      
+    std::jthread m_network_thread;
 
     /// @brief Processes signals with a strategy
-    std::jthread m_strategy_thread;    
-    
+    std::jthread m_strategy_thread;
+
     /// @brief Sends orders
     std::jthread m_execution_thread;
 
     /// @brief Reads market data from JSON
-    std::jthread                    m_reader_thread;
+    std::jthread m_reader_thread;
 
     /// @brief TCP server handle
     TcpServerUniquePtr p_tcp_server;
@@ -105,8 +108,8 @@ private:
     MarketFeedUniquePtr p_market_feed;
 
     /// @brief Performance counters (lock-free)
-    alignas(64) std::atomic<uint64_t> m_signals_generated{0};
-    alignas(64) std::atomic<uint64_t> m_orders_sent{0};
+    alignas(64) std::atomic<uint64_t> m_signals_generated{ 0 };
+    alignas(64) std::atomic<uint64_t> m_orders_sent{ 0 };
 
     /// @brief Thread functions
     void _network_loop();
@@ -114,42 +117,44 @@ private:
     void _execution_loop();
 
     // Strategy logic
-    Signal _compute_signal(const MarketData &md);
-    Order  _generate_order(const Signal &signal);
+    Signal _compute_signal(const MarketData& md);
+    Order _generate_order(const Signal& signal);
 
-    /// @brief Attempt to set thread affinity. Prints logs if it was unsuccessful.
-    /// @param thread 
-    /// @param cpu_id 
-    void _set_thread_affinity(std::thread::native_handle_type thread, int cpu_id);
+    /// @brief Attempt to set thread affinity. Prints logs if it was
+    /// unsuccessful.
+    /// @param thread
+    /// @param cpu_id
+    void
+    _set_thread_affinity(std::thread::native_handle_type thread, int cpu_id);
+
 public:
-
     explicit Algo(io::Config&&);
     ~Algo();
 
     std::expected<void, AlgoError> initialize_client();
     std::expected<void, AlgoError> initialize_server();
 
-    __always_inline
-    bool is_server_initialized() const noexcept
+    [[nodiscard]] __always_inline bool
+    is_server_initialized() const noexcept
     {
         return m_server_started.load(std::memory_order_relaxed);
     }
 
-    __always_inline
-    bool is_client_initialized() const noexcept
+    [[nodiscard]] __always_inline bool
+    is_client_initialized() const noexcept
     {
         return m_client_started.load(std::memory_order_relaxed);
     }
 
-    __always_inline
-    bool is_client_running() const noexcept
+    [[nodiscard]] __always_inline bool
+    is_client_running() const noexcept
     {
         return m_client_running.load(std::memory_order_relaxed);
     }
 
     // Same as `__always_inline` GCC helper macro
-    inline __attribute__ ((__always_inline__)) 
-    bool is_client_stopped() const noexcept
+    inline __attribute__((__always_inline__)) bool
+    is_client_stopped() const noexcept
     {
         return m_client_stopped.load(std::memory_order_relaxed);
     }
@@ -160,3 +165,5 @@ public:
     void print_client_stats() const;
 };
 } // End namespace fiah
+
+#endif // ALGO_HH
