@@ -12,7 +12,9 @@
 #pragma once
 // C++ Includes
 #include <cstdint>
+#include <expected>
 #include <filesystem>
+#include <optional>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -83,5 +85,8 @@ public:
      *  @return The value as a double
      */
     double get_double(const std::string& key) const;
+
+    std::optional<std::string>
+    get_value(const std::string& section, const std::string& key) const;
 };
 } // namespace fiah::utils

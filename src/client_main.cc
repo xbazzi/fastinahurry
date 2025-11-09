@@ -55,18 +55,6 @@ main(int argc, char* argv[])
     fiah::log::init("main");
     LOG_DEBUG_S("Client entrypoint (client_main.cc) started.");
 
-    fiah::utils::TomlParser parser{ "etc/testconfig.toml" };
-    auto result = parser.load();
-    if (!result)
-    {
-        LOG_ERROR_S("Failed to load TOML file: ",
-                    static_cast<int>(result.error()));
-    }
-    else
-    {
-        LOG_INFO_S("TOML file loaded successfully.");
-    }
-
     if (argc < 2)
     {
         print_help();
@@ -87,7 +75,7 @@ main(int argc, char* argv[])
         return 1;
     }
 
-    /// Create this mf on the stack keep a stack
+    /// Create this mf on the stack keep it a stack💯
     fiah::Controller ctlr(std::move(config));
 
     /// Start some work around here
@@ -97,5 +85,7 @@ main(int argc, char* argv[])
         return rc;
     }
     LOG_INFO_S("Client entrypoint exited with status ", 0);
+    LOG_INFO_S("Market IP: ", config.get_market_ip());
+    LOG_INFO_S("Market Port: ", config.get_market_port());
     return 0;
 }

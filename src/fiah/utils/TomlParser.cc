@@ -34,9 +34,30 @@ TomlParser::TomlParser() noexcept
 
 TomlParser::TomlParser(const std::filesystem::path& path) noexcept
     : m_filepath{ path }
-// , m_ifs{}
 {
     // m_ifs.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+}
+
+std::optional<std::string>
+TomlParser::get_value(const std::string& section, const std::string& key) const
+{
+    auto section_it = m_keys.find(section);
+    if (section_it == std::end(m_keys))
+    {
+        LOG_DEBUG("Could not find section");
+        return std::nullopt;
+    }
+
+    // find the key inside the section map
+    auto key_it = section_it->second.find(key);
+    if (key_it == section_it->second.end())
+    {
+        LOG_DEBUG("Could not find key");
+        return std::nullopt;
+    }
+    LOG_DEBUG("Found key with value: ", key_it->second);
+
+    return key_it->second; // copy into optional
 }
 
 auto
@@ -117,11 +138,36 @@ TomlParser::extract_keys(std::ifstream& file) noexcept
 
         std::string key = line.substr(0, equal_sign);
         std::string val = line.substr(equal_sign + 1);
-        // Trim whitespace from key and value
+
+        LOG_DEBUG("Parsed key raw: ", key, " with value: ", val);
+
+        // Trim leading/trailing whitespace from key and value first
         key.erase(0, key.find_first_not_of(" \t\r\n"));
         key.erase(key.find_last_not_of(" \t\r\n") + 1);
         val.erase(0, val.find_first_not_of(" \t\r\n"));
         val.erase(val.find_last_not_of(" \t\r\n") + 1);
+
+        // Remove inline comment from value (simple heuristic): strip from first
+        // '#' to end. This parser does not handle '#' inside quoted strings.
+        auto comment_pos = val.find('#');
+        if (comment_pos != std::string::npos)
+        {
+            val = val.substr(0, comment_pos);
+            // trim again after removing comment
+            val.erase(val.find_last_not_of(" \t\r\n") + 1);
+            val.erase(0, val.find_first_not_of(" \t\r\n"));
+        }
+
+        // remove quotes from value if present
+        if (val.size() >= 2
+            && ((val.front() == '"' && val.back() == '"')
+                || (val.front() == '\'' && val.back() == '\'')))
+        {
+            val = val.substr(1, val.size() - 2);
+        }
+
+        LOG_DEBUG("Parsed key after removing space/comments/quotes: ", key,
+                  " with value: ", val);
 
         // Insert into map
         // Prefer emplace to move the strings into the map
