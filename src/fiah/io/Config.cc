@@ -1,7 +1,7 @@
 #include <filesystem>
 #include <iostream>
 
-#include <toml.hpp>
+// #include <toml.hpp>
 
 #include "fiah/io/Config.hh"
 #include "fiah/utils/Timer.hpp"
@@ -16,18 +16,21 @@ Config::Config(const std::filesystem::path& path)
 bool
 Config::parse_config() noexcept
 {
-    auto result = m_parser.load();
-    if (!result.has_value())
-    {
-        LOG_ERROR("Failed to load TOML file: ",
-                  static_cast<int>(result.error()));
-    }
-    else
-    {
-        LOG_INFO("TOML file loaded successfully.");
-    }
-
-    return true;
+    return m_parser.load()
+        .transform(
+            [](bool success)
+            {
+                LOG_INFO("TOML file loaded successfully.");
+                return success;
+            })
+        .or_else(
+            [](TomlParserError error) -> std::expected<bool, TomlParserError>
+            {
+                LOG_ERROR("Failed to load TOML file: ",
+                          static_cast<int>(error));
+                return std::unexpected(error);
+            })
+        .value_or(false);
 }
 
 std::string
