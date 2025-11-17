@@ -1,33 +1,18 @@
-# FastInAHurry🏃‍♀️‍➡️
-Financial market streaming and order execution simulator written in C++.
 
-Low latency, data locality, and high performance are paramount.
+# 🪞 GitHub Mirror
 
+This is an automated mirror of the repository hosted on [GitGud.foo/xbazzi/fastinahurry](https://gitgud.foo/xbazzi/fastinahurry).
 
-<mark>Only tested on Linux</mark>, and it  works on any distro as long as you have `nix`. Currently, there is no Windows support. Or ever.
+**⚠️ This is a read-only mirror - do not create issues or pull requests here.**
 
-# Build n' Run
-## Build
-Install nix (and optionally direnv) and run the `flake.nix` to load all dependencies in your local environment:
-```bash
-nix develop
-```
+## 🏠 Original Repository
 
-Then you can build the project
-```bash
-make all
-```
+Please visit the [original](https://gitgud.foo/xbazzi/fastinahurry) repository for:
+- 📝 Issues and bug reports
+- 🔄 Pull requests and contributions
+- 📋 Project documentation
+- 💬 Discussions
 
-## Run
+---
 
-First, run the server:
-```bash
-./build/bin/server &
-```
-
-Then run the client:
-```bash
-./build/bin/client 
-```
-
-If you have direnv, run `direnv allow` and enjoy having your packages loaded automatically; no need to run `nix develop` everytime you're in a new shell or load another `shell.nix`/`flake.nix` from another project.
+*This mirror is automatically updated when changes are pushed to the master branch.*
