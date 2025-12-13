@@ -1,17 +1,19 @@
-#include <benchmark/benchmark.h>
 #include <atomic>
+#include <benchmark/benchmark.h>
 #include <cstdint>
-#include <thread>
 #include <iostream>
+#include <thread>
 
 #include "fiah/structs/SPSCQueue.hh"
 #include "fiah/structs/ThreadSafeQueue.hpp"
 
-static void BM_SPSCQueue_Push(benchmark::State& state) {
+static void BM_SPSCQueue_Push(benchmark::State &state)
+{
     fiah::structs::SPSCQueue<int, 1024> queue;
     int value = 42;
-    
-    for (auto _ : state) {
+
+    for (auto _ : state)
+    {
         queue.push(value);
     }
 }
@@ -31,20 +33,22 @@ static void BM_SPSCQueue_Fill_Milli(benchmark::State &state)
 
 static void BM_SPSCQueue_Multithreaded(benchmark::State &state)
 {
-    using ElementType = int;
+    using ElementType = std::uint64_t;
     constexpr std::size_t N = (1 << 30) / sizeof(ElementType); // 32MB for 4byte type
     static fiah::structs::SPSCQueue<ElementType, N> queue;
-    std::cout << "element size spsc: " << sizeof(ElementType) << ", struct size: " <<  sizeof(queue) << std::endl;
+    std::cout << "element size spsc: " << sizeof(ElementType) << ", struct size: " << sizeof(queue) << std::endl;
     for (auto _ : state)
     {
         std::atomic<bool> done{false};
         std::atomic<bool> start{false};
 
         std::jthread producer([&]() {
-            while (!start.load(std::memory_order_relaxed)) ;
+            while (!start.load(std::memory_order_relaxed))
+                ;
 
             for (std::size_t i{}; i < N; ++i)
-                while (!queue.push(i)) ;
+                while (!queue.push(i))
+                    ;
 
             done.store(true, std::memory_order_release);
             benchmark::ClobberMemory();
@@ -55,8 +59,7 @@ static void BM_SPSCQueue_Multithreaded(benchmark::State &state)
             int popped{};
 
             start.store(true, std::memory_order_release);
-            while (!done.load(std::memory_order_acquire)
-                || !queue.empty())
+            while (!done.load(std::memory_order_acquire) || !queue.empty())
             {
                 if (queue.pop(tmp))
                 {
@@ -67,18 +70,16 @@ static void BM_SPSCQueue_Multithreaded(benchmark::State &state)
             }
             benchmark::ClobberMemory();
         });
-
-
     }
     state.SetItemsProcessed(N * state.iterations());
 }
 
-static void BM_ThreadSafeQueue_Multithreaded(benchmark::State& state)
+static void BM_ThreadSafeQueue_Multithreaded(benchmark::State &state)
 {
     using ElementType = int;
     constexpr std::size_t N = (1 << 30) / sizeof(ElementType); // 32MB
     static fiah::structs::ThreadSafeQueue<ElementType> queue;
-    std::cout << "element size threadsafeq: " << sizeof(ElementType) << ", struct size: " <<  sizeof(queue) << std::endl;
+    std::cout << "element size threadsafeq: " << sizeof(ElementType) << ", struct size: " << sizeof(queue) << std::endl;
     for (auto _ : state)
     {
         std::atomic<bool> done{false};
@@ -86,7 +87,8 @@ static void BM_ThreadSafeQueue_Multithreaded(benchmark::State& state)
 
         std::jthread producer([&]() {
             ElementType someval{1337UL};
-            while (!start.load(std::memory_order_relaxed)) ;
+            while (!start.load(std::memory_order_relaxed))
+                ;
 
             for (std::size_t i{}; i < N; ++i)
                 queue.push(someval);
@@ -99,8 +101,7 @@ static void BM_ThreadSafeQueue_Multithreaded(benchmark::State& state)
             int popped{};
 
             start.store(true, std::memory_order_release);
-            while (!done.load(std::memory_order_acquire)
-                || !queue.empty())
+            while (!done.load(std::memory_order_acquire) || !queue.empty())
             {
                 // Cool C++17 syntax, but won't compile if T is no
                 // convertible to bool

@@ -3,8 +3,8 @@
 #include <expected>
 
 // FastInAHurry Includes
-#include "fiah/Algo.hh"
 #include "fiah/Controller.hh"
+#include "fiah/Core.hh"
 #include "fiah/io/Config.hh"
 #include "fiah/memory/unique_ptr.hh"
 #include "fiah/utils/Logger.hh"
@@ -13,18 +13,18 @@
 namespace fiah
 {
 
-Controller::Controller(io::Config &&config) noexcept(noexcept(AlgoUniquePtr()))
-    : p_algo{memory::make_unique<Algo>(std::move(config))}
+Controller::Controller(io::Config &&config) noexcept(noexcept(CoreUniquePtr()))
+    : p_core{memory::make_unique<Core>(std::move(config))}
 {
 }
 
 bool Controller::init_client() noexcept
 {
-    auto result = p_algo->initialize_client();
+    auto result = p_core->initialize_client();
     if (!result.has_value())
     {
         /// @todo print error as string in the log
-        LOG_ERROR("Failed to init client in Controller: <ErrorFromAlgo>");
+        LOG_ERROR("Failed to init client in Controller: <ErrorFromCore>");
         return 1;
     }
     LOG_INFO("Controller successfully initialized the client.");
@@ -33,11 +33,11 @@ bool Controller::init_client() noexcept
 
 bool Controller::init_server() noexcept
 {
-    auto result = p_algo->initialize_server();
+    auto result = p_core->initialize_server();
     if (!result.has_value())
     {
         /// @todo print error as string in the log
-        LOG_ERROR("Failed to init server in Controller: <ErrorFromAlgo>");
+        LOG_ERROR("Failed to init server in Controller: <ErrorFromCore>");
         return 1;
     }
     LOG_INFO("Controller successfully initialized the server.");
@@ -48,7 +48,7 @@ bool Controller::start_server() noexcept
 {
     try
     {
-        if (!p_algo->is_server_initialized())
+        if (!p_core->is_server_initialized())
         {
             if (init_server() != 0)
             {
@@ -56,12 +56,12 @@ bool Controller::start_server() noexcept
                 return 1;
             }
         }
-        p_algo->work_server();
+        p_core->work_server();
         return 0;
     }
-    catch (AlgoException &e)
+    catch (CoreException &e)
     {
-        LOG_ERROR("Controller failed to start server (fiah::AlgoException): ", e.what());
+        LOG_ERROR("Controller failed to start server (fiah::CoreException): ", e.what());
         return 1;
     }
     catch (std::exception &e)
@@ -81,7 +81,7 @@ bool Controller::start_client() noexcept
             LOG_ERROR("Failed to initialize client. Aborting start!");
             return 1;
         }
-        auto work_result = p_algo->work_client();
+        auto work_result = p_core->work_client();
         if (!work_result.has_value())
         {
             LOG_ERROR("Client work failed");
@@ -94,12 +94,12 @@ bool Controller::start_client() noexcept
         LOG_INFO("Client running. Press Ctrl+C to stop...");
         std::this_thread::sleep_for(600s); // Run for 10 minutes
 
-        p_algo->stop_client();
+        p_core->stop_client();
         return 0;
     }
-    catch (AlgoException &e)
+    catch (CoreException &e)
     {
-        LOG_ERROR("Controller failed to start client (fiah::AlgoException): ", e.what());
+        LOG_ERROR("Controller failed to start client (fiah::CoreException): ", e.what());
         return 1;
     }
     catch (std::exception &e)

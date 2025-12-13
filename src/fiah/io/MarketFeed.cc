@@ -1,21 +1,18 @@
 // C++ Includes
+#include <chrono>
 #include <cstring>
 #include <thread>
-#include <chrono>
 
 // FastInAHurry Includes
+#include "fiah/CoreException.hh"
 #include "fiah/io/MarketFeed.hh"
-#include "fiah/AlgoException.hh"
 #include "fiah/utils/Timer.hpp"
 
-namespace fiah::io {
+namespace fiah::io
+{
 
-MarketFeed::MarketFeed(
-    const Config& config,
-    structs::SPSCQueue<MarketData, 4096UL>& queue
-)
-    : m_config(config)
-    , m_market_data_queue(queue)
+MarketFeed::MarketFeed(const Config &config, structs::SPSCQueue<MarketData, 4096UL> &queue)
+    : m_config(config), m_market_data_queue(queue)
 {
     LOG_DEBUG("MarketFeed constructed");
 }
@@ -26,8 +23,7 @@ MarketFeed::~MarketFeed()
     LOG_DEBUG("MarketFeed destroyed");
 }
 
-auto MarketFeed::initialize()
-    -> std::expected<void, AlgoError>
+auto MarketFeed::initialize() -> std::expected<void, CoreError>
 {
     utils::Timer timer{"MarketFeed::initialize()"};
 
@@ -37,30 +33,22 @@ auto MarketFeed::initialize()
         return {};
     }
 
-    const std::string& market_ip = m_config.get_market_ip();
+    const std::string &market_ip = m_config.get_market_ip();
     std::uint16_t market_port = m_config.get_market_port();
 
-    p_tcp_client = memory::make_unique<TcpClient>(
-        market_ip, market_port
-    );
+    p_tcp_client = memory::make_unique<TcpClient>(market_ip, market_port);
 
-    LOG_INFO(
-        "MarketFeed initialized with market server ip: ",
-        market_ip, ", and port: ", market_port
-    );
+    LOG_INFO("MarketFeed initialized with market server ip: ", market_ip, ", and port: ", market_port);
 
     // Connect immediately if possible
     auto connect_result = p_tcp_client->connect_to_server();
     if (!connect_result.has_value())
     {
-        LOG_ERROR(
-            "Couldn't connect to market server during initialization. ",
-            "Maybe the server is not online yet."
-        );
+        LOG_ERROR("Couldn't connect to market server during initialization. ", "Maybe the server is not online yet.");
         // Clean up the partially initialized client
         p_tcp_client.reset();
         m_initialized.store(false, std::memory_order_release);
-        return std::unexpected(AlgoError::SERVER_NOT_ONLINE);
+        return std::unexpected(CoreError::SERVER_NOT_ONLINE);
     }
 
     m_initialized.store(true, std::memory_order_release);
@@ -68,12 +56,11 @@ auto MarketFeed::initialize()
     return {};
 }
 
-auto MarketFeed::_reconnect()
-    -> std::expected<void, AlgoError>
+auto MarketFeed::_reconnect() -> std::expected<void, CoreError>
 {
     LOG_INFO("Attempting to reconnect MarketFeed...");
 
-    const std::string& market_ip = m_config.get_market_ip();
+    const std::string &market_ip = m_config.get_market_ip();
     std::uint16_t market_port = m_config.get_market_port();
 
     // Clean up old client
@@ -88,7 +75,7 @@ auto MarketFeed::_reconnect()
     {
         LOG_WARN("Reconnection attempt failed - server not available");
         p_tcp_client.reset();
-        return std::unexpected{AlgoError::SERVER_NOT_ONLINE};
+        return std::unexpected{CoreError::SERVER_NOT_ONLINE};
     }
 
     m_initialized.store(true, std::memory_order_release);
@@ -96,7 +83,7 @@ auto MarketFeed::_reconnect()
     return {};
 }
 
-void MarketFeed::receive_loop(std::atomic<bool>& running_flag)
+void MarketFeed::receive_loop(std::atomic<bool> &running_flag)
 {
     using namespace std::chrono_literals;
 
@@ -131,20 +118,15 @@ void MarketFeed::receive_loop(std::atomic<bool>& running_flag)
                     if (retry_count < max_retries)
                     {
                         auto backoff = std::chrono::milliseconds(100 * (1 << retry_count));
-                        LOG_WARN(
-                            "Reconnection attempt ", retry_count,
-                            " failed. Retrying in ", backoff.count(), "ms..."
-                        );
+                        LOG_WARN("Reconnection attempt ", retry_count, " failed. Retrying in ", backoff.count(),
+                                 "ms...");
                         std::this_thread::sleep_for(backoff);
                     }
                 }
 
                 if (!p_tcp_client)
                 {
-                    LOG_ERROR(
-                        "Failed to reconnect after ", max_retries,
-                        " attempts. Thread exiting."
-                    );
+                    LOG_ERROR("Failed to reconnect after ", max_retries, " attempts. Thread exiting.");
                     running_flag.store(false, std::memory_order_release);
                     return;
                 }
@@ -155,10 +137,8 @@ void MarketFeed::receive_loop(std::atomic<bool>& running_flag)
             auto recv_result = p_tcp_client->recv(buffer, sizeof(buffer));
             if (!recv_result.has_value())
             {
-                LOG_WARN(
-                    "Failed to receive market data packet. "
-                    "Socket disconnected - will attempt reconnect."
-                );
+                LOG_WARN("Failed to receive market data packet. "
+                         "Socket disconnected - will attempt reconnect.");
                 // Don't exit - clean up and let the null check above handle reconnection
                 p_tcp_client.reset();
                 m_initialized.store(false, std::memory_order_release);
@@ -175,15 +155,9 @@ void MarketFeed::receive_loop(std::atomic<bool>& running_flag)
             std::memcpy(&md, buffer, sizeof(MarketData));
             m_ticks_received.fetch_add(1, std::memory_order_relaxed);
 
-            LOG_DEBUG(
-                "Got md (raw): "
-                , "Symbol: ", md.symbol, ", "
-                , "Seq: ", md.seq_num, ", "
-                , "Ask: ", md.ask, ", "
-                , "Bid: ", md.bid, ", "
-                , "Timestamp: ", static_cast<uint64_t>(md.timestamp_ns), ", "
-                , "ticksReceived: ", m_ticks_received.load(std::memory_order_acquire)
-            );
+            LOG_DEBUG("Got md (raw): ", "Symbol: ", md.symbol, ", ", "Seq: ", md.seq_num, ", ", "Ask: ", md.ask, ", ",
+                      "Bid: ", md.bid, ", ", "Timestamp: ", static_cast<uint64_t>(md.timestamp_ns), ", ",
+                      "ticksReceived: ", m_ticks_received.load(std::memory_order_acquire));
 
             if (!m_market_data_queue.push(md))
             {
@@ -201,7 +175,7 @@ void MarketFeed::receive_loop(std::atomic<bool>& running_flag)
         }
         LOG_INFO("MarketFeed receive loop exiting...");
     }
-    catch (const std::exception& e)
+    catch (const std::exception &e)
     {
         LOG_ERROR("MarketFeed receive loop crashed with exception: ", e.what());
         running_flag.store(false, std::memory_order_release);
@@ -225,11 +199,8 @@ void MarketFeed::stop()
 
     m_initialized.store(false, std::memory_order_release);
 
-    LOG_INFO(
-        "MarketFeed stopped. Stats: "
-        , "Ticks received: ", m_ticks_received.load(std::memory_order_relaxed)
-        , ", Queue full events: ", m_queue_full_count.load(std::memory_order_relaxed)
-    );
+    LOG_INFO("MarketFeed stopped. Stats: ", "Ticks received: ", m_ticks_received.load(std::memory_order_relaxed),
+             ", Queue full events: ", m_queue_full_count.load(std::memory_order_relaxed));
 }
 
 } // namespace fiah::io

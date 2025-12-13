@@ -2,8 +2,9 @@
 
 #include <cstdint>
 
-namespace fiah {
-enum class AlgoError : std::uint8_t
+namespace fiah
+{
+enum class CoreError : std::uint8_t
 {
     INIT_CLIENT_FAIL,
     SERVER_NOT_ONLINE,
@@ -16,7 +17,7 @@ enum class TomlParserError : std::uint8_t
     FILE_NOT_FOUND,
     PARSE_ERROR,
     KEY_NOT_FOUND,
-    TYPE_MISMATCH,  
+    TYPE_MISMATCH,
     INVALID_TOML
 };
 
@@ -28,7 +29,7 @@ enum class Error : std::uint8_t
     UNKNOWN_ERROR,
     INIT_ERROR,
     CONTROLLER_ERROR,
-    ALGO_ERORR,
+    CORE_ERORR,
     THREAD_ERROR
 };
 #pragma pack(pop)

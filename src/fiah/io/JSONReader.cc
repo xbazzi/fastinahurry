@@ -4,12 +4,12 @@
 
 // FastInAHurry Includes
 #include "fiah/io/JSONReader.hh"
-#include "fiah/Algo.hh"
 
 // Third Party Includes
 // #include "trading.pb.h"
 
-namespace io {
+namespace io
+{
 
 // OrderQueue read_orders_from_json(const std::string& filename) {
 //     OrderQueue orders;
@@ -43,4 +43,4 @@ namespace io {
 
 //     return orders;
 // }
-} // End io namespace
+} // namespace io

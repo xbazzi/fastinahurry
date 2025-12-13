@@ -1,5 +1,5 @@
-#ifndef ALGOEXCEPTION_HH
-#define ALGOEXCEPTION_HH
+#ifndef COREEXCEPTION_HH
+#define COREEXCEPTION_HH
 
 // C++ Includes
 #include <sstream>
@@ -15,44 +15,39 @@
 namespace fiah
 {
 
-using ErrorVariant = std::variant<std::monostate, TcpError, AlgoError, Error>;
+using ErrorVariant = std::variant<std::monostate, TcpError, CoreError, Error>;
 
-class AlgoException : public std::runtime_error
+class CoreException : public std::runtime_error
 {
-private:
+  private:
     ErrorVariant m_error_variant{};
 
-public:
-    explicit AlgoException(const std::string& message)
-        : std::runtime_error{ message }
-        , m_error_variant{ std::monostate{} }
-    {}
+  public:
+    explicit CoreException(const std::string &message) : std::runtime_error{message}, m_error_variant{std::monostate{}}
+    {
+    }
 
     template <typename EnumType>
         requires std::is_enum_v<EnumType>
-    AlgoException(const std::string& message, EnumType error)
-        : std::runtime_error(format_error(message, error))
-        , m_error_variant(error)
-    {}
+    CoreException(const std::string &message, EnumType error)
+        : std::runtime_error(format_error(message, error)), m_error_variant(error)
+    {
+    }
 
-    const ErrorVariant&
-    get_error() const noexcept
+    const ErrorVariant &get_error() const noexcept
     {
         return m_error_variant;
     }
 
-private:
-    template <typename EnumType>
-    static std::string
-    format_error(const std::string& message, EnumType error)
+  private:
+    template <typename EnumType> static std::string format_error(const std::string &message, EnumType error)
     {
         std::ostringstream oss;
         oss << message << " (" << enum_to_string(error) << ")";
         return oss.str();
     }
 
-    static std::string
-    enum_to_string(TcpError e)
+    static std::string enum_to_string(TcpError e)
     {
         switch (e)
         {
@@ -76,25 +71,23 @@ private:
         return "TcpError::UNKNOWN";
     }
 
-    static std::string
-    enum_to_string(AlgoError e)
+    static std::string enum_to_string(CoreError e)
     {
         switch (e)
         {
-        case AlgoError::INIT_CLIENT_FAIL:
-            return "AlgoError::INIT_CLIENT_FAIL";
-        case AlgoError::SERVER_NOT_ONLINE:
-            return "AlgoError::SERVER_NOT_ONLINE";
-        case AlgoError::INIT_SERVER_FAIL:
-            return "AlgoError::INIT_SERVER_FAIL";
-        case AlgoError::INVALID_STATE:
-            return "AlgoError::INIT_SERVER_FAIL";
+        case CoreError::INIT_CLIENT_FAIL:
+            return "CoreError::INIT_CLIENT_FAIL";
+        case CoreError::SERVER_NOT_ONLINE:
+            return "CoreError::SERVER_NOT_ONLINE";
+        case CoreError::INIT_SERVER_FAIL:
+            return "CoreError::INIT_SERVER_FAIL";
+        case CoreError::INVALID_STATE:
+            return "CoreError::INIT_SERVER_FAIL";
         }
-        return "AlgoError::UNKNOWN";
+        return "CoreError::UNKNOWN";
     }
 
-    static std::string
-    enum_to_string(Error e)
+    static std::string enum_to_string(Error e)
     {
         switch (e)
         {
@@ -108,8 +101,8 @@ private:
             return "Error::INIT_ERROR";
         case Error::CONTROLLER_ERROR:
             return "Error::CONTROLLER_ERROR";
-        case Error::ALGO_ERORR:
-            return "Error::ALGO_ERROR";
+        case Error::CORE_ERORR:
+            return "Error::CORE_ERROR";
         case Error::THREAD_ERROR:
             return "Error::THREAD_ERROR";
         }
@@ -119,4 +112,4 @@ private:
 
 } // namespace fiah
 
-#endif // ALGOEXCEPTION_HH
+#endif // CORE_HH

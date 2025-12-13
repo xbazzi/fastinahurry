@@ -38,6 +38,15 @@ find_package(nlohmann_json REQUIRED)
 find_package(toml11 REQUIRED)
 find_package(PkgConfig REQUIRED)
 find_package(GTest REQUIRED)
+include(FetchContent)
+
+FetchContent_Declare(
+  quickstructs
+  GIT_REPOSITORY https://github.com/xbazzi/quickstructs
+  GIT_TAG        master
+)
+
+FetchContent_MakeAvailable(quickstructs)
 
 include_directories("${CMAKE_SOURCE_DIR}/include")
 
@@ -76,11 +85,17 @@ target_compile_features(fiah_common PRIVATE cxx_std_23)
 target_include_directories(fiah_common PUBLIC
   ${CMAKE_SOURCE_DIR}/include
   ${CMAKE_CURRENT_BINARY_DIR}
+  ${quickstructs_SOURCE_DIR}/include
 )
 target_link_libraries(fiah_common PUBLIC
   nlohmann_json::nlohmann_json
   toml11::toml11
 )
+
+# Make quickstructs' quick_tests link against fiah_common
+if(TARGET quick_tests)
+    target_link_libraries(quick_tests PRIVATE fiah_common)
+endif()
 
 add_executable(client src/client_main.cc)
 set_target_properties(client PROPERTIES

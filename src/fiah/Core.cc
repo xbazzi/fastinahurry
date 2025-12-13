@@ -6,11 +6,10 @@
 #include <stop_token>
 
 // FastInAHurry Includes
-#include "fiah/Algo.hh"
-#include "fiah/AlgoException.hh"
+#include "fiah/Core.hh"
+#include "fiah/CoreException.hh"
 #include "fiah/io/Config.hh"
 #include "fiah/io/JSONReader.hh"
-#include "fiah/io/TcpClient.hh"
 #include "fiah/structs/Structs.hh"
 #include "fiah/utils/Logger.hh"
 #include "fiah/utils/Timer.hpp"
@@ -21,22 +20,18 @@
 namespace fiah
 {
 
-Algo::Algo(io::Config &&config) : p_config{memory::make_unique<io::Config>(std::move(config))}
+Core::Core(io::Config &&config) : p_config{memory::make_unique<io::Config>(std::move(config))}
 {
 }
 
-Algo::~Algo()
+Core::~Core()
 {
     stop_client();
 }
 
-// ============================================================================
-// INITIALIZATION
-// ============================================================================
-
-auto Algo::initialize_server() -> std::expected<void, AlgoError>
+auto Core::initialize_server() -> std::expected<void, CoreError>
 {
-    utils::Timer timer{"Algo::initialize_server()"};
+    utils::Timer timer{"Core::initialize_server()"};
 
     if (is_server_initialized())
     {
@@ -47,7 +42,7 @@ auto Algo::initialize_server() -> std::expected<void, AlgoError>
     // Invariant check: p_config must exist (programming error if null)
     if (!p_config) [[unlikely]]
     {
-        throw AlgoException("FATAL: p_config is null - Algo object in invalid state", AlgoError::INVALID_STATE);
+        throw CoreException("FATAL: p_config is null - Core object in invalid state", CoreError::INVALID_STATE);
     }
 
     std::string market_ip = p_config->get_market_ip();
@@ -58,11 +53,11 @@ auto Algo::initialize_server() -> std::expected<void, AlgoError>
     auto result = p_tcp_server->start();
     if (!result.has_value())
     {
-        LOG_ERROR("Algo failed to start TCP server on ", market_ip, ':', std::to_string(market_port), ", with error: ");
-        return std::unexpected(AlgoError::INIT_SERVER_FAIL);
+        LOG_ERROR("Core failed to start TCP server on ", market_ip, ':', std::to_string(market_port), ", with error: ");
+        return std::unexpected(CoreError::INIT_SERVER_FAIL);
 
-        // throw AlgoException(
-        //     "Algo failed to start TCP server on "
+        // throw CoreException(
+        //     "Core failed to start TCP server on "
         //     + market_ip + ':' + std::to_string(market_port)
         //     + ", with error: ",
         //     result.error()
@@ -72,9 +67,9 @@ auto Algo::initialize_server() -> std::expected<void, AlgoError>
     return {};
 }
 
-auto Algo::initialize_client() -> std::expected<void, AlgoError>
+auto Core::initialize_client() -> std::expected<void, CoreError>
 {
-    utils::Timer timer{"Algo::initialize_client()"};
+    utils::Timer timer{"Core::initialize_client()"};
     if (is_client_initialized())
     {
         LOG_WARN("MarketFeed already initialized");
@@ -84,7 +79,7 @@ auto Algo::initialize_client() -> std::expected<void, AlgoError>
     // Invariant check: p_config must exist (programming error if null)
     if (!p_config) [[unlikely]]
     {
-        throw AlgoException("FATAL: p_config is null - Algo object in invalid state", AlgoError::INVALID_STATE);
+        throw CoreException("FATAL: p_config is null - Core object in invalid state", CoreError::INVALID_STATE);
     }
 
     // Create MarketFeed with reference to our market data queue
@@ -105,9 +100,9 @@ auto Algo::initialize_client() -> std::expected<void, AlgoError>
     return {};
 }
 
-auto Algo::work_client() -> std::expected<void, AlgoError>
+auto Core::work_client() -> std::expected<void, CoreError>
 {
-    utils::Timer timer{"Algo::work_client()"};
+    utils::Timer timer{"Core::work_client()"};
 
     if (is_client_running())
     {
@@ -150,7 +145,7 @@ auto Algo::work_client() -> std::expected<void, AlgoError>
 ///
 /// @brief THREAD 1: Network Loop - Delegates to MarketFeed
 ///
-void Algo::_network_loop()
+void Core::_network_loop()
 {
     try
     {
@@ -181,7 +176,7 @@ void Algo::_network_loop()
     }
 }
 
-void Algo::_strategy_loop()
+void Core::_strategy_loop()
 {
     try
     {
@@ -229,7 +224,7 @@ void Algo::_strategy_loop()
     }
 }
 
-void Algo::_execution_loop()
+void Core::_execution_loop()
 {
     try
     {
@@ -270,7 +265,7 @@ void Algo::_execution_loop()
     }
 }
 
-Algo::Signal Algo::_compute_signal(const MarketData &md)
+Core::Signal Core::_compute_signal(const MarketData &md)
 {
     utils::Timer timer{"_compute_signal()"};
     Signal signal;
@@ -308,7 +303,7 @@ Algo::Signal Algo::_compute_signal(const MarketData &md)
     return signal;
 }
 
-Algo::Order Algo::_generate_order(const Algo::Signal &signal)
+Core::Order Core::_generate_order(const Core::Signal &signal)
 {
     static std::atomic<uint64_t> s_order_id_counter{1};
     Order order;
@@ -323,7 +318,7 @@ Algo::Order Algo::_generate_order(const Algo::Signal &signal)
     return order;
 }
 
-void Algo::_set_thread_affinity(std::thread::native_handle_type thread, int cpu_id)
+void Core::_set_thread_affinity(std::thread::native_handle_type thread, int cpu_id)
 {
 #ifdef __linux__
     cpu_set_t cpuset;
@@ -331,7 +326,7 @@ void Algo::_set_thread_affinity(std::thread::native_handle_type thread, int cpu_
     CPU_SET(cpu_id, &cpuset);
     int result = pthread_setaffinity_np(thread, sizeof(cpu_set_t), &cpuset);
     if (result != 0)
-        LOG_WARN("Algo failed to set thread affinity to CPU ID ", cpu_id, " ", "for thread ", thread);
+        LOG_WARN("Core failed to set thread affinity to CPU ID ", cpu_id, " ", "for thread ", thread);
     else
         LOG_INFO("Thread id ", thread, " pinned to CPU ", cpu_id);
 #else
@@ -339,7 +334,7 @@ void Algo::_set_thread_affinity(std::thread::native_handle_type thread, int cpu_
 #endif
 }
 
-void Algo::stop_client()
+void Core::stop_client()
 {
     if (is_client_stopped())
     {
@@ -366,12 +361,12 @@ void Algo::stop_client()
     // jthread dtor handles joining
 }
 
-void Algo::print_client_stats() const
+void Core::print_client_stats() const
 {
     uint64_t ticks_received = p_market_feed ? p_market_feed->ticks_received() : 0;
     uint64_t queue_full_events = p_market_feed ? p_market_feed->queue_full_count() : 0;
 
-    LOG_DEBUG("\n=== Algo Statistics ===", "\n\tTicks received: ", ticks_received,
+    LOG_DEBUG("\n=== Core Statistics ===", "\n\tTicks received: ", ticks_received,
               "\n\tSignals generated: ", m_signals_generated.load(std::memory_order_relaxed),
               "\n\tOrders sent: ", m_orders_sent.load(std::memory_order_relaxed), "\n\tQueue full events: ",
               queue_full_events
@@ -381,48 +376,9 @@ void Algo::print_client_stats() const
               "\n\tSignal queue size: ", m_signal_queue.size(), "\n\tOrder queue size: ", m_order_queue.size());
 }
 
-/// @brief Receives MarketData structs from market
-// void Algo::work_client()
-// {
-//     utils::Timer timer{"Algo::work_client()"};
-//     LOG_INFO("Client working");
-//     LOG_DEBUG("");
-//     if (!is_client_initialized()) [[unlikely]]
-//     {
-//         utils::Timer timer{"client not init"};
-//         auto result = initialize_client();
-//         if (!result.has_value())
-//         {
-//             LOG_ERROR("Algo failed to initialize client.");
-//             // throw AlgoException("Client initialization failed.",
-//             result.error());
-//         }
-//     }
-//     LOG_DEBUG("client is initialized");
-
-//     std::byte buf[1024];
-//     auto connect_result = p_tcp_client->connect_to_server();
-//     if (!connect_result.has_value())
-//     {
-//         LOG_ERROR("Could not connect to server.");
-//     }
-//     std::uint64_t rec_bytes = p_tcp_client->recv(buf, sizeof(buf)).value();
-//     MarketData* market_data = reinterpret_cast<MarketData*>(buf);
-
-//     LOG_INFO(
-//         "Read ",
-//         rec_bytes,
-//         " bytes: \n",
-//         "Symbol: ", market_data->symbol,
-//         "\n\tBid: ", market_data->ask,
-//         "\n\tAsk: ", market_data->bid,
-//         "\ntimestamp: ", market_data->timestamp_ns
-//     );
-// }
-
-auto Algo::work_server() -> std::expected<void, AlgoError>
+auto Core::work_server() -> std::expected<void, CoreError>
 {
-    utils::Timer timer{"Algo::work_server()"};
+    utils::Timer timer{"Core::work_server()"};
     using namespace std::chrono_literals;
 
     if (!is_server_initialized()) [[unlikely]]
@@ -430,7 +386,7 @@ auto Algo::work_server() -> std::expected<void, AlgoError>
         auto result = initialize_server();
         if (!result.has_value())
         {
-            LOG_ERROR("Algo failed to initialize server.");
+            LOG_ERROR("Core failed to initialize server.");
             return std::unexpected(result.error());
         }
     }
@@ -438,7 +394,7 @@ auto Algo::work_server() -> std::expected<void, AlgoError>
     // Invariant check: p_tcp_server must exist after initialization
     if (!p_tcp_server) [[unlikely]]
     {
-        throw AlgoException("FATAL: p_tcp_server is null after initialization", AlgoError::INVALID_STATE);
+        throw CoreException("FATAL: p_tcp_server is null after initialization", CoreError::INVALID_STATE);
     }
 
     LOG_INFO("Server listening on port ", p_config->get_market_port());
@@ -460,7 +416,7 @@ auto Algo::work_server() -> std::expected<void, AlgoError>
         // Send market data continuously to this client until they disconnect
         for (;;)
         {
-            utils::Timer timer{"Algo::work_server::LOOP"};
+            utils::Timer timer{"Core::work_server::LOOP"};
             if (client_socket.value() < 1)
             {
                 LOG_WARN("Invalid client socket. Breaking send loop.");
