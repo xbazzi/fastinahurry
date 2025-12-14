@@ -41,15 +41,16 @@ find_package(GTest REQUIRED)
 include(FetchContent)
 
 FetchContent_Declare(
-  quickstructs
-  # GIT_REPOSITORY https://github.com/xbazzi/quickstructs
-  # GIT_TAG        master
-  SOURCE_DIR       /home/xbazzi/repos/quickstructs
+  quicklib
+  GIT_REPOSITORY https://github.com/xbazzi/quicklib.git
+  GIT_TAG        master
+  # Local for testing
+  # SOURCE_DIR       /path/to/local/quicklib
 )
 
-# Disable building tests for quickstructs dependency
+# Disable building tests for quicklib dependency
 set(BUILD_TESTING OFF)
-FetchContent_MakeAvailable(quickstructs)
+FetchContent_MakeAvailable(quicklib)
 set(BUILD_TESTING ON)
 
 
@@ -64,7 +65,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
 message("************************************************************")
-message("**** Building in ${CMAKE_BUILD_TYPE} mode ")
+message("**** Building FastInAHurry in ${CMAKE_BUILD_TYPE} mode ")
 message("************************************************************")
 
 
@@ -94,12 +95,11 @@ target_compile_features(fiah_common PRIVATE cxx_std_23)
 target_include_directories(fiah_common PUBLIC
   ${CMAKE_SOURCE_DIR}/include
   ${CMAKE_CURRENT_BINARY_DIR}
-  ${quickstructs_SOURCE_DIR}/include
+  ${quicklib_SOURCE_DIR}/include
 )
 target_link_libraries(fiah_common PUBLIC
   nlohmann_json::nlohmann_json
   toml11::toml11
-  quickstructs
 )
 
 add_executable(client src/fiah/app/client_main.cc)
