@@ -45,9 +45,7 @@ TEST(SanityTest, StringComparison)
     EXPECT_STREQ("test", "test");
 }
 
-// ============================================================================
-// Test Organization Guidelines
-// ============================================================================
+/// Auto generated doc
 //
 // When adding new tests, follow these best practices:
 //
@@ -90,4 +88,3 @@ TEST(SanityTest, StringComparison)
 //       // Assert
 //   }
 //
-// ============================================================================

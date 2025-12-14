@@ -25,7 +25,7 @@ namespace fiah::utils
 template <class Tag> class Logger
 {
 
-public:
+  public:
     enum class Level : std::uint8_t
     {
         INFO,
@@ -39,37 +39,28 @@ public:
     /// @brief Singleton-returning method
     /// @param location
     /// @return Singleton per name, which is the class that uses this Logger
-    __always_inline static Logger&
-    get_instance(std::string&& name = "GenericLogger")
+    __always_inline static Logger &get_instance(std::string &&name = "GenericLogger")
     {
-        static Logger instance{ std::move(name) };
+        static Logger instance{std::move(name)};
         return instance;
     }
 
-    template <class... Args>
-    void
-    info(const char* func, int line, Args&&... args)
+    template <class... Args> void info(const char *func, int line, Args &&...args)
     {
         _log(Level::INFO, func, line, std::forward<Args>(args)...);
     }
 
-    template <class... Args>
-    void
-    error(const char* func, int line, Args&&... args)
+    template <class... Args> void error(const char *func, int line, Args &&...args)
     {
         _log(Level::ERROR, func, line, std::forward<Args>(args)...);
     }
 
-    template <class... Args>
-    void
-    debug(const char* func, int line, Args&&... args)
+    template <class... Args> void debug(const char *func, int line, Args &&...args)
     {
         _log(Level::DEBUG, func, line, std::forward<Args>(args)...);
     }
 
-    template <class... Args>
-    void
-    warn(const char* func, int line, Args&&... args)
+    template <class... Args> void warn(const char *func, int line, Args &&...args)
     {
         _log(Level::WARN, func, line, std::forward<Args>(args)...);
     }
@@ -89,33 +80,31 @@ public:
         // Destructor
     }
 
-private:
+  private:
     std::string m_name;
     mutable std::mutex m_log_mutex;
 
-    Logger(std::string&& name)
-        : m_name{ std::move(name) }
-    {}
+    Logger(std::string &&name) : m_name{std::move(name)}
+    {
+    }
 
-    Logger(const Logger&) = delete;
-    Logger(Logger&&) = delete;
-    Logger& operator=(Logger&&) = delete;
-    Logger& operator=(const Logger&) = delete;
+    Logger(const Logger &) = delete;
+    Logger(Logger &&) = delete;
+    Logger &operator=(Logger &&) = delete;
+    Logger &operator=(const Logger &) = delete;
 
     /// @brief Thread-safe logging implementation
     /// @param level    Log level
     /// @param ...args  Stuff to log (must implement <<operator)
     ///
     /// @todo Implement `has_stream_operator` concept to assert << availability
-    template <class... Args>
-    void
-    _log(Logger::Level level, const char* func, int line, Args&&... args)
+    template <class... Args> void _log(Logger::Level level, const char *func, int line, Args &&...args)
     {
         // Get timestamp
         auto now = std::chrono::system_clock::now();
         auto curr_time = std::chrono::system_clock::to_time_t(now);
-        auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
-            now.time_since_epoch() % std::chrono::seconds(1));
+        auto ms =
+            std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch() % std::chrono::seconds(1));
 
         // Thread-safe time formatting
         std::tm time_buf{};
@@ -133,11 +122,9 @@ private:
         oss << _level_to_color(level) << '[';
 
         // Manual time formatting to avoid std::put_time issues
-        oss << (time_buf.tm_hour < 10 ? "0" : "") << time_buf.tm_hour << ':'
-            << (time_buf.tm_min < 10 ? "0" : "") << time_buf.tm_min << ':'
-            << (time_buf.tm_sec < 10 ? "0" : "") << time_buf.tm_sec << '.'
-            << ms.count() << ']' << '[' << _level_to_string(level) << ']' << '['
-            << m_name << "::" << func << ':' << line << "] ";
+        oss << (time_buf.tm_hour < 10 ? "0" : "") << time_buf.tm_hour << ':' << (time_buf.tm_min < 10 ? "0" : "")
+            << time_buf.tm_min << ':' << (time_buf.tm_sec < 10 ? "0" : "") << time_buf.tm_sec << '.' << ms.count()
+            << ']' << '[' << _level_to_string(level) << ']' << '[' << m_name << "::" << func << ':' << line << "] ";
 
         // Append all arguments
         (oss << ... << std::forward<Args>(args));
@@ -150,8 +137,7 @@ private:
         }
     }
 
-    static const char*
-    _level_to_string(Level level)
+    static const char *_level_to_string(Level level)
     {
         switch (level)
         {
@@ -168,8 +154,7 @@ private:
         }
     }
 
-    static const char*
-    _level_to_color(Level level)
+    static const char *_level_to_color(Level level)
     {
         switch (level)
         {

@@ -9,7 +9,8 @@
 // FastInAHurry Includes
 #include "fiah/structs/SPSCQueue.hh"
 
-namespace fiah::structs {
+namespace fiah::structs
+{
 
 ///
 /// @brief General purpose structs
@@ -19,13 +20,14 @@ namespace fiah::structs {
 
 #pragma pack(push, 1)
 /// @brief Incoming data from market
-struct MarketData {
+struct MarketData
+{
     std::uint64_t seq_num;
     char symbol[8];
     double bid;
     double ask;
     std::uint64_t timestamp_ns;
-}; 
+};
 #pragma pack(pop)
 
 /// @brief Market signal
@@ -81,6 +83,5 @@ struct Worker
     std::atomic<bool> running{true};
     int cpu_affinity;
 };
-
 
 } // End namespace fiah::structs

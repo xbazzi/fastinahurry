@@ -1,22 +1,26 @@
 #include "fiah/options/PayOffCall.hh"
 #include "fiah/options/PayOffPut.hh"
 
-namespace fiah::options {
+namespace fiah::options
+{
 
-PayOff::PayOff() {}
+PayOff::PayOff()
+{
+}
 
 // =========
 // PayOffCall
 // =========
 
 // Constructor with single strike parameter
-PayOffCall::PayOffCall(const double K)
- : _K{K}
-{}
+PayOffCall::PayOffCall(const double K) : _K{K}
+{
+}
 
 // Over-ridden operator() method, which turns PayOffCall into a function object
-double PayOffCall::operator() (const double S) const {
-  return std::max(S-_K, 0.0); // Standard European call pay-off
+double PayOffCall::operator()(const double S) const
+{
+    return std::max(S - _K, 0.0); // Standard European call pay-off
 }
 
 // =========
@@ -24,13 +28,14 @@ double PayOffCall::operator() (const double S) const {
 // =========
 
 // Constructor with single strike parameter
-PayOffPut::PayOffPut(const double K)
- : _K{K}
-{}
-
-// Over-ridden operator() method, which turns PayOffPut into a function object
-double PayOffPut::operator() (const double S) const {
-  return std::max(_K-S, 0.0); // Standard European put pay-off
+PayOffPut::PayOffPut(const double K) : _K{K}
+{
 }
 
-} // End namespace options
+// Over-ridden operator() method, which turns PayOffPut into a function object
+double PayOffPut::operator()(const double S) const
+{
+    return std::max(_K - S, 0.0); // Standard European put pay-off
+}
+
+} // namespace fiah::options

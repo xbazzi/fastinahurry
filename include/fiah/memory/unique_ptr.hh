@@ -4,18 +4,22 @@
 #include <type_traits>
 #include <utility>
 
-namespace fiah::memory {
+namespace fiah::memory
+{
 
 /// @brief Default deleter that calls delete on the Pointer_T
-template <typename T>
-struct default_deleter {
+template <typename T> struct default_deleter
+{
     constexpr default_deleter() noexcept = default;
 
     /// @brief Allow construction from compatible deleters
-    template <typename U, typename = std::enable_if_t<std::is_convertible_v<U*, T*>>>
-    default_deleter(const default_deleter<U>&) noexcept {}
+    template <typename U, typename = std::enable_if_t<std::is_convertible_v<U *, T *>>>
+    default_deleter(const default_deleter<U> &) noexcept
+    {
+    }
 
-    void operator()(T* ptr) const noexcept {
+    void operator()(T *ptr) const noexcept
+    {
         static_assert(sizeof(T) > 0, "Cannot delete incomplete type");
         delete ptr;
     }
@@ -42,17 +46,17 @@ struct default_deleter {
 ///
 /// @todo Implement custom allocator
 /// @todo Implement array type
-template <typename T, typename Deleter = default_deleter<T>>
-class unique_ptr {
-private:
+template <typename T, typename Deleter = default_deleter<T>> class unique_ptr
+{
+  private:
     // Arrays are not supported in this implementation
     static_assert(!std::is_array_v<T>, "Array types not supported. Use unique_ptr<T[]> specialization.");
 
-    T* m_ptr;
+    T *m_ptr;
     [[no_unique_address]] Deleter m_deleter; // EBO
 
-public:
-    using Pointer_T = T*;
+  public:
+    using Pointer_T = T *;
     using Element_T = T;
     using Deleter_T = Deleter;
 
@@ -61,45 +65,40 @@ public:
     // ============================================================================
 
     /// @brief Default constructor - creates an empty unique_ptr
-    constexpr unique_ptr() noexcept
-        : m_ptr(nullptr)
-        , m_deleter()
-    {}
+    constexpr unique_ptr() noexcept : m_ptr(nullptr), m_deleter()
+    {
+    }
 
     /// @brief Nullptr constructor - creates an empty unique_ptr
-    constexpr unique_ptr(std::nullptr_t) noexcept
-        : m_ptr(nullptr)
-        , m_deleter()
-    {}
+    constexpr unique_ptr(std::nullptr_t) noexcept : m_ptr(nullptr), m_deleter()
+    {
+    }
 
     /// @brief Takes ownership of the given Pointer_T
     /// @param ptr Raw Pointer_T to take ownership of (can be nullptr)
-    explicit unique_ptr(Pointer_T ptr) noexcept
-        : m_ptr(ptr)
-        , m_deleter()
-    {}
+    explicit unique_ptr(Pointer_T ptr) noexcept : m_ptr(ptr), m_deleter()
+    {
+    }
 
     /// @brief Takes ownership of Pointer_T with a copy of the deleter
     /// @param ptr Raw Pointer_T to take ownership of
     /// @param del Deleter to copy
-    unique_ptr(Pointer_T ptr, const Deleter& del) noexcept(std::is_nothrow_copy_constructible_v<Deleter>)
-        : m_ptr(ptr)
-        , m_deleter(del)
-    {}
+    unique_ptr(Pointer_T ptr, const Deleter &del) noexcept(std::is_nothrow_copy_constructible_v<Deleter>)
+        : m_ptr(ptr), m_deleter(del)
+    {
+    }
 
     /// @brief Takes ownership of Pointer_T with a moved deleter
     /// @param ptr Raw Pointer_T to take ownership of
     /// @param del Deleter to move
-    unique_ptr(Pointer_T ptr, Deleter&& del) noexcept(std::is_nothrow_move_constructible_v<Deleter>)
-        : m_ptr(ptr)
-        , m_deleter(std::move(del))
-    {}
+    unique_ptr(Pointer_T ptr, Deleter &&del) noexcept(std::is_nothrow_move_constructible_v<Deleter>)
+        : m_ptr(ptr), m_deleter(std::move(del))
+    {
+    }
 
     /// @brief Move constructor - transfers ownership from other
     /// @param other The unique_ptr to move from (will be left empty)
-    unique_ptr(unique_ptr&& other) noexcept
-        : m_ptr(other.m_ptr)
-        , m_deleter(std::forward<Deleter>(other.m_deleter))
+    unique_ptr(unique_ptr &&other) noexcept : m_ptr(other.m_ptr), m_deleter(std::forward<Deleter>(other.m_deleter))
     {
         other.m_ptr = nullptr;
     }
@@ -108,19 +107,19 @@ public:
     /// @tparam U Type that is convertible to T
     /// @tparam D Deleter type that is convertible to Deleter
     template <typename U, typename D,
-              typename = std::enable_if_t<
-                  std::is_convertible_v<typename unique_ptr<U, D>::Pointer_T, Pointer_T> &&
-                  !std::is_array_v<U>>>
-    unique_ptr(unique_ptr<U, D>&& other) noexcept
-        : m_ptr(other.release())
-        , m_deleter(std::forward<D>(other.get_deleter()))
-    {}
+              typename = std::enable_if_t<std::is_convertible_v<typename unique_ptr<U, D>::Pointer_T, Pointer_T> &&
+                                          !std::is_array_v<U>>>
+    unique_ptr(unique_ptr<U, D> &&other) noexcept
+        : m_ptr(other.release()), m_deleter(std::forward<D>(other.get_deleter()))
+    {
+    }
 
     /// @brief Copy constructor is deleted (unique ownership)
-    unique_ptr(const unique_ptr&) = delete;
+    unique_ptr(const unique_ptr &) = delete;
 
     /// @brief Destructor - deletes the managed object if owned
-    ~unique_ptr() {
+    ~unique_ptr()
+    {
         reset();
     }
 
@@ -131,8 +130,10 @@ public:
     /// @brief Move assignment - transfers ownership from other
     /// @param other The unique_ptr to move from
     /// @return Reference to this
-    unique_ptr& operator=(unique_ptr&& other) noexcept {
-        if (this != &other) {
+    unique_ptr &operator=(unique_ptr &&other) noexcept
+    {
+        if (this != &other)
+        {
             reset(other.release());
             m_deleter = std::forward<Deleter>(other.m_deleter);
         }
@@ -141,23 +142,24 @@ public:
 
     /// @brief Converting move assignment
     template <typename U, typename D,
-              typename = std::enable_if_t<
-                  std::is_convertible_v<typename unique_ptr<U, D>::Pointer_T, Pointer_T> &&
-                  std::is_assignable_v<Deleter&, D&&>>>
-    unique_ptr& operator=(unique_ptr<U, D>&& other) noexcept {
+              typename = std::enable_if_t<std::is_convertible_v<typename unique_ptr<U, D>::Pointer_T, Pointer_T> &&
+                                          std::is_assignable_v<Deleter &, D &&>>>
+    unique_ptr &operator=(unique_ptr<U, D> &&other) noexcept
+    {
         reset(other.release());
         m_deleter = std::forward<D>(other.get_deleter());
         return *this;
     }
 
     /// @brief Assign nullptr - deletes the managed object
-    unique_ptr& operator=(std::nullptr_t) noexcept {
+    unique_ptr &operator=(std::nullptr_t) noexcept
+    {
         reset();
         return *this;
     }
 
     /// @brief Copy assignment is deleted (unique ownership)
-    unique_ptr& operator=(const unique_ptr&) = delete;
+    unique_ptr &operator=(const unique_ptr &) = delete;
 
     // ============================================================================
     // Modifiers
@@ -165,16 +167,17 @@ public:
 
     /// @brief Release ownership of the managed object
     /// @return The raw Pointer_T (caller is now responsible for deletion)
-    [[nodiscard]] Pointer_T release() noexcept 
+    [[nodiscard]] Pointer_T release() noexcept
     {
         return std::exchange(m_ptr, nullptr);
     }
 
     /// @brief Replace the managed object
     /// @param ptr New Pointer_T to manage (can be nullptr)
-    void reset(Pointer_T ptr = nullptr) noexcept {
+    void reset(Pointer_T ptr = nullptr) noexcept
+    {
         Pointer_T old = std::exchange(m_ptr, ptr);
-        if (old) 
+        if (old)
         {
             m_deleter(old);
         }
@@ -182,7 +185,8 @@ public:
 
     /// @brief Swap with another unique_ptr
     /// @param other The unique_ptr to swap with
-    void swap(unique_ptr& other) noexcept {
+    void swap(unique_ptr &other) noexcept
+    {
         std::swap(m_ptr, other.m_ptr);
         std::swap(m_deleter, other.m_deleter);
     }
@@ -200,20 +204,20 @@ public:
     // }
 
     /// @brief Get a reference to the deleter
-    [[nodiscard]] Deleter& get_deleter() noexcept 
+    [[nodiscard]] Deleter &get_deleter() noexcept
     {
         return m_deleter;
     }
 
     /// @brief Get a const reference to the deleter
-    [[nodiscard]] const Deleter& get_deleter() const noexcept 
+    [[nodiscard]] const Deleter &get_deleter() const noexcept
     {
         return m_deleter;
     }
 
     /// @brief Check if the unique_ptr owns an object
     /// @return true if managing an object, false otherwise
-    explicit operator bool() const noexcept 
+    explicit operator bool() const noexcept
     {
         return m_ptr != nullptr;
     }
@@ -225,7 +229,7 @@ public:
     /// @brief Dereference the managed Pointer_T
     /// @return Reference to the managed object
     /// @warning Undefined behavior if the Pointer_T is nullptr
-    [[nodiscard]] typename std::add_lvalue_reference_t<T> operator*() const noexcept 
+    [[nodiscard]] typename std::add_lvalue_reference_t<T> operator*() const noexcept
     {
         return *m_ptr;
     }
@@ -233,7 +237,7 @@ public:
     /// @brief Access members of the managed object
     /// @return The managed raw Pointer_T
     /// @warning Undefined behavior if the Pointer_T is nullptr
-    [[nodiscard]] Pointer_T operator->() const noexcept 
+    [[nodiscard]] Pointer_T operator->() const noexcept
     {
         return m_ptr;
     }
@@ -244,8 +248,8 @@ public:
 // ================================================================================
 
 /// @brief Swap two unique_ptrs
-template <typename T, typename D>
-void swap(unique_ptr<T, D>& lhs, unique_ptr<T, D>& rhs) noexcept {
+template <typename T, typename D> void swap(unique_ptr<T, D> &lhs, unique_ptr<T, D> &rhs) noexcept
+{
     lhs.swap(rhs);
 }
 
@@ -254,8 +258,8 @@ void swap(unique_ptr<T, D>& lhs, unique_ptr<T, D>& rhs) noexcept {
 /// @tparam Args Constructor argument types
 /// @param args Arguments to forward to T's constructor
 /// @return unique_ptr managing the newly created object
-template <typename T, typename... Args>
-[[nodiscard]] unique_ptr<T> make_unique(Args&&... args) {
+template <typename T, typename... Args> [[nodiscard]] unique_ptr<T> make_unique(Args &&...args)
+{
     return unique_ptr<T>(new T(std::forward<Args>(args)...));
 }
 
@@ -264,56 +268,60 @@ template <typename T, typename... Args>
 // ================================================================================
 
 template <typename T1, typename D1, typename T2, typename D2>
-[[nodiscard]] bool operator==(const unique_ptr<T1, D1>& lhs, const unique_ptr<T2, D2>& rhs) noexcept 
+[[nodiscard]] bool operator==(const unique_ptr<T1, D1> &lhs, const unique_ptr<T2, D2> &rhs) noexcept
 {
     return lhs.m_ptr == rhs.m_ptr;
 }
 
 template <typename T1, typename D1, typename T2, typename D2>
-[[nodiscard]] bool operator!=(const unique_ptr<T1, D1>& lhs, const unique_ptr<T2, D2>& rhs) noexcept 
+[[nodiscard]] bool operator!=(const unique_ptr<T1, D1> &lhs, const unique_ptr<T2, D2> &rhs) noexcept
 {
     return lhs.m_ptr != rhs.m_ptr;
 }
 
 template <typename T1, typename D1, typename T2, typename D2>
-[[nodiscard]] bool operator<(const unique_ptr<T1, D1>& lhs, const unique_ptr<T2, D2>& rhs) noexcept {
+[[nodiscard]] bool operator<(const unique_ptr<T1, D1> &lhs, const unique_ptr<T2, D2> &rhs) noexcept
+{
     using CT = std::common_type_t<typename unique_ptr<T1, D1>::Pointer_T, typename unique_ptr<T2, D2>::Pointer_T>;
     return std::less<CT>{}(lhs.m_ptr, rhs.m_ptr);
 }
 
 template <typename T1, typename D1, typename T2, typename D2>
-[[nodiscard]] bool operator<=(const unique_ptr<T1, D1>& lhs, const unique_ptr<T2, D2>& rhs) noexcept {
+[[nodiscard]] bool operator<=(const unique_ptr<T1, D1> &lhs, const unique_ptr<T2, D2> &rhs) noexcept
+{
     return !(rhs < lhs);
 }
 
 template <typename T1, typename D1, typename T2, typename D2>
-[[nodiscard]] bool operator>(const unique_ptr<T1, D1>& lhs, const unique_ptr<T2, D2>& rhs) noexcept {
+[[nodiscard]] bool operator>(const unique_ptr<T1, D1> &lhs, const unique_ptr<T2, D2> &rhs) noexcept
+{
     return rhs < lhs;
 }
 
 template <typename T1, typename D1, typename T2, typename D2>
-[[nodiscard]] bool operator>=(const unique_ptr<T1, D1>& lhs, const unique_ptr<T2, D2>& rhs) noexcept {
+[[nodiscard]] bool operator>=(const unique_ptr<T1, D1> &lhs, const unique_ptr<T2, D2> &rhs) noexcept
+{
     return !(lhs < rhs);
 }
 
 // Comparisons with nullptr
-template <typename T, typename D>
-[[nodiscard]] bool operator==(const unique_ptr<T, D>& ptr, std::nullptr_t) noexcept {
+template <typename T, typename D> [[nodiscard]] bool operator==(const unique_ptr<T, D> &ptr, std::nullptr_t) noexcept
+{
     return !ptr;
 }
 
-template <typename T, typename D>
-[[nodiscard]] bool operator==(std::nullptr_t, const unique_ptr<T, D>& ptr) noexcept {
+template <typename T, typename D> [[nodiscard]] bool operator==(std::nullptr_t, const unique_ptr<T, D> &ptr) noexcept
+{
     return !ptr;
 }
 
-template <typename T, typename D>
-[[nodiscard]] bool operator!=(const unique_ptr<T, D>& ptr, std::nullptr_t) noexcept {
+template <typename T, typename D> [[nodiscard]] bool operator!=(const unique_ptr<T, D> &ptr, std::nullptr_t) noexcept
+{
     return static_cast<bool>(ptr);
 }
 
-template <typename T, typename D>
-[[nodiscard]] bool operator!=(std::nullptr_t, const unique_ptr<T, D>& ptr) noexcept {
+template <typename T, typename D> [[nodiscard]] bool operator!=(std::nullptr_t, const unique_ptr<T, D> &ptr) noexcept
+{
     return static_cast<bool>(ptr);
 }
 

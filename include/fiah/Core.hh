@@ -10,8 +10,8 @@
 
 // FastInAHurry includes
 // #include "fiah/ThreadPool.hpp"
-#include "fiah/CoreException.hh"
-#include "fiah/Error.hh"
+#include "fiah/Error/CoreException.hh"
+#include "fiah/Error/Error.hh"
 #include "fiah/io/Config.hh"
 #include "fiah/io/MarketFeed.hh"
 #include "fiah/io/TcpServer.hh"

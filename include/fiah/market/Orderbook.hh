@@ -4,10 +4,10 @@
 
 class Orderbook
 {
-private:
+  private:
     struct OrderEntry
     {
-        OrderPointer _order{ nullptr };
+        OrderPointer _order{nullptr};
         OrderPointers::iterator _location;
     };
 
@@ -21,6 +21,5 @@ private:
             Remove,
             Match,
         };
-
     };
 };

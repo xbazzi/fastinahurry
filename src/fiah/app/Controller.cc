@@ -3,8 +3,8 @@
 #include <expected>
 
 // FastInAHurry Includes
-#include "fiah/Controller.hh"
 #include "fiah/Core.hh"
+#include "fiah/app/Controller.hh"
 #include "fiah/io/Config.hh"
 #include "fiah/memory/unique_ptr.hh"
 #include "fiah/utils/Logger.hh"

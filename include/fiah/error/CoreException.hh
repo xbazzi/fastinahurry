@@ -12,7 +12,7 @@
 #include "fiah/Error.hh"
 #include "fiah/io/TcpError.hh"
 
-namespace fiah
+namespace fiah::error
 {
 
 using ErrorVariant = std::variant<std::monostate, TcpError, CoreError, Error>;
@@ -110,6 +110,6 @@ class CoreException : public std::runtime_error
     }
 };
 
-} // namespace fiah
+} // namespace fiah::error
 
 #endif // CORE_HH

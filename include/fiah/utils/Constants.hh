@@ -12,9 +12,8 @@ namespace fiah::utils
  */
 #if defined(__cpp_lib_hardware_interference_size)
 {
-    static constexpr const std::uint16_t CACHE_LINE_SIZE
-        = static_cast<std::uint16_t>(
-            std::hardware_destructive_interference_size);
+    static constexpr const std::uint16_t CACHE_LINE_SIZE =
+        static_cast<std::uint16_t>(std::hardware_destructive_interference_size);
 }
 #else
 {

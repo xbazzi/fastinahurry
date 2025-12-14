@@ -1,20 +1,22 @@
 #include "PayOff.hh"
 
-namespace fiah::options {
+namespace fiah::options
+{
 
-class PayOffDoubleDigital : public PayOff {
- private:
-  double _U;  // Upper strike price
-  double _D;  // Lower strike price
+class PayOffDoubleDigital : public PayOff
+{
+  private:
+    double _U; // Upper strike price
+    double _D; // Lower strike price
 
- public:
-  // Two strike parameters for constructor
-  PayOffDoubleDigital(const double _U, const double _D);
+  public:
+    // Two strike parameters for constructor
+    PayOffDoubleDigital(const double _U, const double _D);
 
-  // Destructor
-  virtual ~PayOffDoubleDigital();
+    // Destructor
+    virtual ~PayOffDoubleDigital();
 
-  // Pay-off is 1 if spot within strike barriers, 0 otherwise
-  virtual double operator() (const double S) const;
+    // Pay-off is 1 if spot within strike barriers, 0 otherwise
+    virtual double operator()(const double S) const;
 };
-} // End namespace options
+} // namespace fiah::options

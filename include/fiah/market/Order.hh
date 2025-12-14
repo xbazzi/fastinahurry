@@ -1,11 +1,11 @@
 #pragma once
 
-#include <memory>
 #include <list>
+#include <memory>
 
 #include "fiah/utils/Types.hh"
 
-enum class OrderType 
+enum class OrderType
 {
     GoodTillCancel,
     FillAndKill,
@@ -22,7 +22,7 @@ enum class Side
 
 class Order
 {
-private:
+  private:
     OrderType _type;
     OrderId _id;
     Side _side;
@@ -30,7 +30,7 @@ private:
     Quantity _initial_quantity;
     Quantity _remaining_quantity;
 
-public:
+  public:
     Order() = delete;
     Order(OrderType, OrderId, Side, Price, Quantity);
     Order(OrderId, Side, Quantity);
