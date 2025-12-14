@@ -15,16 +15,20 @@
 #include "fiah/utils/Timer.hpp"
 #include "fiah/utils/TomlParser.hh"
 
-void print_help()
+void
+print_help()
 {
     std::ostringstream ss;
-    ss << "Usage: " << '\n' << "\tclient <config_file_path>" << '\n' << "\tEx: client etc/config.toml" << '\n';
+    ss << "Usage: " << '\n'
+       << "\tclient <config_file_path>" << '\n'
+       << "\tEx: client etc/config.toml" << '\n';
     std::cout << ss.str() << std::endl;
 }
 
 static std::atomic<bool> g_shutdown;
 
-void signal_handler(int signal)
+void
+signal_handler(int signal)
 {
     if (signal == SIGINT || signal == SIGTERM)
     {
@@ -35,10 +39,10 @@ void signal_handler(int signal)
 
 /// @brief Look at this dummy
 struct DummyStructForMainLoggerTag
-{
-};
+{};
 
-int main(int argc, char *argv[])
+int
+main(int argc, char* argv[])
 {
 #ifdef _LIBCPP_VERSION
     std::cout << "Using libc++ " << _LIBCPP_VERSION << '\n';
@@ -57,14 +61,14 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    const auto &path = std::filesystem::path(argv[1]);
+    const auto& path = std::filesystem::path(argv[1]);
     if (!std::filesystem::exists(path))
     {
         std::cout << "Path doesn't exist: " << path << '\n';
         return 1;
     }
 
-    fiah::io::Config config{path};
+    fiah::io::Config config{ path };
     if (!config.parse_config())
     {
         std::cout << "Unable to parse config" << '\n';

@@ -20,39 +20,42 @@
 namespace fiah::io
 {
 
-TcpServer::TcpServer(const std::string &ip, uint16_t port) noexcept : Tcp{ip, port}
+TcpServer::TcpServer(const std::string &ip, uint16_t port) noexcept
+    : Tcp{ ip, port }
 {
 }
 
-TcpServer::TcpServer(std::string &&ip, uint16_t port) noexcept(noexcept(std::string{std::move("Hi mom!")}))
-    : Tcp{std::move(ip), port}
+TcpServer::TcpServer(std::string &&ip, uint16_t port)
+  noexcept(noexcept(std::string{ std::move("Hi mom!") }))
+    : Tcp{ std::move(ip), port }
 {
 }
 
-auto TcpServer::start() -> std::expected<void, TcpError>
+auto
+TcpServer::start() -> std::expected<void, TcpError>
 {
-    utils::Timer timer{"TcpServer::start()"};
+    utils::Timer timer{ "TcpServer::start()" };
     LOG_INFO("Attempting to start server on ", _ip, ":", _port);
 
-    if (!create_socket())
+    if(!create_socket())
     {
         LOG_ERROR("Couldn't create socket.");
         return std::unexpected(TcpError::BAD_SOCKET);
     }
 
     sockaddr_in addr{};
-    addr.sin_family      = AF_INET;
-    addr.sin_port        = htons(_port);
+    addr.sin_family = AF_INET;
+    addr.sin_port = htons(_port);
     addr.sin_addr.s_addr = inet_addr(_ip.c_str());
 
-    if (::bind(m_sock, reinterpret_cast<sockaddr *>(&addr), sizeof(addr)) < 0)
+    if(::bind(m_sock, reinterpret_cast<sockaddr *>(&addr), sizeof(addr)) < 0)
     {
         LOG_ERROR("Couldn't bind "
                   "address to socket.");
         return std::unexpected(TcpError::BIND_FAIL);
     }
 
-    if (::listen(m_sock, MAX_LISTEN_NUM) < 0)
+    if(::listen(m_sock, MAX_LISTEN_NUM) < 0)
     {
         LOG_ERROR("Couldn't listen on socket.");
         return std::unexpected(TcpError::LISTEN_FAIL);
@@ -63,13 +66,14 @@ auto TcpServer::start() -> std::expected<void, TcpError>
     return {};
 }
 
-auto TcpServer::accept_client() -> std::expected<SocketRAII, TcpError>
+auto
+TcpServer::accept_client() -> std::expected<SocketRAII, TcpError>
 {
-    utils::Timer timer{"accept_client"};
+    utils::Timer timer{ "accept_client" };
     int client_fd = ::accept(m_sock, nullptr, nullptr);
-    if (client_fd < 0)
+    if(client_fd < 0)
         return std::unexpected(TcpError::BAD_SOCKET);
-    return SocketRAII{client_fd};
+    return SocketRAII{ client_fd };
 }
 
 } // namespace fiah::io
