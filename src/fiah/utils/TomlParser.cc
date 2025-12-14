@@ -107,7 +107,7 @@ auto TomlParser::extract_keys(std::ifstream &file) noexcept -> std::expected<boo
         {
             // Section header
             auto section = line.substr(left_bracket + 1);
-            section = section.substr(0, section.find(']'));
+            section      = section.substr(0, section.find(']'));
             // Trim whitespace from section
             section.erase(0, section.find_first_not_of(" \t\r\n"));
             section.erase(section.find_last_not_of(" \t\r\n") + 1);
@@ -182,7 +182,7 @@ std::string TomlParser::get_string(const std::string &key) const
         return {};
     }
     auto section = key.substr(0, dot);
-    auto subkey = key.substr(dot + 1);
+    auto subkey  = key.substr(dot + 1);
 
     auto sit = m_keys.find(section);
     if (sit == m_keys.end())

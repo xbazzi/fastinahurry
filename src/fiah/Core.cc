@@ -45,7 +45,7 @@ auto Core::initialize_server() -> std::expected<void, CoreError>
         throw CoreException("FATAL: p_config is null - Core object in invalid state", CoreError::INVALID_STATE);
     }
 
-    std::string market_ip = p_config->get_market_ip();
+    std::string market_ip     = p_config->get_market_ip();
     std::uint16_t market_port = p_config->get_market_port();
 
     p_tcp_server = memory::make_unique<io::TcpServer>(market_ip, market_port);
@@ -274,26 +274,26 @@ Core::Signal Core::_compute_signal(const MarketData &md)
 
     // Spread check
     double spread = md.ask - md.bid;
-    double mid = (md.ask + md.bid) / 2.0;
+    double mid    = (md.ask + md.bid) / 2.0;
     LOG_DEBUG("ask, bid:", md.ask, ", ", md.bid);
 
     if (spread < 0.05) // Tight spread
     {
         if (mid < 190.0)
         {
-            signal.type = Signal::Type::BUY;
-            signal.price = md.ask;
+            signal.type     = Signal::Type::BUY;
+            signal.price    = md.ask;
             signal.quantity = 100;
         }
         else if (mid > 190.0005)
         {
-            signal.type = Signal::Type::SELL;
-            signal.price = md.bid;
+            signal.type     = Signal::Type::SELL;
+            signal.price    = md.bid;
             signal.quantity = 100;
         }
         else
         {
-            signal.type = Signal::Type::HOLD;
+            signal.type  = Signal::Type::HOLD;
             signal.price = -1;
         }
     }
@@ -308,12 +308,12 @@ Core::Order Core::_generate_order(const Core::Signal &signal)
     static std::atomic<uint64_t> s_order_id_counter{1};
     Order order;
     std::memcpy(order.symbol, signal.symbol, sizeof(order.symbol));
-    order.side = (signal.type == Signal::Type::BUY) ? Order::Side::BUY : Order::Side::SELL;
-    order.price = signal.price;
+    order.side     = (signal.type == Signal::Type::BUY) ? Order::Side::BUY : Order::Side::SELL;
+    order.price    = signal.price;
     order.quantity = signal.quantity;
     order.order_id = s_order_id_counter.fetch_add(1, std::memory_order_relaxed);
 
-    auto now = std::chrono::steady_clock::now();
+    auto now           = std::chrono::steady_clock::now();
     order.timestamp_ns = now.time_since_epoch().count();
     return order;
 }
@@ -363,7 +363,7 @@ void Core::stop_client()
 
 void Core::print_client_stats() const
 {
-    uint64_t ticks_received = p_market_feed ? p_market_feed->ticks_received() : 0;
+    uint64_t ticks_received    = p_market_feed ? p_market_feed->ticks_received() : 0;
     uint64_t queue_full_events = p_market_feed ? p_market_feed->queue_full_count() : 0;
 
     LOG_DEBUG("\n=== Core Statistics ===", "\n\tTicks received: ", ticks_received,

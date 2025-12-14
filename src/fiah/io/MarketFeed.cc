@@ -34,7 +34,7 @@ auto MarketFeed::initialize() -> std::expected<void, CoreError>
     }
 
     const std::string &market_ip = m_config.get_market_ip();
-    std::uint16_t market_port = m_config.get_market_port();
+    std::uint16_t market_port    = m_config.get_market_port();
 
     p_tcp_client = memory::make_unique<TcpClient>(market_ip, market_port);
 
@@ -61,7 +61,7 @@ auto MarketFeed::_reconnect() -> std::expected<void, CoreError>
     LOG_INFO("Attempting to reconnect MarketFeed...");
 
     const std::string &market_ip = m_config.get_market_ip();
-    std::uint16_t market_port = m_config.get_market_port();
+    std::uint16_t market_port    = m_config.get_market_port();
 
     // Clean up old client
     p_tcp_client.reset();
@@ -102,7 +102,7 @@ void MarketFeed::receive_loop(std::atomic<bool> &running_flag)
                 LOG_WARN("TCP client is null - attempting reconnection...");
 
                 // Attempt to reconnect with exponential backoff
-                int retry_count = 0;
+                int retry_count       = 0;
                 const int max_retries = 5;
 
                 while (retry_count < max_retries && running_flag.load(std::memory_order_acquire))
