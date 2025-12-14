@@ -9,8 +9,8 @@
 #include <variant>
 
 // FastInAHurry includes
-#include "fiah/Error.hh"
-#include "fiah/io/TcpError.hh"
+#include "fiah/error/Error.hh"
+// #include "quick/io/TcpError.hh"
 
 namespace fiah::error
 {

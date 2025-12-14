@@ -8,12 +8,12 @@
 #include <sstream>
 
 // FastInAHurry Includes
-#include "fiah/Controller.hh"
-#include "fiah/io/Config.hh"
+#include "fiah/app/Controller.hh"
 #include "fiah/structs/Structs.hh"
-#include "fiah/utils/SimpleLogger.hh"
-#include "fiah/utils/Timer.hpp"
 #include "fiah/utils/TomlParser.hh"
+#include "quick/io/Config.hh"
+#include "quick/utils/SimpleLogger.hh"
+#include "quick/utils/Timer.hh"
 
 void print_help()
 {
@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
     std::cout << "Unknown standard library\n";
 #endif
     // initialize the simple global logger for this binary
-    fiah::log::init("main");
+    quick::utils::init("main");
     LOG_DEBUG_S("Client entrypoint (client_main.cc) started.");
 
     if (argc < 2)
@@ -64,7 +64,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    fiah::io::Config config{path};
+    quick::io::Config config{path};
     if (!config.parse_config())
     {
         std::cout << "Unable to parse config" << '\n';

@@ -3,10 +3,10 @@
 #include <memory>
 #include <thread>
 
-#include "fiah/Core.hh"
-#include "fiah/CoreException.hh"
-#include "fiah/Error.hh"
-#include "fiah/io/Config.hh"
+#include "fiah/app/Core.hh"
+#include "fiah/error/CoreException.hh"
+#include "fiah/error/Error.hh"
+#include "quick/io/Config.hh"
 #include "test_utils.hh"
 
 using namespace fiah;
@@ -22,7 +22,7 @@ class CoreTestFixture : public ::testing::Test
 {
   protected:
     std::unique_ptr<Core> p_core;
-    io::Config config_;
+    quick::io::Config config_;
 
     /// @brief Called before each test
     void SetUp() override
@@ -49,7 +49,7 @@ class CoreTestFixture : public ::testing::Test
     }
 
     /// @brief Helper to create algo with custom config
-    void create_p_corewith_config(io::Config custom_config)
+    void create_p_corewith_config(quick::io::Config custom_config)
     {
         p_core = std::make_unique<Core>(std::move(custom_config));
     }

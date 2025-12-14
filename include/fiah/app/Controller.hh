@@ -2,10 +2,10 @@
 #define FIAH_CONTROLLER_HH
 #endif
 
-#include "fiah/Core.hh"
-#include "fiah/io/Config.hh"
-#include "fiah/memory/unique_ptr.hh"
-#include "fiah/utils/Logger.hh"
+#include "fiah/app/Core.hh"
+#include "quick/handle/UniquePtr.hh"
+#include "quick/io/Config.hh"
+#include "quick/utils/Logger.hh"
 
 namespace fiah
 {
@@ -19,17 +19,18 @@ class Controller
 {
   public:
     Controller() noexcept = default;
-    explicit Controller(io::Config &&) noexcept(noexcept(CoreUniquePtr()));
-    explicit Controller(const io::Config &) = delete;
+    explicit Controller(quick::io::Config &&) noexcept(noexcept(CoreUniquePtr()));
+    explicit Controller(const quick::io::Config &) = delete;
     bool start_server() noexcept;
     bool start_client() noexcept;
     bool init_client() noexcept;
     bool init_server() noexcept;
 
   private:
-    using CoreUniquePtr = memory::unique_ptr<Core>;
+    using CoreUniquePtr = quick::handle::UniquePtr<Core>;
     CoreUniquePtr p_core{nullptr};
-    static inline utils::Logger<Controller> &m_logger{utils::Logger<Controller>::get_instance("Controller")};
+    static inline quick::utils::Logger<Controller> &m_logger{
+        quick::utils::Logger<Controller>::get_instance("Controller")};
 };
 
 } // End namespace fiah

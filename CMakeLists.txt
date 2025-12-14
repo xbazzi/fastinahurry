@@ -42,11 +42,16 @@ include(FetchContent)
 
 FetchContent_Declare(
   quickstructs
-  GIT_REPOSITORY https://github.com/xbazzi/quickstructs
-  GIT_TAG        master
+  # GIT_REPOSITORY https://github.com/xbazzi/quickstructs
+  # GIT_TAG        master
+  SOURCE_DIR       /home/xbazzi/repos/quickstructs
 )
 
+# Disable building tests for quickstructs dependency
+set(BUILD_TESTING OFF)
 FetchContent_MakeAvailable(quickstructs)
+set(BUILD_TESTING ON)
+
 
 include_directories("${CMAKE_SOURCE_DIR}/include")
 
@@ -73,7 +78,11 @@ file(GLOB_RECURSE COMMON_SRC
 )
 
 # Exclude mains from the common sources
-list(REMOVE_ITEM COMMON_SRC "${CMAKE_SOURCE_DIR}/src/fiah/options/main.cc")
+list(REMOVE_ITEM COMMON_SRC 
+    "${CMAKE_SOURCE_DIR}/src/fiah/options/main.cc"
+    "${CMAKE_SOURCE_DIR}/src/fiah/app/client_main.cc"
+    "${CMAKE_SOURCE_DIR}/src/fiah/app/server_main.cc"
+)
 
 # Create a shared library for common sources (compiled once, linked multiple times)
 add_library(fiah_common STATIC ${COMMON_SRC})
@@ -90,20 +99,16 @@ target_include_directories(fiah_common PUBLIC
 target_link_libraries(fiah_common PUBLIC
   nlohmann_json::nlohmann_json
   toml11::toml11
+  quickstructs
 )
 
-# Make quickstructs' quick_tests link against fiah_common
-if(TARGET quick_tests)
-    target_link_libraries(quick_tests PRIVATE fiah_common)
-endif()
-
-add_executable(client src/client_main.cc)
+add_executable(client src/fiah/app/client_main.cc)
 set_target_properties(client PROPERTIES
   CXX_STANDARD 23
   CXX_STANDARD_REQUIRED YES
 )
 
-add_executable(server src/server_main.cc)
+add_executable(server src/fiah/app/server_main.cc)
 set_target_properties(server PROPERTIES
   CXX_STANDARD 23
   CXX_STANDARD_REQUIRED YES

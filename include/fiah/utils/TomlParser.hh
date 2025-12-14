@@ -19,13 +19,13 @@
 #include <unordered_map>
 #include <vector>
 
-// FastInAHurry Includes
-#include "fiah/utils/Logger.hh"
+// QUICK Includes
+#include "quick/utils/Logger.hh"
 
 // Third Party Includes
 
 // FastInAHurry Includes
-#include "fiah/Error.hh"
+#include "fiah/error/Error.hh"
 
 namespace fiah::utils
 {
@@ -39,7 +39,8 @@ class TomlParser
     // std::ifstream m_ifs;
     std::filesystem::path m_filepath;
     std::vector<std::string> m_sections;
-    static inline Logger<TomlParser> &m_logger{Logger<TomlParser>::get_instance("TomlParser")};
+    static inline quick::utils::Logger<TomlParser> &m_logger{
+        quick::utils::Logger<TomlParser>::get_instance("TomlParser")};
 
     // Map of section -> (key -> value)
     std::unordered_map<std::string, std::unordered_map<std::string, std::string>> m_keys;

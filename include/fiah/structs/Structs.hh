@@ -7,7 +7,7 @@
 // Third Party Includes
 
 // FastInAHurry Includes
-#include "fiah/structs/SPSCQueue.hh"
+#include "quick/structs/SPSCQueue.hh"
 
 namespace fiah::structs
 {
@@ -79,7 +79,7 @@ struct Task
 struct Worker
 {
     std::thread thread;
-    structs::SPSCQueue<Task, 1024> queue;
+    quick::structs::SPSCQueue<Task, 1024> queue;
     std::atomic<bool> running{true};
     int cpu_affinity;
 };

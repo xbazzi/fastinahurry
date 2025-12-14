@@ -3,18 +3,18 @@
 #include <expected>
 
 // FastInAHurry Includes
-#include "fiah/Core.hh"
 #include "fiah/app/Controller.hh"
-#include "fiah/io/Config.hh"
-#include "fiah/memory/unique_ptr.hh"
-#include "fiah/utils/Logger.hh"
-#include "fiah/utils/Timer.hpp"
+#include "fiah/app/Core.hh"
+#include "quick/handle/UniquePtr.hh"
+#include "quick/io/Config.hh"
+#include "quick/utils/Logger.hh"
+#include "quick/utils/Timer.hh"
 
 namespace fiah
 {
 
-Controller::Controller(io::Config &&config) noexcept(noexcept(CoreUniquePtr()))
-    : p_core{memory::make_unique<Core>(std::move(config))}
+Controller::Controller(quick::io::Config &&config) noexcept(noexcept(CoreUniquePtr()))
+    : p_core{quick::handle::make_unique<Core>(std::move(config))}
 {
 }
 
@@ -59,7 +59,7 @@ bool Controller::start_server() noexcept
         p_core->work_server();
         return 0;
     }
-    catch (CoreException &e)
+    catch (error::CoreException &e)
     {
         LOG_ERROR("Controller failed to start server (fiah::CoreException): ", e.what());
         return 1;
@@ -97,7 +97,7 @@ bool Controller::start_client() noexcept
         p_core->stop_client();
         return 0;
     }
-    catch (CoreException &e)
+    catch (error::CoreException &e)
     {
         LOG_ERROR("Controller failed to start client (fiah::CoreException): ", e.what());
         return 1;

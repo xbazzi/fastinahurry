@@ -6,13 +6,13 @@
 #include <stop_token>
 
 // FastInAHurry Includes
-#include "fiah/Core.hh"
-#include "fiah/CoreException.hh"
-#include "fiah/io/Config.hh"
-#include "fiah/io/JSONReader.hh"
+#include "fiah/app/Core.hh"
+#include "fiah/error/CoreException.hh"
 #include "fiah/structs/Structs.hh"
-#include "fiah/utils/Logger.hh"
-#include "fiah/utils/Timer.hpp"
+#include "quick/io/Config.hh"
+#include "quick/io/JSONReader.hh"
+#include "quick/utils/Logger.hh"
+#include "quick/utils/Timer.hh"
 
 // Third Party Includes
 #include <nlohmann/json.hpp>
@@ -20,7 +20,7 @@
 namespace fiah
 {
 
-Core::Core(io::Config &&config) : p_config{memory::make_unique<io::Config>(std::move(config))}
+Core::Core(quick::io::Config &&config) : p_config{quick::handle::make_unique<quick::io::Config>(std::move(config))}
 {
 }
 
@@ -31,7 +31,7 @@ Core::~Core()
 
 auto Core::initialize_server() -> std::expected<void, CoreError>
 {
-    utils::Timer timer{"Core::initialize_server()"};
+    quick::utils::Timer timer{"Core::initialize_server()"};
 
     if (is_server_initialized())
     {
@@ -42,13 +42,13 @@ auto Core::initialize_server() -> std::expected<void, CoreError>
     // Invariant check: p_config must exist (programming error if null)
     if (!p_config) [[unlikely]]
     {
-        throw CoreException("FATAL: p_config is null - Core object in invalid state", CoreError::INVALID_STATE);
+        throw error::CoreException("FATAL: p_config is null - Core object in invalid state", CoreError::INVALID_STATE);
     }
 
     std::string market_ip = p_config->get_market_ip();
     std::uint16_t market_port = p_config->get_market_port();
 
-    p_tcp_server = memory::make_unique<io::TcpServer>(market_ip, market_port);
+    p_tcp_server = quick::handle::make_unique<quick::io::TcpServer>(market_ip, market_port);
 
     auto result = p_tcp_server->start();
     if (!result.has_value())
@@ -69,7 +69,7 @@ auto Core::initialize_server() -> std::expected<void, CoreError>
 
 auto Core::initialize_client() -> std::expected<void, CoreError>
 {
-    utils::Timer timer{"Core::initialize_client()"};
+    quick::utils::Timer timer{"Core::initialize_client()"};
     if (is_client_initialized())
     {
         LOG_WARN("MarketFeed already initialized");
@@ -79,11 +79,11 @@ auto Core::initialize_client() -> std::expected<void, CoreError>
     // Invariant check: p_config must exist (programming error if null)
     if (!p_config) [[unlikely]]
     {
-        throw CoreException("FATAL: p_config is null - Core object in invalid state", CoreError::INVALID_STATE);
+        throw error::CoreException("FATAL: p_config is null - Core object in invalid state", CoreError::INVALID_STATE);
     }
 
     // Create MarketFeed with reference to our market data queue
-    p_market_feed = memory::make_unique<io::MarketFeed>(*p_config, m_market_data_queue);
+    p_market_feed = quick::handle::make_unique<io::MarketFeed>(*p_config, m_market_data_queue);
 
     // Initialize and connect
     auto init_result = p_market_feed->initialize();
@@ -102,7 +102,7 @@ auto Core::initialize_client() -> std::expected<void, CoreError>
 
 auto Core::work_client() -> std::expected<void, CoreError>
 {
-    utils::Timer timer{"Core::work_client()"};
+    quick::utils::Timer timer{"Core::work_client()"};
 
     if (is_client_running())
     {
@@ -267,7 +267,7 @@ void Core::_execution_loop()
 
 Core::Signal Core::_compute_signal(const MarketData &md)
 {
-    utils::Timer timer{"_compute_signal()"};
+    quick::utils::Timer timer{"_compute_signal()"};
     Signal signal;
     std::memcpy(signal.symbol, md.symbol, sizeof(signal.symbol));
     signal.timestamp_ns = md.timestamp_ns;
@@ -378,7 +378,7 @@ void Core::print_client_stats() const
 
 auto Core::work_server() -> std::expected<void, CoreError>
 {
-    utils::Timer timer{"Core::work_server()"};
+    quick::utils::Timer timer{"Core::work_server()"};
     using namespace std::chrono_literals;
 
     if (!is_server_initialized()) [[unlikely]]
@@ -394,7 +394,7 @@ auto Core::work_server() -> std::expected<void, CoreError>
     // Invariant check: p_tcp_server must exist after initialization
     if (!p_tcp_server) [[unlikely]]
     {
-        throw CoreException("FATAL: p_tcp_server is null after initialization", CoreError::INVALID_STATE);
+        throw fiah::error::CoreException("FATAL: p_tcp_server is null after initialization", CoreError::INVALID_STATE);
     }
 
     LOG_INFO("Server listening on port ", p_config->get_market_port());
@@ -416,7 +416,7 @@ auto Core::work_server() -> std::expected<void, CoreError>
         // Send market data continuously to this client until they disconnect
         for (;;)
         {
-            utils::Timer timer{"Core::work_server::LOOP"};
+            quick::utils::Timer timer{"Core::work_server::LOOP"};
             if (client_socket.value() < 1)
             {
                 LOG_WARN("Invalid client socket. Breaking send loop.");
