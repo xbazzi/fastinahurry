@@ -1,21 +1,24 @@
 // C++ Includes
 #include <cstddef>
 #include <cstdint>
+#include <cstring>
 #include <expected>
+#include <random>
 #include <sstream>
 #include <stop_token>
+#include <string>
 
 // FastInAHurry Includes
 #include "fiah/app/Core.hh"
 #include "fiah/error/CoreException.hh"
 #include "fiah/structs/Structs.hh"
-#include "quick/io/Config.hh"
-#include "quick/io/JSONReader.hh"
-#include "quick/utils/Logger.hh"
-#include "quick/utils/Timer.hh"
 
 // Third Party Includes
-#include <nlohmann/json.hpp>
+#include <quick/io/Config.hh>
+#include <quick/io/JSONReader.hh>
+#include <quick/structs/Vector.hh>
+#include <quick/utils/Logger.hh>
+#include <quick/utils/Timer.hh>
 
 namespace fiah
 {
@@ -376,6 +379,28 @@ void Core::print_client_stats() const
               "\n\tSignal queue size: ", m_signal_queue.size(), "\n\tOrder queue size: ", m_order_queue.size());
 }
 
+structs::MarketData Core::generate_market_data(std::string symbol)
+{
+    static std::atomic<uint64_t> tick_counter{0};
+    static std::mt19937_64 rng{std::random_device{}()};
+    static std::uniform_real_distribution<double> price_dist{189.95, 190.05};
+    static std::uniform_real_distribution<double> spread_dist{0.01, 0.05};
+
+    const uint64_t tick_id = tick_counter.fetch_add(1, std::memory_order_relaxed);
+    const double bid = price_dist(rng);
+    const double ask = bid + spread_dist(rng);
+
+    MarketData md{};
+    md.seq_num = tick_id;
+    std::strncpy(md.symbol, symbol.c_str(), sizeof(md.symbol) - 1);
+    md.symbol[sizeof(md.symbol) - 1] = '\0'; // Ensure null termination
+    md.bid = bid;
+    md.ask = ask;
+    md.timestamp_ns = tick_id;
+
+    return md;
+}
+
 auto Core::work_server() -> std::expected<void, CoreError>
 {
     quick::utils::Timer timer{"Core::work_server()"};
@@ -400,11 +425,10 @@ auto Core::work_server() -> std::expected<void, CoreError>
     LOG_INFO("Server listening on port ", p_config->get_market_port());
     LOG_INFO("Accepting client connections...");
 
-    // for (uint64_t i{0}; i <= 1; ++i)
     std::uint64_t i{0};
     do
     {
-        /// Blocks while waiting for clients!
+        // blocks while waiting for clients!
         auto client_socket = p_tcp_server->accept_client();
         if (!client_socket.has_value())
         {
@@ -423,7 +447,7 @@ auto Core::work_server() -> std::expected<void, CoreError>
                 break;
             }
 
-            MarketData tick{i, "ACME", 190.0 + i * 0.001, 190.0 + i * 0.001 + 0.01, ++i};
+            auto tick = generate_market_data("AAPL");
 
             auto send_result = p_tcp_server->send(client_socket.value(), std::addressof(tick), sizeof(tick));
             if (!send_result.has_value())
@@ -440,4 +464,5 @@ auto Core::work_server() -> std::expected<void, CoreError>
     // Unreachable in normal operation, but needed for signature
     return {};
 }
+
 } // End namespace fiah

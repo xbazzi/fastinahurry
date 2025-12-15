@@ -42,10 +42,11 @@ include(FetchContent)
 
 FetchContent_Declare(
   quicklib
-  GIT_REPOSITORY https://github.com/xbazzi/quicklib.git
-  GIT_TAG        master
+  # GIT_REPOSITORY https://github.com/xbazzi/quicklib.git
+  # GIT_TAG        master
   # Local for testing
   # SOURCE_DIR       /path/to/local/quicklib
+  SOURCE_DIR       /home/xbazzi/repos/quicklib
 )
 
 # Disable building tests for quicklib dependency
@@ -81,8 +82,8 @@ file(GLOB_RECURSE COMMON_SRC
 # Exclude mains from the common sources
 list(REMOVE_ITEM COMMON_SRC 
     "${CMAKE_SOURCE_DIR}/src/fiah/options/main.cc"
-    "${CMAKE_SOURCE_DIR}/src/fiah/app/client_main.cc"
-    "${CMAKE_SOURCE_DIR}/src/fiah/app/server_main.cc"
+    "${CMAKE_SOURCE_DIR}/src/fiah/client/main.cc"
+    "${CMAKE_SOURCE_DIR}/src/fiah/server/main.cc"
 )
 
 # Create a shared library for common sources (compiled once, linked multiple times)
@@ -102,13 +103,13 @@ target_link_libraries(fiah_common PUBLIC
   toml11::toml11
 )
 
-add_executable(client src/fiah/app/client_main.cc)
+add_executable(client src/fiah/client/main.cc)
 set_target_properties(client PROPERTIES
   CXX_STANDARD 23
   CXX_STANDARD_REQUIRED YES
 )
 
-add_executable(server src/fiah/app/server_main.cc)
+add_executable(server src/fiah/server/main.cc)
 set_target_properties(server PROPERTIES
   CXX_STANDARD 23
   CXX_STANDARD_REQUIRED YES

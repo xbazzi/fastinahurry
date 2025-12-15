@@ -13,11 +13,14 @@
 #include "fiah/error/Error.hh"
 #include "fiah/market/MarketFeed.hh"
 #include "fiah/structs/Structs.hh"
-#include "quick/handle/UniquePtr.hh"
-#include "quick/io/Config.hh"
-#include "quick/io/TcpServer.hh"
-#include "quick/structs/SPSCQueue.hh"
-#include "quick/utils/Logger.hh"
+
+// Third-Party Includes
+#include <quick/handle/UniquePtr.hh>
+#include <quick/io/Config.hh>
+#include <quick/io/TcpServer.hh>
+#include <quick/structs/SPSCQueue.hh>
+#include <quick/structs/Vector.hh>
+#include <quick/utils/Logger.hh>
 
 namespace fiah
 {
@@ -145,11 +148,13 @@ class Core
         return m_client_running.load(std::memory_order_relaxed);
     }
 
-    // Same as `__always_inline` GCC helper macro
+    /// Same as `__always_inline` GCC helper macro
     inline __attribute__((__always_inline__)) bool is_client_stopped() const noexcept
     {
         return m_client_stopped.load(std::memory_order_relaxed);
     }
+
+    MarketData generate_market_data(std::string);
 
     std::expected<void, CoreError> work_server();
     std::expected<void, CoreError> work_client();

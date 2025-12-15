@@ -18,17 +18,17 @@ namespace fiah::structs
 /// @todo Align to 64 bytes? -> (measure first)
 ///
 
-#pragma pack(push, 1)
+// #pragma pack(push, 1)
 /// @brief Incoming data from market
 struct MarketData
 {
     std::uint64_t seq_num;
-    char symbol[8];
     double bid;
     double ask;
     std::uint64_t timestamp_ns;
+    char symbol[8];
 };
-#pragma pack(pop)
+// #pragma pack(pop)
 
 /// @brief Market signal
 struct Signal
