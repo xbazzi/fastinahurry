@@ -13,7 +13,7 @@
 namespace fiah
 {
 
-Controller::Controller(quick::io::Config &&config) noexcept(noexcept(CoreUniquePtr()))
+Controller::Controller(quick::Config &&config) noexcept(noexcept(CoreUniquePtr()))
     : p_core{quick::handle::make_unique<Core>(std::move(config))}
 {
 }

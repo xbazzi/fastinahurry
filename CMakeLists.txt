@@ -49,8 +49,10 @@ FetchContent_Declare(
   SOURCE_DIR       /home/xbazzi/repos/quicklib
 )
 
-# Disable building tests for quicklib dependency
+# Disable building tests and benchmarks for quicklib dependency
 set(BUILD_TESTING OFF)
+set(BENCHMARK_ENABLE_TESTING OFF CACHE BOOL "" FORCE)
+set(SKIP_BENCHMARKS ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(quicklib)
 set(BUILD_TESTING ON)
 
@@ -58,7 +60,7 @@ set(BUILD_TESTING ON)
 include_directories("${CMAKE_SOURCE_DIR}/include")
 
 # Put all executables in the same directory
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+# set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
 # Convention for executables and libraries
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
@@ -160,6 +162,7 @@ target_include_directories(unit_tests PRIVATE
     ${CMAKE_SOURCE_DIR}/include
     ${CMAKE_SOURCE_DIR}/tests        # For test utilities and headers
     ${CMAKE_CURRENT_BINARY_DIR}      # For generated files
+    ${quicklib_SOURCE_DIR}/include
 )
 
 target_link_libraries(unit_tests PRIVATE
@@ -196,6 +199,7 @@ if(BENCHMARK_SOURCES)
         ${CMAKE_SOURCE_DIR}/include
         ${CMAKE_SOURCE_DIR}/benchmarks   # For benchmark utilities
         ${CMAKE_CURRENT_BINARY_DIR}      # For generated files
+        ${quicklib_SOURCE_DIR}/include
     )
 
     target_link_libraries(benchmarks PRIVATE

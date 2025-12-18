@@ -4,14 +4,14 @@
 #include <thread>
 
 // FastInAHurry Includes
-#include "fiah/CoreException.hh"
-#include "fiah/io/MarketFeed.hh"
-#include "quick/utils/Timer.hh"
+#include "fiah/error/CoreException.hh"
+#include "fiah/market/MarketFeed.hh"
+#include <quick/utils/Timer.hh>
 
 namespace fiah::io
 {
 
-MarketFeed::MarketFeed(const Config &config, quick::structs::SPSCQueue<MarketData, 4096UL> &queue)
+MarketFeed::MarketFeed(const quick::Config &config, quick::structs::SPSCQueue<MarketData, 4096UL> &queue)
     : m_config(config), m_market_data_queue(queue)
 {
     LOG_DEBUG("MarketFeed constructed");
@@ -36,7 +36,7 @@ auto MarketFeed::initialize() -> std::expected<void, CoreError>
     const std::string &market_ip = m_config.get_market_ip();
     std::uint16_t market_port = m_config.get_market_port();
 
-    p_tcp_client = quick::handle::make_unique<TcpClient>(market_ip, market_port);
+    p_tcp_client = quick::handle::make_unique<quick::io::TcpClient>(market_ip, market_port);
 
     LOG_INFO("MarketFeed initialized with market server ip: ", market_ip, ", and port: ", market_port);
 
@@ -68,7 +68,7 @@ auto MarketFeed::_reconnect() -> std::expected<void, CoreError>
     m_initialized.store(false, std::memory_order_release);
 
     // Create new client and attempt connection
-    p_tcp_client = quick::handle::make_unique<TcpClient>(market_ip, market_port);
+    p_tcp_client = quick::handle::make_unique<quick::io::TcpClient>(market_ip, market_port);
 
     auto connect_result = p_tcp_client->connect_to_server();
     if (!connect_result.has_value())

@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    quick::io::Config config{path};
+    quick::Config config{path};
     if (!config.parse_config())
     {
         std::cout << "Unable to parse config" << '\n';

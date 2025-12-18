@@ -4,12 +4,12 @@
 #include <iostream>
 #include <thread>
 
-#include "fiah/structs/SPSCQueue.hh"
-#include "fiah/structs/ThreadSafeQueue.hpp"
+#include <quick/structs/SPSCQueue.hh>
+#include <quick/structs/ThreadSafeQueue.hh>
 
 static void BM_SPSCQueue_Push(benchmark::State &state)
 {
-    fiah::structs::SPSCQueue<int, 1024> queue;
+    quick::structs::SPSCQueue<int, 1024> queue;
     int value = 42;
 
     for (auto _ : state)
@@ -21,7 +21,7 @@ static void BM_SPSCQueue_Push(benchmark::State &state)
 static void BM_SPSCQueue_Fill_Milli(benchmark::State &state)
 {
     constexpr size_t N = 1 << 20; // A milli
-    fiah::structs::SPSCQueue<int, N> queue;
+    quick::structs::SPSCQueue<int, N> queue;
 
     for (auto _ : state)
     {
@@ -35,7 +35,7 @@ static void BM_SPSCQueue_Multithreaded(benchmark::State &state)
 {
     using ElementType = std::uint64_t;
     constexpr std::size_t N = (1 << 30) / sizeof(ElementType); // 32MB for 4byte type
-    static fiah::structs::SPSCQueue<ElementType, N> queue;
+    static quick::structs::SPSCQueue<ElementType, N> queue;
     std::cout << "element size spsc: " << sizeof(ElementType) << ", struct size: " << sizeof(queue) << std::endl;
     for (auto _ : state)
     {
@@ -78,7 +78,7 @@ static void BM_ThreadSafeQueue_Multithreaded(benchmark::State &state)
 {
     using ElementType = int;
     constexpr std::size_t N = (1 << 30) / sizeof(ElementType); // 32MB
-    static fiah::structs::ThreadSafeQueue<ElementType> queue;
+    static quick::structs::ThreadSafeQueue<ElementType> queue;
     std::cout << "element size threadsafeq: " << sizeof(ElementType) << ", struct size: " << sizeof(queue) << std::endl;
     for (auto _ : state)
     {

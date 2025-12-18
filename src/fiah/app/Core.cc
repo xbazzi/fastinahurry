@@ -23,7 +23,7 @@
 namespace fiah
 {
 
-Core::Core(quick::io::Config &&config) : p_config{quick::handle::make_unique<quick::io::Config>(std::move(config))}
+Core::Core(quick::Config &&config) : p_config{quick::handle::make_unique<quick::Config>(std::move(config))}
 {
 }
 

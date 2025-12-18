@@ -9,14 +9,13 @@ help: ## Show this help message
 
 # Default target: build everything
 all: configure ## Build all targets
-	cmake --build $(BUILD_DIR) 
+	cmake --build $(BUILD_DIR) -j 8
 
 # Build only the "options" target
 options: configure ## Build options target
-	cmake --build $(BUILD_DIR) --target options
-
+	cmake --build $(BUILD_DIR) --target options -j 8
 build-test: configure ## Build test target
-	cmake --build $(BUILD_DIR) --target unit_tests
+	cmake --build $(BUILD_DIR) --target unit_tests -j 8
 
 # Configure step (only runs once unless CMakeLists.txt changes)
 $(BUILD_DIR)/CMakeCache.txt: CMakeLists.txt ## Configure build directory

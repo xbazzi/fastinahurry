@@ -71,7 +71,7 @@ class Core
     using MarketData = structs::MarketData;
 
     /// @brief Drop-in replacement for std::unique_ptr<> and std::make_unique<>
-    using ConfigUniquePtr = quick::handle::UniquePtr<quick::io::Config>;
+    using ConfigUniquePtr = quick::handle::UniquePtr<quick::Config>;
     using TcpServerUniquePtr = quick::handle::UniquePtr<quick::io::TcpServer>;
     using MarketFeedUniquePtr = quick::handle::UniquePtr<io::MarketFeed>;
 
@@ -127,7 +127,7 @@ class Core
     void _set_thread_affinity(std::thread::native_handle_type thread, int cpu_id);
 
   public:
-    explicit Core(quick::io::Config &&);
+    explicit Core(quick::Config &&);
     ~Core();
 
     std::expected<void, CoreError> initialize_client();

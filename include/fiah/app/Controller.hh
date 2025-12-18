@@ -19,8 +19,8 @@ class Controller
 {
   public:
     Controller() noexcept = default;
-    explicit Controller(quick::io::Config &&) noexcept(noexcept(CoreUniquePtr()));
-    explicit Controller(const quick::io::Config &) = delete;
+    explicit Controller(quick::Config &&) noexcept(noexcept(CoreUniquePtr()));
+    explicit Controller(const quick::Config &) = delete;
     bool start_server() noexcept;
     bool start_client() noexcept;
     bool init_client() noexcept;
