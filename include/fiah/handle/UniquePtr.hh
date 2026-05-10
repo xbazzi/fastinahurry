@@ -4,7 +4,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace quick::handle
+namespace fiah
 {
 
 /// @brief Default deleter that calls delete on the Pointer_T
@@ -37,11 +37,11 @@ template <typename T> struct default_deleter
 /// Example usage:
 /// @code
 /// ```
-///   auto ptr = quick::memory::UniquePtr<int>(new int(42));
+///   auto ptr = fiah::UniquePtr<int>(new int(42));
 ///   *ptr = 10;
 ///   int value = *ptr;
 ///
-///   auto custom = quick::memory::UniquePtr<int, CustomDeleter>(new int(5),
+///   auto custom = fiah::UniquePtr<int, CustomDeleter>(new int(5),
 ///   CustomDeleter{});
 /// ```
 /// @endcode
@@ -328,4 +328,4 @@ template <typename T, typename D> [[nodiscard]] bool operator!=(std::nullptr_t, 
     return static_cast<bool>(ptr);
 }
 
-} // namespace quick::handle
+} // namespace fiah

@@ -21,15 +21,15 @@
 #include <unordered_map>
 #include <vector>
 
-// QuickLib Includes
-#include "quick/utils/Logger.hh"
+// FastInAHurry Includes
+#include "fiah/utils/Logger.hh"
 
 // Third Party Includes
 
 // QUICK Includes
-#include "quick/error/Error.hh"
+#include "fiah/error/Error.hh"
 
-namespace quick::utils
+namespace fiah
 {
 /**
  * @brief Simple TOML parser for configuration files
@@ -56,14 +56,14 @@ class TomlParser
      *  @param file The input file stream
      *  @return true if valid, false otherwise
      */
-    std::expected<bool, quick::error::TomlParserError> is_valid(std::ifstream &file) noexcept;
+    std::expected<bool, fiah::TomlParserError> is_valid(std::ifstream &file) noexcept;
 
-    std::expected<bool, quick::error::TomlParserError> extract_keys(std::ifstream &file) noexcept;
+    std::expected<bool, fiah::TomlParserError> extract_keys(std::ifstream &file) noexcept;
 
     /** @brief Load a TOML file from disk
      *  @return true if successful, false otherwise
      */
-    std::expected<bool, quick::error::TomlParserError> load() noexcept;
+    std::expected<bool, fiah::TomlParserError> load() noexcept;
 
     /** @brief Get a value from the TOML file as a string
      *  @param key The key to look up
@@ -119,31 +119,31 @@ inline std::optional<std::string> TomlParser::get_value(const std::string &secti
     return key_it->second;
 }
 
-inline auto TomlParser::load() noexcept -> std::expected<bool, quick::error::TomlParserError>
+inline auto TomlParser::load() noexcept -> std::expected<bool, fiah::TomlParserError>
 {
     std::ifstream file{m_filepath};
     if (!file.is_open())
     {
-        return std::unexpected(quick::error::TomlParserError::FILE_NOT_FOUND);
+        return std::unexpected(fiah::TomlParserError::FILE_NOT_FOUND);
     }
 
     auto placeholder = true;
     if (!placeholder)
     {
-        return std::unexpected(quick::error::TomlParserError::INVALID_TOML);
+        return std::unexpected(fiah::TomlParserError::INVALID_TOML);
     }
 
     auto result = extract_keys(file);
     if (!result)
     {
-        return std::unexpected(quick::error::TomlParserError::PARSE_ERROR);
+        return std::unexpected(fiah::TomlParserError::PARSE_ERROR);
     }
 
     file.close();
     return true;
 }
 
-inline auto TomlParser::extract_keys(std::ifstream &file) noexcept -> std::expected<bool, quick::error::TomlParserError>
+inline auto TomlParser::extract_keys(std::ifstream &file) noexcept -> std::expected<bool, fiah::TomlParserError>
 {
     std::string line;
     std::string current_section;
@@ -174,12 +174,12 @@ inline auto TomlParser::extract_keys(std::ifstream &file) noexcept -> std::expec
         auto equal_sign = line.find('=');
         if (equal_sign == std::string::npos)
         {
-            return std::unexpected(quick::error::TomlParserError::PARSE_ERROR);
+            return std::unexpected(fiah::TomlParserError::PARSE_ERROR);
         }
 
         if (current_section.empty())
         {
-            return std::unexpected(quick::error::TomlParserError::PARSE_ERROR);
+            return std::unexpected(fiah::TomlParserError::PARSE_ERROR);
         }
 
         std::string key = line.substr(0, equal_sign);
@@ -213,9 +213,9 @@ inline auto TomlParser::extract_keys(std::ifstream &file) noexcept -> std::expec
     return true;
 }
 
-inline auto TomlParser::is_valid(std::ifstream &file) noexcept -> std::expected<bool, quick::error::TomlParserError>
+inline auto TomlParser::is_valid(std::ifstream &file) noexcept -> std::expected<bool, fiah::TomlParserError>
 {
-    return std::unexpected(quick::error::TomlParserError::INVALID_TOML);
+    return std::unexpected(fiah::TomlParserError::INVALID_TOML);
 }
 
 inline std::string TomlParser::get_string(const std::string &key) const
@@ -274,4 +274,4 @@ inline double TomlParser::get_double(const std::string &key) const
     }
 }
 
-} // namespace quick::utils
+} // namespace fiah

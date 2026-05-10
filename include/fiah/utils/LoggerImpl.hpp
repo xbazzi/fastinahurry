@@ -1,6 +1,6 @@
 #include "utils/Logger.hh"
 
-namespace quick::utils
+namespace fiah
 {
 static Logger &Logger::get_instance(Location location = Location::current())
 {
@@ -55,4 +55,4 @@ static const char *Logger::_level_to_color(Level level)
         return "\033[0m";
     }
 }
-} // namespace quick::utils
+} // namespace fiah

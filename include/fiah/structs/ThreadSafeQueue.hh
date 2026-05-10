@@ -5,7 +5,7 @@
 #include <queue>
 #include <thread>
 
-namespace quick::structs
+namespace fiah
 {
 
 /// @brief Generic thread-safe locking queue, backed by std::queue
@@ -44,4 +44,4 @@ template <typename T> class ThreadSafeQueue
         return val;
     }
 };
-} // namespace quick::structs
+} // namespace fiah

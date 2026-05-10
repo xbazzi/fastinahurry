@@ -8,7 +8,7 @@
 #include <new>
 #include <type_traits>
 
-namespace quick::structs
+namespace fiah
 {
 template <typename Element> class Vector
 {
@@ -152,4 +152,4 @@ template <typename Element> class Vector
         std::destroy_at(p_arr + m_size);
     }
 };
-} // namespace quick::structs
+} // namespace fiah

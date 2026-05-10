@@ -6,7 +6,7 @@
 // Third-party Includes
 // #include <cassandra.h>
 
-namespace quick::io
+namespace fiah
 {
 
 struct Basic_
@@ -200,4 +200,4 @@ cass_session_free(session);
 cass_cluster_free(cluster);
 return 1;
 }
-} // End quick::io namespace
+} // End namespace fiah

@@ -5,9 +5,9 @@
 #include <string>
 #include <utility>
 
-#include "quick/utils/Logger.hh"
+#include "fiah/utils/Logger.hh"
 
-namespace quick::utils
+namespace fiah
 {
 
 // Internal tag type used to instantiate the underlying templated Logger.
@@ -19,7 +19,7 @@ struct _InternalLoggerTag
 inline Logger<_InternalLoggerTag> &impl_logger()
 {
     // Return the singleton instance. If you want to control the logger name,
-    // call `fiah::log::init(name)` before any other logging occurs so the
+    // call `fiah::init(name)` before any other logging occurs so the
     // singleton is constructed with your desired name.
     return Logger<_InternalLoggerTag>::get_instance();
 }
@@ -60,9 +60,9 @@ inline void warn(const std::source_location &loc = std::source_location::current
 }
 
 // Note: these macros use std::source_location to capture caller info.
-#define LOG_INFO_S(...) ::quick::utils::info(std::source_location::current(), __VA_ARGS__)
-#define LOG_DEBUG_S(...) ::quick::utils::debug(std::source_location::current(), __VA_ARGS__)
-#define LOG_ERROR_S(...) ::quick::utils::error(std::source_location::current(), __VA_ARGS__)
-#define LOG_WARN_S(...) ::quick::util::warn(std::source_location::current(), __VA_ARGS__)
+#define LOG_INFO_S(...) ::fiah::info(std::source_location::current(), __VA_ARGS__)
+#define LOG_DEBUG_S(...) ::fiah::debug(std::source_location::current(), __VA_ARGS__)
+#define LOG_ERROR_S(...) ::fiah::error(std::source_location::current(), __VA_ARGS__)
+#define LOG_WARN_S(...) ::fiah::warn(std::source_location::current(), __VA_ARGS__)
 
-} // namespace quick::utils
+} // namespace fiah

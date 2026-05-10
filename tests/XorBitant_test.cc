@@ -1,5 +1,5 @@
 // clang-format on
-#include "quick/utils/XorBitant.hh"
+#include "fiah/utils/XorBitant.hh"
 
 #include <algorithm>
 #include <chrono>

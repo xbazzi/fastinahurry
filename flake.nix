@@ -70,7 +70,7 @@
           ];
           shell = pkgs.zsh;
           shellHook = ''
-            echo "Welcome to the QuickLib flake dev shell" 
+            echo "Welcome to the FastInAHurry flake dev shell" 
             export CC=gcc
             export CXX=g++
           '';

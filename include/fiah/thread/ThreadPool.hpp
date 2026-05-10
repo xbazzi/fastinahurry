@@ -10,9 +10,9 @@
 #include <ranges>
 #include <thread>
 
-#include "quick/utils/Timer.hh"
+#include "fiah/utils/Timer.hh"
 
-namespace quick::thread
+namespace fiah
 {
 
 namespace
@@ -50,7 +50,7 @@ class ThreadPool
 
 ThreadPool::ThreadPool(std::size_t num_threads = std::thread::hardware_concurrency()) : m_num_threads{num_threads}
 {
-    quick::utils::Timer timer{"ThreadPool ctor"};
+    fiah::Timer timer{"ThreadPool ctor"};
     using namespace std::chrono_literals;
     // auto stop_token = m_stop_source.get_token();
     m_workers.reserve(num_threads);
@@ -121,4 +121,4 @@ ThreadPool::~ThreadPool()
         thread.request_stop();
     });
 }
-} // End namespace quick::thread
+} // End namespace fiah

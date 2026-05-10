@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-namespace quick::error
+namespace fiah
 {
 enum class CoreError : std::uint8_t
 {
@@ -45,4 +45,4 @@ enum class TcpError : std::uint8_t
     RECV_FAIL,
     INVALID_IP
 };
-} // namespace quick::error
+} // namespace fiah

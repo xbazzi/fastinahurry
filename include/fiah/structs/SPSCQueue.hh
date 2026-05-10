@@ -11,9 +11,9 @@
 #include <type_traits>
 #include <utility>
 
-// QuickLib Includes
+// FastInAHurry Includes
 
-namespace quick::structs
+namespace fiah
 {
 
 #if defined(__cpp_lib_hardware_interference_size)
@@ -173,4 +173,4 @@ template <class T, std::uint64_t CapacityPow2> class SPSCQueue
 };
 /// @example spsc_queue_example.cc
 
-} // End namespace quick::structs
+} // End namespace fiah

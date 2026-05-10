@@ -3,8 +3,8 @@
 #include <iostream>
 #include <thread>
 
-// QuickLib Includes
-#include "quick/structs/SPSCQueue.hh"
+// FastInAHurry Includes
+#include "fiah/structs/SPSCQueue.hh"
 
 namespace fiah
 {
@@ -14,7 +14,7 @@ static void ExampleSPSCQueue()
 
     // 1 KB queue
     constexpr uint16_t N = (1 << 10) / sizeof(ElementType);
-    quick::structs::SPSCQueue<ElementType, N> queue;
+    fiah::SPSCQueue<ElementType, N> queue;
     static_assert(queue.capacity() == N);
 
     std::thread prod([&] {

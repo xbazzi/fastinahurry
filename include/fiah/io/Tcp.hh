@@ -9,9 +9,9 @@
 #include <string>
 
 #include "fiah/error/Error.hh"
-#include "quick/io/SocketRAII.hh"
+#include "fiah/io/SocketRAII.hh"
 
-namespace quick::io
+namespace fiah
 {
 
 class Tcp
@@ -39,11 +39,11 @@ class Tcp
         static_assert(std::is_move_assignable_v<Tcp>);
     }
 
-    auto create_socket() -> std::expected<void, quick::error::TcpError>
+    auto create_socket() -> std::expected<void, fiah::TcpError>
     {
         int fd = ::socket(AF_INET, SOCK_STREAM, 0);
         if (fd < 0)
-            return std::unexpected(quick::error::TcpError::BAD_SOCKET);
+            return std::unexpected(fiah::TcpError::BAD_SOCKET);
         m_sock = fd;
         return {};
     }
@@ -72,4 +72,4 @@ class Tcp
 
     virtual ~Tcp() noexcept = default;
 };
-} // End namespace quick::io
+} // End namespace fiah

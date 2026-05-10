@@ -1,5 +1,5 @@
 // clang-format on
-#include "quick/structs/Vector.hh"
+#include "fiah/structs/Vector.hh"
 
 #include <gtest/gtest.h>
 #include <iostream>
@@ -17,19 +17,19 @@ protected:
 
 TEST_F(VectorTest, DefaultConstructor)
 {
-    quick::structs::Vector<int> vec;
+    fiah::Vector<int> vec;
     EXPECT_EQ(vec.size(), 0);
 }
 
 TEST_F(VectorTest, SizeConstructor)
 {
-    quick::structs::Vector<int> vec(5);
+    fiah::Vector<int> vec(5);
     EXPECT_EQ(vec.size(), 5);
 }
 
 TEST_F(VectorTest, PushBackIntegers)
 {
-    quick::structs::Vector<int> vec;
+    fiah::Vector<int> vec;
     vec.push_back(10);
     vec.push_back(20);
     vec.push_back(30);
@@ -42,7 +42,7 @@ TEST_F(VectorTest, PushBackIntegers)
 
 TEST_F(VectorTest, PushBackStrings)
 {
-    quick::structs::Vector<std::string> vec;
+    fiah::Vector<std::string> vec;
     
     vec.push_back("Hello");
     vec.push_back("World");
@@ -56,7 +56,7 @@ TEST_F(VectorTest, PushBackStrings)
 
 TEST_F(VectorTest, CapacityGrowth)
 {
-    quick::structs::Vector<int> vec;
+    fiah::Vector<int> vec;
     
     // Push enough elements to trigger capacity growth
     for (int i = 0; i < 20; ++i)

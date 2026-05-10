@@ -16,7 +16,7 @@
 #include <utility>
 // #include <mutex>
 
-namespace quick
+namespace fiah
 {
 
 template <class T> struct default_deleter
@@ -207,16 +207,16 @@ template <class T, class Deleter = default_deleter<T>> class shared_ptr
         return p_obj != nullptr;
     }
 };
-} // namespace quick
+} // namespace fiah
 
 int main()
 {
     int p = 5;
     int *x = &p;
     auto deleter = [&](int *) {};
-    quick::shared_ptr<int, decltype(deleter)> intptr(x, deleter);
+    fiah::shared_ptr<int, decltype(deleter)> intptr(x, deleter);
     std::cout << intptr.use_count() << " ";
-    quick::shared_ptr<int, decltype(deleter)> anotherone(std::move(intptr));
+    fiah::shared_ptr<int, decltype(deleter)> anotherone(std::move(intptr));
     std::cout << anotherone.use_count() << " ";
     intptr.reset();
     std::cout << anotherone.use_count() << " ";

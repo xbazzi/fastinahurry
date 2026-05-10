@@ -15,7 +15,7 @@
 #include <typeinfo>
 #include <variant>
 
-namespace quick
+namespace fiah
 {
 
 template <typename T> struct is_small_trait
@@ -101,7 +101,7 @@ template <typename AnyType> class Any
         }
     }
 };
-} // namespace quick
+} // namespace fiah
 
 #include <any>
 #include <cassert>
@@ -122,13 +122,13 @@ struct MyStruct
 
 int main()
 {
-    quick::any<int> someAny{1};
+    fiah::any<int> someAny{1};
     std::cout << "sizeof(any<int>): " << sizeof(someAny) << "\n";
 
     const int &value = someAny.any_cast<int>();
     std::cout << "Value stored: " << value << "\n";
 
-    quick::any<double> anotherAny{3.14};
+    fiah::any<double> anotherAny{3.14};
     std::cout << "sizeof(any<double>): " << sizeof(anotherAny) << "\n";
     std::cout << "Double value: " << anotherAny.any_cast<double>() << "\n";
 

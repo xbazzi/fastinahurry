@@ -6,9 +6,9 @@
 #include <iostream>
 #include <ranges>
 
-#include "quick/utils/Timer.hh" 
+#include "fiah/utils/Timer.hh" 
 #include "test_utils.hh" 
-#include "quick/structs/SPSCQueue.hh"
+#include "fiah/structs/SPSCQueue.hh"
 // clang-format on
 
 class SPSCQueueTest : public ::testing::Test
@@ -21,12 +21,12 @@ class SPSCQueueTest : public ::testing::Test
     {
     }
 
-    quick::structs::SPSCQueue<int, 1024UL> p_test_obj;
+    fiah::SPSCQueue<int, 1024UL> p_test_obj;
 };
 
 TEST_F(SPSCQueueTest, AddElements)
 {
-    quick::utils::Timer spsc_timer{"SPSCQueueTest"};
+    fiah::Timer spsc_timer{"SPSCQueueTest"};
     EXPECT_EQ(p_test_obj.capacity(), 1024) << "Yup";
     EXPECT_EQ(p_test_obj.size(), 0) << "Yup";
 

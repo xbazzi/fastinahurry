@@ -5,20 +5,20 @@
 #include <string>
 #include <vector>
 
-// QuickLib Includes
-#include "quick/utils/Logger.hh"
-#include "quick/utils/TomlParser.hh"
+// FastInAHurry Includes
+#include "fiah/utils/Logger.hh"
+#include "fiah/utils/TomlParser.hh"
 
-namespace quick
+namespace fiah
 {
 
 class Config
 {
   private:
     std::filesystem::path m_config_path{};
-    static inline quick::utils::Logger<Config> &m_logger{quick::utils::Logger<Config>::get_instance("Config")};
+    static inline fiah::Logger<Config> &m_logger{fiah::Logger<Config>::get_instance("Config")};
 
-    quick::utils::TomlParser m_parser{};
+    fiah::TomlParser m_parser{};
 
   public:
     Config() noexcept = default;
@@ -34,7 +34,7 @@ class Config
                 LOG_INFO("TOML file loaded successfully.");
                 return success;
             })
-            .or_else([](error::TomlParserError error) -> std::expected<bool, error::TomlParserError> {
+            .or_else([](fiah::TomlParserError error) -> std::expected<bool, fiah::TomlParserError> {
                 LOG_ERROR("Failed to load TOML file: ", static_cast<int>(error));
                 return std::unexpected(error);
             })
@@ -74,4 +74,4 @@ class Config
     // const std::string& get_market_protocol() const noexcept;
 };
 
-} // namespace quick
+} // namespace fiah

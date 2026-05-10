@@ -11,7 +11,7 @@
 #include <string>
 #include <type_traits>
 
-namespace quick::utils
+namespace fiah
 {
 
 /// @brief Thread-safe (locking) logging implementation. You need to provide a
@@ -170,6 +170,6 @@ template <class Tag> class Logger
         }
     }
 };
-} // End namespace quick::utils
+} // End namespace fiah
 
 #endif // LOGGER_HH

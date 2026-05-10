@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 4.0)
-project(QuickStructs CXX)
+project(FastInAHurry CXX)
 enable_testing()
 include(CTest)
 include(GoogleTest)
@@ -39,13 +39,13 @@ endif()
 add_link_options(-Wno-interference-size -fsanitize=address,undefined,leak)
 
 # Create header-only library interface
-add_library(quickstructs INTERFACE)
-target_include_directories(quickstructs INTERFACE
+add_library(fiah INTERFACE)
+target_include_directories(fiah INTERFACE
     $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>
 )
 
-target_compile_features(quickstructs INTERFACE cxx_std_23)
+target_compile_features(fiah INTERFACE cxx_std_23)
 
 # Compiler flags and other goodies
 set(CMAKE_CXX_STANDARD 23)
@@ -80,32 +80,32 @@ if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
       "${CMAKE_SOURCE_DIR}/tests/test.cc"
   )
 
-  add_executable(quick_tests
+  add_executable(fiah_tests
       ${TEST_SOURCES}
   )
 
-  set_target_properties(quick_tests PROPERTIES
+  set_target_properties(fiah_tests PROPERTIES
       CXX_STANDARD 23
       CXX_STANDARD_REQUIRED YES
   )
 
-  target_include_directories(quick_tests PRIVATE
+  target_include_directories(fiah_tests PRIVATE
       ${CMAKE_SOURCE_DIR}/include
       ${CMAKE_SOURCE_DIR}/tests        # For test utilities and headers
       ${CMAKE_CURRENT_BINARY_DIR}      # For generated files
   )
 
-  target_link_libraries(quick_tests PRIVATE
+  target_link_libraries(fiah_tests PRIVATE
       GTest::gtest
       GTest::gtest_main
       Threads::Threads
   )
 
   # Register tests with CTest
-  add_test(NAME quick_tests COMMAND quick_tests)
+  add_test(NAME fiah_tests COMMAND fiah_tests)
   
   # Optional: Use gtest_discover_tests for better test reporting
-  gtest_discover_tests(quick_tests)
+  gtest_discover_tests(fiah_tests)
 endif()
 
 # ============================================================================
@@ -122,22 +122,22 @@ if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
   )
 
 if(BENCHMARK_SOURCES)
-    add_executable(quick_benchmarks
+    add_executable(fiah_benchmarks
         ${BENCHMARK_SOURCES}
     )
 
-    set_target_properties(quick_benchmarks PROPERTIES
+    set_target_properties(fiah_benchmarks PROPERTIES
         CXX_STANDARD 23
         CXX_STANDARD_REQUIRED YES
     )
 
-    target_include_directories(quick_benchmarks PRIVATE
+    target_include_directories(fiah_benchmarks PRIVATE
         ${CMAKE_SOURCE_DIR}/include
         ${CMAKE_SOURCE_DIR}/benchmarks   # For benchmark utilities
         ${CMAKE_CURRENT_BINARY_DIR}      # For generated files
     )
 
-    target_link_libraries(quick_benchmarks PRIVATE
+    target_link_libraries(fiah_benchmarks PRIVATE
         benchmark::benchmark
         benchmark::benchmark_main
     )

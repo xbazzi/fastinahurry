@@ -1,7 +1,7 @@
 // clang-format on
-#include "quick/memory/Memcpy.cc"
-#include "quick/memory/Memmove.cc"
-#include "quick/memory/Strcpy.cc"
+#include "fiah/memory/Memcpy.cc"
+#include "fiah/memory/Memmove.cc"
+#include "fiah/memory/Strcpy.cc"
 
 #include <gtest/gtest.h>
 #include <print>

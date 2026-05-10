@@ -8,7 +8,7 @@
 #include <sstream>
 #include <string_view>
 
-namespace quick::utils
+namespace fiah
 {
 using namespace std::literals::chrono_literals;
 
@@ -63,4 +63,4 @@ class Timer
         stop();
     }
 };
-} // namespace quick::utils
+} // namespace fiah
