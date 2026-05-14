@@ -26,7 +26,7 @@ class SPSCQueueTest : public ::testing::Test
 
 TEST_F(SPSCQueueTest, AddElements)
 {
-    fiah::Timer spsc_timer{"SPSCQueueTest"};
+    fiah::Timer spsc_timer{};
     EXPECT_EQ(p_test_obj.capacity(), 1024) << "Yup";
     EXPECT_EQ(p_test_obj.size(), 0) << "Yup";
 

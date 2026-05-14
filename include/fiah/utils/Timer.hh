@@ -1,3 +1,4 @@
+// clang-format off
 #pragma once
 
 #include <chrono>
@@ -12,47 +13,69 @@ namespace fiah
 {
 using namespace std::literals::chrono_literals;
 
+template <class Clock = std::chrono::steady_clock>
+    requires std::chrono::is_clock_v<Clock>
 class Timer
 {
-  private:
-    using clock = std::chrono::steady_clock;
-    using time_point = std::chrono::time_point<clock>;
-    /// @brief
-    std::string_view m_scope_name;
-    time_point m_start_timepoint;
-
-    [[nodiscard]] auto elapsed() const
-    {
-        return std::chrono::duration_cast<std::chrono::microseconds>(clock::now() - m_start_timepoint);
-    }
-
-    void stop()
-    {
-        std::chrono::microseconds dur = elapsed();
-        // std::ostringstream oss;
-        // oss << "\033[35m"
-        //     << "[TIMER] " << m_scope_name << " took ≈ " << dur / 1us << "us"
-        //     << " ≈ "
-        //     << std::chrono::duration_cast<std::chrono::seconds>(dur).count()
-        //     << "s\n"
-        //     << "\033[0m";
-        // std::cout << oss.str() << std::flush;
-        /// @todo Switch to C++23 print
-        std::print("{}[Timer] {} took {}ns", std::chrono::utc_clock::now(), m_scope_name, dur.count());
-    }
-
-    void reset()
-    {
-        m_start_timepoint = clock::now();
-    }
-
   public:
-    Timer() noexcept : m_scope_name{"Unspecified"}, m_start_timepoint{clock::now()}
+    using clock_type    = Clock;
+    using time_point    = typename clock_type::time_point;
+    using duration_type = typename clock_type::duration;
+
+    Timer() noexcept 
+        :  m_startTimePoint{clock_type::now()}
     {
     }
-    Timer(const std::string_view scope_name) noexcept : m_scope_name{scope_name}, m_start_timepoint{clock::now()}
+
+    [[nodiscard]]
+    __attribute__ ((__always_inline__))
+    time_point startTime() const noexcept
     {
+        return m_startTimePoint;
     }
+
+    inline void reset() noexcept
+    {
+        m_startTimePoint = clock_type::now();
+    }
+
+    [[nodiscard]]
+    duration_type elapsed() const noexcept
+    {
+        return clock_type::now() - m_startTimePoint;
+    }
+
+    template <class Duration = std::chrono::nanoseconds>
+    [[nodiscard]]
+    auto elapsedAs() const noexcept
+    {
+        return std::chrono::duration_cast<Duration>(elapsed());
+    }
+
+    [[nodiscard]]
+    std::int64_t elapsedNs() const noexcept
+    {
+        return elapsedAs<std::chrono::nanoseconds>().count();
+    }
+
+    [[nodiscard]]
+    std::int64_t elapsedUs() const noexcept
+    {
+        return elapsedAs<std::chrono::microseconds>().count();
+    }
+
+    [[nodiscard]]
+    std::int64_t elapsedMs() const noexcept
+    {
+        return elapsedAs<std::chrono::milliseconds>().count();
+    }
+
+    [[nodiscard]]
+    double elapsedSecs() const noexcept
+    {
+        return std::chrono::duration<double>(elapsed()).count();
+    }
+
     Timer(const Timer &) = delete;
     Timer(Timer &&) = delete;
     Timer &operator=(const Timer &) = delete;
@@ -60,7 +83,10 @@ class Timer
 
     ~Timer() noexcept
     {
-        stop();
+        // stop();
     }
+
+  private:
+    time_point m_startTimePoint;
 };
 } // namespace fiah

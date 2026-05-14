@@ -50,7 +50,7 @@ class ThreadPool
 
 ThreadPool::ThreadPool(std::size_t num_threads = std::thread::hardware_concurrency()) : m_num_threads{num_threads}
 {
-    fiah::Timer timer{"ThreadPool ctor"};
+    fiah::Timer timer{};
     using namespace std::chrono_literals;
     // auto stop_token = m_stop_source.get_token();
     m_workers.reserve(num_threads);

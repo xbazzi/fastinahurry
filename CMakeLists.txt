@@ -4,6 +4,8 @@ enable_testing()
 include(CTest)
 include(GoogleTest)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Debug)
     message("*** Build type not set.  defaulting to Debug")
@@ -75,7 +77,7 @@ message("************************************************************")
 
 # Only build tests if this is the main project (not included via FetchContent)
 if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
-  file(GLOB_RECURSE TEST_SOURCES
+  file(GLOB_RECURSE TEST_SOURCES CONFIGURE_DEPENDS
       "${CMAKE_SOURCE_DIR}/tests/*_test.cc"
       "${CMAKE_SOURCE_DIR}/tests/test.cc"
   )
@@ -87,6 +89,7 @@ if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
   set_target_properties(fiah_tests PROPERTIES
       CXX_STANDARD 23
       CXX_STANDARD_REQUIRED YES
+      RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/tests
   )
 
   target_include_directories(fiah_tests PRIVATE
@@ -99,6 +102,14 @@ if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
       GTest::gtest
       GTest::gtest_main
       Threads::Threads
+  )
+
+  target_precompile_headers(fiah_tests PRIVATE
+      <gtest/gtest.h>
+      <iostream>
+      <algorithm>
+      <ranges>
+      <print>
   )
 
   # Register tests with CTest
