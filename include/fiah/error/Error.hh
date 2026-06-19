@@ -21,7 +21,6 @@ enum class TomlParserError : std::uint8_t
     INVALID_TOML
 };
 
-#pragma pack(push, 1)
 enum class Error : std::uint8_t
 {
     USER_ERROR,
@@ -32,9 +31,20 @@ enum class Error : std::uint8_t
     CORE_ERORR,
     THREAD_ERROR
 };
-#pragma pack(pop)
 
 enum class TcpError : std::uint8_t
+{
+    BAD_SOCKET,
+    BIND_FAIL,
+    LISTEN_FAIL,
+    CONNECT_FAIL,
+    ACCEPT_FAIL,
+    SEND_FAIL,
+    RECV_FAIL,
+    INVALID_IP
+};
+
+enum class UdpError : std::uint8_t
 {
     BAD_SOCKET,
     BIND_FAIL,

@@ -1,66 +1,67 @@
 #pragma once
 
 #include <unistd.h>
+#include <type_traits>
 
 class SocketRAII
 {
   private:
-    int _fd{-1};
+    int m_fd;
 
   public:
-    SocketRAII() = default;
-    explicit SocketRAII(int fd) : _fd{fd}
+    SocketRAII() : m_fd{-1} {}
+    explicit SocketRAII(int fd) : m_fd{fd}
     {
         static_assert(!std::is_copy_constructible_v<SocketRAII>);
         static_assert(!std::is_copy_assignable<SocketRAII>::value);
     }
     SocketRAII(const SocketRAII &) = delete;            // No copy ctor
     SocketRAII &operator=(const SocketRAII &) = delete; // No copy assg
-    SocketRAII(SocketRAII &&other) noexcept(std::is_move_constructible_v<SocketRAII>) : _fd{other._fd}
+    SocketRAII(SocketRAII &&other) noexcept(std::is_move_constructible_v<SocketRAII>) : m_fd{other.m_fd}
     {
-        other._fd = -1;
+        other.m_fd = -1;
     } // Move ctor
     SocketRAII &operator=(SocketRAII &&other) noexcept(std::is_move_assignable_v<SocketRAII>) // Move assg
     {
         if (this != &other)
         {
-            if (_fd >= 0)
-                close(_fd);
-            _fd = other._fd;
-            other._fd = -1;
+            if (m_fd >= 0)
+                close(m_fd);
+            m_fd = other.m_fd;
+            other.m_fd = -1;
         }
         return *this;
     }
     ~SocketRAII()
     {
-        if (_fd >= 0)
-            close(_fd);
+        if (m_fd >= 0)
+            close(m_fd);
     }
 
     // Allow use in system calls
     operator int() const noexcept
     {
-        return _fd;
+        return m_fd;
     }
 
     // Assignment from raw socket
     SocketRAII &operator=(int newfd) noexcept
     {
-        if (_fd >= 0)
-            ::close(_fd);
-        _fd = newfd;
+        if (m_fd >= 0)
+            ::close(m_fd);
+        m_fd = newfd;
         return *this;
     }
 
     [[nodiscard]] bool valid() const noexcept
     {
-        return _fd >= 0;
+        return m_fd >= 0;
     }
 
     void reset(int newfd = -1) noexcept
     {
-        if (_fd >= 0)
-            close(_fd);
-        _fd = newfd;
+        if (m_fd >= 0)
+            close(m_fd);
+        m_fd = newfd;
     }
 };

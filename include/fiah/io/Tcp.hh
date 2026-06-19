@@ -7,6 +7,7 @@
 
 #include <cstdint>
 #include <string>
+#include <expected>
 
 #include "fiah/error/Error.hh"
 #include "fiah/io/SocketRAII.hh"
@@ -66,7 +67,6 @@ class Tcp
   public:
     Tcp(const Tcp &) = delete;
     Tcp &operator=(const Tcp &) = delete;
-
     Tcp(Tcp &&) = default;
     Tcp &operator=(Tcp &&) = default;
 
