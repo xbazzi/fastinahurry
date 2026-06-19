@@ -9,33 +9,29 @@ namespace fiah
 class FiniteDiff
 {
   public:
-    enum class DiffType
+    enum class DiffType : std::uint8_t
     {
+        None = 0,
         Forward,
         Backward,
         Central
     };
 
-    template <class F>
-        requires std::invocable<F, double>
-    static double calc(double x, double h, F &&f, DiffType type = DiffType::Forward)
+    template <class FuncT, DiffType eDiffType>
+        requires std::invocable<FuncT, double>
+    static double calc(double x, double h, FuncT &&f)
     {
-        switch (type)
-        {
-        case DiffType::Forward:
+        if constexpr (eDiffType == DiffType::Forward)
             return calcForwardFiniteDiff(x, std::forward<F>(f), h);
-        case DiffType::Central:
+        else if constexpr (eDiffType == DiffType::Central)
             return calcCentralFiniteDiff(x, std::forward<F>(f), h);
-        case DiffType::Backward:
+        else (eDiffType == DiffType::Backward)
             return calcBackwardFiniteDiff(x, std::forward<F>(f), h);
-        default:
-            std::unreachable();
-        }
+        std::unreachable();
     }
 
   private:
     template <class F> [[nodiscard]] static double calcForwardFiniteDiff(double x, F &&f, double h)
-
     {
         return (std::invoke(f, x + h) - std::invoke(f, x)) / h;
     }

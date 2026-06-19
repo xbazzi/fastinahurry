@@ -26,7 +26,7 @@ template <typename T> struct default_deleter
 };
 
 /// @brief Custom unique Pointer_T implementation as an alternative to
-/// std::UniquePtr
+/// std::unique_ptr
 /// @tparam T The type being managed
 /// @tparam Deleter The deleter type (defaults to default_deleter<T>)
 ///
