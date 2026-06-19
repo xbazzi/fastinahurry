@@ -37,7 +37,7 @@ class TcpServer : public Tcp
     __always_inline [[gnu::hot]] auto send(SocketRAII &client, const void *buf, size_t len)
         -> std::expected<std::uint64_t, fiah::TcpError>
     {
-        fiah::Timer timer{"TcpServer::send()"};
+        fiah::Timer timer{};
         ssize_t result = ::send(client, buf, len, MSG_NOSIGNAL);
         if (result < 0) [[unlikely]]
             return std::unexpected(fiah::TcpError::SEND_FAIL);
@@ -47,7 +47,7 @@ class TcpServer : public Tcp
     __always_inline [[gnu::hot]] auto recv(SocketRAII &client, void *buf, size_t len)
         -> std::expected<std::uint64_t, fiah::TcpError>
     {
-        fiah::Timer timer{"TcpServer::recv()"};
+        fiah::Timer timer{};
         ssize_t result = ::recv(client, buf, len, 0);
         if (result < 0) [[unlikely]]
             return std::unexpected(fiah::TcpError::RECV_FAIL);
@@ -69,7 +69,7 @@ inline TcpServer::TcpServer(std::string &&ip, uint16_t port) : Tcp{std::move(ip)
 
 inline auto TcpServer::start() -> std::expected<void, fiah::TcpError>
 {
-    fiah::Timer timer{"TcpServer::start()"};
+    fiah::Timer timer{};
     LOG_INFO("Attempting to start server on ", _ip, ":", _port);
 
     if (!create_socket())
@@ -102,7 +102,7 @@ inline auto TcpServer::start() -> std::expected<void, fiah::TcpError>
 
 inline auto TcpServer::accept_client() -> std::expected<SocketRAII, fiah::TcpError>
 {
-    fiah::Timer timer{"accept_client"};
+    fiah::Timer timer{};
     int client_fd = ::accept(m_sock, nullptr, nullptr);
     if (client_fd < 0)
         return std::unexpected(fiah::TcpError::BAD_SOCKET);
