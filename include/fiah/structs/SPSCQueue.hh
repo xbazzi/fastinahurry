@@ -129,8 +129,6 @@ template <class T, std::uint64_t CapacityPow2> class SPSCQueue
     }
 
     /// @brief Pop into the passed argument (by reference) to prevent moves
-    /// @todo we shouldn't move bc the consumer wouldn't know if the queue wrapped
-    ///       around and overwrote the current element. Need to think of something else.
     bool pop(T &out)
     {
         std::uint64_t tail = m_tail.load(std::memory_order_relaxed);

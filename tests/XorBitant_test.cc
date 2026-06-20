@@ -9,6 +9,10 @@
 #include <random>
 #include <ranges>
 #include <thread>
+
+namespace fiah
+{
+
 // clang-format off
 
 class XorBitantTest : public ::testing::Test
@@ -82,3 +86,4 @@ TEST_F(XorBitantTest, ThreadDoubleClockSeed)
     generateHistogram(xor_gen, "thread + double clock");
     testRandomnessAndShuffling(xor_gen);
 }
+} // End namespace fiah

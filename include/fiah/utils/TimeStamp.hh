@@ -52,10 +52,15 @@ public:
     constexpr TimeStamp() noexcept = default;
     explicit TimeStamp(rep ticks) noexcept : m_ticks{ticks} {}
 
-    static TimeStamp now() noexcept
+    void update_now() noexcept
     {
         const auto now = clock::now().time_since_epoch();
-        return {std::chrono::duration_cast<duration>(now).count()};
+        m_ticks = std::chrono::duration_cast<duration>(now).count();
+    }
+
+    rep get_ticks() const noexcept
+    {
+        return m_ticks;
     }
 
     template <class Duration>

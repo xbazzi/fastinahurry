@@ -1,7 +1,10 @@
 #include <cstdint>
 #include <limits>
 
-class XorBitant
+namespace fiah
+{
+
+class XorBitant32
 {
   private:
     constexpr static inline std::uint64_t MAGIC_MULTIPLIER = 0x9E3779B97F4A7C15ULL;
@@ -11,7 +14,7 @@ class XorBitant
   public:
     using result_type = std::uint32_t;
 
-    explicit XorBitant(std::uint64_t seed = MAGIC_SEED) : m_state(seed)
+    explicit XorBitant32(std::uint64_t seed = MAGIC_SEED) : m_state(seed)
     {
     }
 
@@ -38,3 +41,7 @@ class XorBitant
         return static_cast<result_type>(x * MAGIC_MULTIPLIER);
     }
 };
+
+using XorBitant = XorBitant32;
+
+} // End namespace fiah
