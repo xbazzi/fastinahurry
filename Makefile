@@ -15,6 +15,9 @@ all: configure ## Build all targets
 options: configure ## Build options target
 	cmake --build $(BUILD_DIR) --target options
 
+check: configure ## Compile all library headers (no tests/examples/benchmarks)
+	cmake --build $(BUILD_DIR) --target fiah_header_check
+
 build-test: configure ## Build test target
 	cmake --build $(BUILD_DIR) --target fiah_tests
 

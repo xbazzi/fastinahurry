@@ -26,7 +26,6 @@ class TSCTimer
 
     void increment(std::uint64_t ns)
     {
-        unsigned aux;
         m_u64TimeNow += ns;
     }
 
@@ -37,7 +36,7 @@ class TSCTimer
 
     double cyclesToMicros(std::uint64_t cycles) const
     {
-        return cycles * m_dbCyclesToMicros;
+        return static_cast<double>(cycles) * m_dbCyclesToMicros;
     }
 
     ~TSCTimer()

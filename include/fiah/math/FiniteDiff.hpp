@@ -11,7 +11,6 @@ class FiniteDiff
   public:
     enum class DiffType : std::uint8_t
     {
-        None = 0,
         Forward,
         Backward,
         Central
@@ -22,11 +21,11 @@ class FiniteDiff
     static double calc(double x, double h, FuncT &&f)
     {
         if constexpr (eDiffType == DiffType::Forward)
-            return calcForwardFiniteDiff(x, std::forward<F>(f), h);
+            return calcForwardFiniteDiff(x, std::forward<FuncT>(f), h);
         else if constexpr (eDiffType == DiffType::Central)
-            return calcCentralFiniteDiff(x, std::forward<F>(f), h);
-        else (eDiffType == DiffType::Backward)
-            return calcBackwardFiniteDiff(x, std::forward<F>(f), h);
+            return calcCentralFiniteDiff(x, std::forward<FuncT>(f), h);
+        else 
+            return calcBackwardFiniteDiff(x, std::forward<FuncT>(f), h);
         std::unreachable();
     }
 

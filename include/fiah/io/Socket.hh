@@ -3,25 +3,25 @@
 #include <unistd.h>
 #include <type_traits>
 
-class SocketRAII
+class Socket
 {
   private:
     int m_fd;
 
   public:
-    SocketRAII() : m_fd{-1} {}
-    explicit SocketRAII(int fd) : m_fd{fd}
+    Socket() : m_fd{-1} {}
+    explicit Socket(int fd) : m_fd{fd}
     {
-        static_assert(!std::is_copy_constructible_v<SocketRAII>);
-        static_assert(!std::is_copy_assignable<SocketRAII>::value);
+        static_assert(!std::is_copy_constructible_v<Socket>);
+        static_assert(!std::is_copy_assignable<Socket>::value);
     }
-    SocketRAII(const SocketRAII &) = delete;            // No copy ctor
-    SocketRAII &operator=(const SocketRAII &) = delete; // No copy assg
-    SocketRAII(SocketRAII &&other) noexcept(std::is_move_constructible_v<SocketRAII>) : m_fd{other.m_fd}
+    Socket(const Socket &) = delete;            // No copy ctor
+    Socket &operator=(const Socket &) = delete; // No copy assg
+    Socket(Socket &&other) noexcept(std::is_move_constructible_v<Socket>) : m_fd{other.m_fd}
     {
         other.m_fd = -1;
     } // Move ctor
-    SocketRAII &operator=(SocketRAII &&other) noexcept(std::is_move_assignable_v<SocketRAII>) // Move assg
+    Socket &operator=(Socket &&other) noexcept(std::is_move_assignable_v<Socket>) // Move assg
     {
         if (this != &other)
         {
@@ -32,7 +32,7 @@ class SocketRAII
         }
         return *this;
     }
-    ~SocketRAII()
+    ~Socket()
     {
         if (m_fd >= 0)
             close(m_fd);
@@ -45,7 +45,7 @@ class SocketRAII
     }
 
     // Assignment from raw socket
-    SocketRAII &operator=(int newfd) noexcept
+    Socket &operator=(int newfd) noexcept
     {
         if (m_fd >= 0)
             ::close(m_fd);

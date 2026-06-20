@@ -1,10 +1,3 @@
-// Write your solution here
-// C++20 for C++
-// /////////////////////////////////////////////////////////////////////////
-// If C++: Your code is automatically compiled with a precompiled header. //
-// 99% of includes / packages are already added for you.                  //
-// You do NOT need to add your own includes here.                         //
-// /////////////////////////////////////////////////////////////////////////
 
 #include <atomic>
 #include <concepts>
@@ -208,19 +201,3 @@ template <class T, class Deleter = default_deleter<T>> class shared_ptr
     }
 };
 } // namespace fiah
-
-int main()
-{
-    int p = 5;
-    int *x = &p;
-    auto deleter = [&](int *) {};
-    fiah::shared_ptr<int, decltype(deleter)> intptr(x, deleter);
-    std::cout << intptr.use_count() << " ";
-    fiah::shared_ptr<int, decltype(deleter)> anotherone(std::move(intptr));
-    std::cout << anotherone.use_count() << " ";
-    intptr.reset();
-    std::cout << anotherone.use_count() << " ";
-    anotherone.reset();
-
-    std::cout << anotherone.use_count() << " ";
-}

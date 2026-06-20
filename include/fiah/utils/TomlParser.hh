@@ -213,7 +213,7 @@ inline auto TomlParser::extract_keys(std::ifstream &file) noexcept -> std::expec
     return true;
 }
 
-inline auto TomlParser::is_valid(std::ifstream &file) noexcept -> std::expected<bool, fiah::TomlParserError>
+inline auto TomlParser::is_valid([[maybe_unused]] std::ifstream &file) noexcept -> std::expected<bool, fiah::TomlParserError>
 {
     return std::unexpected(fiah::TomlParserError::INVALID_TOML);
 }

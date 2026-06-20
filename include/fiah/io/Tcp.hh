@@ -10,7 +10,7 @@
 #include <expected>
 
 #include "fiah/error/Error.hh"
-#include "fiah/io/SocketRAII.hh"
+#include "fiah/io/Socket.hh"
 
 namespace fiah
 {
@@ -20,7 +20,7 @@ class Tcp
   protected:
     std::string _ip{};
     std::uint16_t _port{};
-    SocketRAII m_sock{-1};
+    Socket m_sock{-1};
     bool _running{false};
 
     Tcp() = default;

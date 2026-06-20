@@ -43,7 +43,7 @@ add_link_options(-Wno-interference-size -fsanitize=address,undefined,leak)
 # Create header-only library interface
 add_library(fiah INTERFACE)
 target_include_directories(fiah INTERFACE
-    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>
 )
 
@@ -54,10 +54,11 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(GTest REQUIRED)
-find_package(Threads)
+find_package(Threads REQUIRED)
+find_package(nlohmann_json REQUIRED)
 include(FetchContent)
 
-include_directories("${CMAKE_SOURCE_DIR}/include")
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include")
 
 # Put all executables in the same directory
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
@@ -70,6 +71,18 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 message("************************************************************")
 message("**** Building in ${CMAKE_BUILD_TYPE} mode ")
 message("************************************************************")
+
+# ============================================================================
+# Header Compilation Check
+# ============================================================================
+add_library(fiah_header_check OBJECT check/all_headers.cc)
+target_include_directories(fiah_header_check PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+target_link_libraries(fiah_header_check PRIVATE
+    nlohmann_json::nlohmann_json
+    Threads::Threads
+)
 
 # ============================================================================
 # Testing Configuration

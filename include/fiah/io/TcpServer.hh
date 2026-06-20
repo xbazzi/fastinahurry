@@ -32,9 +32,9 @@ class TcpServer : public Tcp
     explicit TcpServer(std::string &&, std::uint16_t);
 
     std::expected<void, fiah::TcpError> start();
-    std::expected<SocketRAII, fiah::TcpError> accept_client();
+    std::expected<Socket, fiah::TcpError> accept_client();
 
-    __always_inline [[gnu::hot]] auto send(SocketRAII &client, const void *buf, size_t len)
+    __always_inline [[gnu::hot]] auto send(Socket &client, const void *buf, size_t len)
         -> std::expected<std::uint64_t, fiah::TcpError>
     {
         fiah::Timer timer{};
@@ -44,7 +44,7 @@ class TcpServer : public Tcp
         return static_cast<std::uint64_t>(result);
     }
 
-    __always_inline [[gnu::hot]] auto recv(SocketRAII &client, void *buf, size_t len)
+    __always_inline [[gnu::hot]] auto recv(Socket &client, void *buf, size_t len)
         -> std::expected<std::uint64_t, fiah::TcpError>
     {
         fiah::Timer timer{};
@@ -80,7 +80,7 @@ inline auto TcpServer::start() -> std::expected<void, fiah::TcpError>
 
     sockaddr_in addr{};
     addr.sin_family = AF_INET;
-    addr.sin_port = htons(_port);
+    addr.sin_port = ::htons(_port);
     addr.sin_addr.s_addr = inet_addr(_ip.c_str());
 
     if (::bind(m_sock, reinterpret_cast<sockaddr *>(&addr), sizeof(addr)) < 0)
@@ -100,13 +100,13 @@ inline auto TcpServer::start() -> std::expected<void, fiah::TcpError>
     return {};
 }
 
-inline auto TcpServer::accept_client() -> std::expected<SocketRAII, fiah::TcpError>
+inline auto TcpServer::accept_client() -> std::expected<Socket, fiah::TcpError>
 {
     fiah::Timer timer{};
     int client_fd = ::accept(m_sock, nullptr, nullptr);
     if (client_fd < 0)
         return std::unexpected(fiah::TcpError::BAD_SOCKET);
-    return SocketRAII{client_fd};
+    return Socket{client_fd};
 }
 
 } // End namespace fiah
