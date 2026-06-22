@@ -12,9 +12,11 @@
 #include "fiah/error/Error.hh"
 #include "fiah/io/Socket.hh"
 
+
 namespace fiah
 {
 
+/// @todo remove expected and gnu::hot
 class Tcp
 {
   protected:

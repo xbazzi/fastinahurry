@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <chrono>
+#include <type_traits>
 
 namespace fiah 
 {
@@ -49,18 +50,28 @@ public:
     using rep = duration::rep;
     using time_point = std::chrono::time_point<clock, duration>;
 
+    static constexpr float NANO_PER_MICRO{1000.0};
+
     constexpr TimeStamp() noexcept = default;
     explicit TimeStamp(rep ticks) noexcept : m_ticks{ticks} {}
 
-    void update_now() noexcept
+    TimeStamp& update_now() noexcept
     {
         const auto now = clock::now().time_since_epoch();
         m_ticks = std::chrono::duration_cast<duration>(now).count();
+        return *this;
     }
 
     rep get_ticks() const noexcept
     {
         return m_ticks;
+    }
+
+    template <class T>
+        requires std::is_integral_v<T>
+    static float to_micro(const T& val)
+    {
+        return val / NANO_PER_MICRO;
     }
 
     template <class Duration>

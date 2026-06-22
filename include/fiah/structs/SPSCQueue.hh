@@ -10,6 +10,7 @@
 #include <new>
 #include <type_traits>
 #include <utility>
+#include <concepts>
 
 // FastInAHurry Includes
 
@@ -84,25 +85,12 @@ template <class T, std::uint64_t CapacityPow2> class SPSCQueue
         }
     }
 
-    /// @brief Copy push. Try moving instead of you can. Calls `emplace(arg)`.
-    /// @note Non-copyable types are fine as long as they are
-    /// movable/constructible.
-    /// @warning Push by value+move is often a tad faster than const& for small
-    /// trivially movable T.
     /// @param x
     /// @return Success or failure as a bool.
-    bool push(const T &x)
+    bool push(auto&& x)
+        requires std::convertible_to<std::remove_cvref_t<decltype(x)>, T>
     {
-        return emplace(x);
-    }
-
-    /// @brief Move push. Just calls `emplace(std::move(item))`.
-    /// @return Success or failure as a bool.
-    /// @param x
-    /// @return
-    bool push(T &&x)
-    {
-        return emplace(std::move(x));
+        return emplace(std::forward<decltype(x)>(x));
     }
 
     /// @brief Actually constructs objects in the queue.

@@ -4,6 +4,7 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
+#include <sys/types.h>
 
 #include <cstdint>
 #include <expected>
@@ -17,12 +18,12 @@ namespace fiah {
 
 class UdpBase
 {
-public:
+protected:
     UdpBase(const UdpBase&) = delete;
     UdpBase& operator=(const UdpBase&) = delete;
     UdpBase(UdpBase&&) = default;
     UdpBase& operator=(UdpBase&&) = default;
-    virtual ~UdpBase() noexcept = default;
+    ~UdpBase() noexcept = default;
 
 protected:
     Socket m_sock;
@@ -41,14 +42,14 @@ protected:
 
     int get_fd() const noexcept { return static_cast<int>(m_sock); }
 
-    [[nodiscard, gnu::always_inline, gnu::hot]]
+    [[nodiscard, gnu::always_inline]]
     ssize_t send(const void* buf, size_t len, const sockaddr_in& peer, int flags = 0)
     {
         return ::sendto(m_sock, buf, len, flags,
                         reinterpret_cast<const sockaddr*>(&peer), sizeof(peer));
     }
 
-    [[nodiscard, gnu::always_inline, gnu::hot]]
+    [[nodiscard, gnu::always_inline]]
     ssize_t recv(void* buf, size_t len, sockaddr_in& peer, int flags = 0)
     {
         socklen_t peer_len = sizeof(peer);
@@ -58,7 +59,7 @@ protected:
 
 };
 
-class UdpServer : public UdpBase
+class UdpServer : private UdpBase
 {
   public:
     UdpServer() = default;
@@ -86,24 +87,16 @@ class UdpServer : public UdpBase
         return {};
     }
 
-    [[nodiscard, gnu::always_inline, gnu::hot]] 
-    auto send(const void* buf, size_t len, const sockaddr_in& peer)
-        -> std::expected<std::uint64_t, UdpError>
+    [[gnu::always_inline]] 
+    auto send(const void* buf, size_t len, const sockaddr_in& peer) -> ssize_t
     {
-        ssize_t result = UdpBase::send(buf, len, peer);
-        if (result < 0) [[unlikely]]
-            return std::unexpected(UdpError::SEND_FAIL);
-        return static_cast<std::uint64_t>(result);
+        return UdpBase::send(buf, len, peer);
     }
 
-    [[nodiscard, gnu::always_inline, gnu::hot]] 
-    auto recv(void* buf, size_t len, sockaddr_in& peer)
-        -> std::expected<std::uint64_t, UdpError>
+    [[nodiscard, gnu::always_inline]] 
+    auto recv(void* buf, size_t len, sockaddr_in& peer) -> ssize_t
     {
-        ssize_t result = UdpBase::recv(buf, len, peer);
-        if (result < 0) [[unlikely]]
-            return std::unexpected(UdpError::RECV_FAIL);
-        return static_cast<std::uint64_t>(result);
+        return UdpBase::recv(buf, len, peer);
     }
 
 private:
@@ -112,7 +105,7 @@ private:
     bool m_started{false};
 };
 
-class UdpClient : public UdpBase
+class UdpClient : private UdpBase
 {
   public:
     UdpClient() = default;
@@ -136,25 +129,18 @@ class UdpClient : public UdpBase
         return {};
     }
 
-    [[nodiscard, gnu::always_inline, gnu::hot]]
-    auto recv(void* buf, size_t len, sockaddr_in& peer)
-        -> std::expected<std::size_t, UdpError>
+    [[nodiscard, gnu::always_inline]]
+    auto recv(void* buf, size_t len, sockaddr_in& peer) -> ssize_t
     {
-        ssize_t result = UdpBase::recv(buf, len, peer);
-        if (result < 0) [[unlikely]]
-            return std::unexpected(UdpError::RECV_FAIL);
-        return static_cast<std::size_t>(result);
+        return UdpBase::recv(buf, len, peer);
     }
 
-    template <class Self>
-    sockaddr_in get_sockaddr_in(this Self&& self)
+    sockaddr_in get_sockaddr_in(this const auto& self)
     {
-        return std::forward<Self>(self).m_peer;
+        return self.m_peer;
     }
 
 private:
     sockaddr_in m_peer;
 };
-
-
 } // End namespace fiah
