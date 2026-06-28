@@ -21,12 +21,12 @@ check: configure ## Compile all library headers (no tests/examples/benchmarks)
 build-test: configure ## Build test target
 	cmake --build $(BUILD_DIR) --target fiah_tests
 
-test: build-test ## Build and run tests (optional: FILTER=TestSuite.TestName)
-	./tests/fiah_tests $(if $(FILTER),--gtest_filter=$(FILTER),)
+tests: build-test ## Build and run tests (optional: FILTER=TestSuite.TestName)
+	./$(BUILD_DIR)/bin/fiah_tests $(if $(FILTER),--gtest_filter=$(FILTER),)
 
 # Configure step (only runs once unless CMakeLists.txt changes)
 $(BUILD_DIR)/CMakeCache.txt: CMakeLists.txt ## Configure build directory
-	cmake -S . -B $(BUILD_DIR) -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+	cmake -S . -B $(BUILD_DIR) -G Ninja -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 
 configure: $(BUILD_DIR)/CMakeCache.txt 
 

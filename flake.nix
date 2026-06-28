@@ -36,6 +36,7 @@
             pyPkgs
             ++ (with pkgs; [
               # Compilers and build tools
+              ninja
               clang
               gcc
               llvm.lldb
@@ -51,22 +52,16 @@
               valgrind
               doxygen
               graphviz
-              nodejs_22
               zsh
 
-              # Testing frameworks
-              gtest
-              gbenchmark
             ]);
 
           buildInputs = with pkgs; [
-            # Libraries your code links against
             boost
             toml11
             openssl
-            nlohmann_json
-            grpc
-            protobuf
+            gtest
+            gbenchmark
           ];
           shell = pkgs.zsh;
           shellHook = ''

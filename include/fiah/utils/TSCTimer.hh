@@ -6,9 +6,6 @@
 #include <x86intrin.h>
 #endif
 
-// Third Party Includes
-#include <nlohmann/json.hpp>
-
 // FastInAHurry Includes
 #include "fiah/utils/Logger.hh"
 #include "fiah/utils/Timer.hh"

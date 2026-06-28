@@ -55,7 +55,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(GTest REQUIRED)
 find_package(Threads REQUIRED)
-find_package(nlohmann_json REQUIRED)
+find_package(REQUIRED)
 include(FetchContent)
 
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include")
@@ -80,7 +80,6 @@ target_include_directories(fiah_header_check PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 target_link_libraries(fiah_header_check PRIVATE
-    nlohmann_json::nlohmann_json
     Threads::Threads
 )
 
@@ -102,7 +101,6 @@ if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
   set_target_properties(fiah_tests PROPERTIES
       CXX_STANDARD 23
       CXX_STANDARD_REQUIRED YES
-      RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/tests
   )
 
   target_include_directories(fiah_tests PRIVATE

@@ -23,7 +23,6 @@
 #include "fiah/io/TcpServer.hh"
 #include "fiah/io/Udp.hh"
 #include "fiah/io/Config.hh"
-#include "fiah/io/JSONReader.hh"
 
 // Math
 #include "fiah/math/AutoDiff.hpp"
@@ -40,7 +39,6 @@
 #include "fiah/thread/SpinMutex.hpp"
 #include "fiah/thread/ThreadPool.hpp"
 
-// Memory (included as headers in tests)
-#include "fiah/memory/Memcpy.cc"
-#include "fiah/memory/Memmove.cc"
-#include "fiah/memory/Strcpy.cc"
+// Memory 
+#include "fiah/memory/BumpAllocator.hh"
+#include "fiah/memory/BumpArena.hh"
