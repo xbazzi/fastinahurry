@@ -1,155 +1,213 @@
 #pragma once
 
 #include <algorithm>
-#include <cstdint>
+#include <cstddef>
 #include <cstdlib>
 #include <cstring>
 #include <memory>
 #include <new>
-#include <type_traits>
+#include <stdexcept>
+#include <cassert>
+#include <format>
+
+#include "../utils/TypeFlags.hh"
 
 namespace fiah
 {
-template <typename Element> class Vector
+
+template <class T> class Vector
 {
-  private:
-    std::uint64_t m_size{0};
-    std::uint64_t m_cap{1};
-    Element *p_arr{nullptr};
+    static constexpr auto TSize = sizeof(T);
+    static constexpr std::align_val_t TAlign{alignof(T)};
+    static constexpr auto ExpansionMult = 2;
 
-    static Element *_allocate(std::uint64_t alloc_size)
+    T* m_begin{nullptr};
+    T* m_end{nullptr};
+    T* m_cap{nullptr};
+
+    [[nodiscard]] static constexpr T* _allocate(std::size_t alloc_size) noexcept
     {
-        if (alloc_size == 0)
-            return nullptr;
-        return static_cast<Element *>(::operator new(sizeof(Element) * alloc_size));
+        assert(alloc_size != 0);
+        return static_cast<T*>(::operator new(TSize * alloc_size, TAlign));
     }
 
-    void _grow_capacity(std::uint64_t new_cap)
+    constexpr void _grow_capacity(std::size_t new_cap) noexcept
     {
-        Element *new_arr = _allocate(new_cap);
-        std::size_t i = 0;
-        try
-        {
-            for (; i < m_size; ++i)
-                std::construct_at(new_arr + i, std::move_if_noexcept(p_arr[i]));
-        }
-        catch (...)
-        {
-            std::destroy_n(new_arr, i);
-            ::operator delete(new_arr);
-            throw;
-        }
+        auto const new_arr = _allocate(new_cap);
+        auto const curr_sz = size();
+        auto i = curr_sz;
 
-        std::destroy_n(p_arr, m_size);
-        ::operator delete(p_arr);
-        p_arr = new_arr;
-        m_cap = new_cap;
+        while(i-- > 0)
+            std::construct_at(new_arr + i, std::move_if_noexcept(m_begin[i]));
+
+        std::destroy_n(m_begin, curr_sz);
+        ::operator delete(m_begin, TAlign);
+        m_begin = new_arr;
+        m_end = m_begin + curr_sz;
+        m_cap = m_begin + new_cap;
     }
 
-    void _destroy_and_free()
+    constexpr void _allocate_from_nullptr(std::size_t new_cap = 1) noexcept
     {
-        if (p_arr)
-        {
-            std::destroy_n(p_arr, m_size);
-            ::operator delete(p_arr);
-        }
-        return;
+        assert(m_begin == nullptr); assert(m_end == nullptr); assert(m_cap == nullptr);
+        m_end = m_begin = _allocate(new_cap);
+        m_cap = m_begin + new_cap;
+    }
+
+    constexpr void _destroy_all() noexcept
+    {
+        if(not m_begin) return;
+        std::destroy_n(m_begin, size());
+        m_end = m_begin;
+    }
+
+    constexpr void _free() noexcept
+    {
+        ::operator delete(m_begin, TAlign);
+        m_begin = m_cap = m_end = nullptr;
+    }
+
+    constexpr void _destroy_and_free() noexcept
+    {
+        _destroy_all();
+        _free();
     }
 
   public:
-    Vector() : m_size{0}, p_arr{static_cast<Element *>(::operator new(sizeof(Element)))}
+
+    constexpr Vector() noexcept = default;
+
+    template <std::size_t N>
+    constexpr Vector(ReserveInitial<N>) noexcept
     {
+        _allocate_from_nullptr(N);
     }
 
-    Vector(std::uint64_t size) : m_size{size}
+    constexpr Vector(Vector const& other) noexcept
     {
-        m_cap = std::max<std::uint64_t>(1ULL, size);
-        p_arr = _allocate(m_cap);
-        for (std::uint64_t i = 0; i < size; ++i)
-        {
-            std::construct_at(p_arr + i);
-        }
+        _allocate_from_nullptr(other.capacity());
+        m_end = std::uninitialized_copy_n(other.m_begin, other.size(), m_begin);
     }
 
-    ~Vector()
+    Vector& operator=(Vector const& other) noexcept
     {
-        std::destroy_n(p_arr, m_size);
-        ::operator delete(p_arr);
+        reserve(other.size());
+        m_end = std::copy_n(other.m_begin, other.size(), m_begin);
+        return *this;
     }
 
-    Element &operator[](std::size_t pos)
+    constexpr Vector(Vector&& other) noexcept
+    : m_begin(other.m_begin), m_end(other.m_end), m_cap(other.m_cap)
     {
-        return *(p_arr + pos);
+        other.m_cap = other.m_end = other.m_begin = nullptr;
     }
 
-    template <class T> void push_back(T &&element)
+    Vector& operator=(Vector&& other) noexcept
     {
-        if (m_cap == 1) [[unlikely]]
-            _grow_capacity(m_cap * 3);
-        if (m_size >= m_cap)
-            _grow_capacity(m_cap * 3);
-        Element *inserter = p_arr + m_size;
-
-        // "Tryhard version"
-        // std::construct_at<std::remove_pointer_t<decltype(inserter)>>(inserter,
-        // element);
-        //
-        // "Never touched a woman"
-        // ::new (static_cast<void*>(inserter))
-        //     std::remove_reference_t<Element>(std::forward<Element>(element));
-        //
-        // Touches grass
-        std::construct_at(inserter, std::forward<Element>(element));
-        ++m_size;
+        _destroy_and_free();
+        m_begin = other.m_begin; m_end = other.m_end; m_cap = other.m_cap;
+        other.m_cap = other.m_end = other.m_begin = nullptr;
+        return *this;
     }
 
-    template <class... Args> void emplace_back(Args &&...args)
+    constexpr ~Vector() noexcept
     {
-        if (m_cap == 1) [[unlikely]]
-            _grow_capacity(m_cap * 3);
-        if (m_size >= m_cap)
-            _grow_capacity(m_cap * 3);
-        Element *inserter = p_arr + m_size;
-
-        // Construct element in-place with forwarded arguments
-        std::construct_at(inserter, std::forward<Args>(args)...);
-        ++m_size;
+        _destroy_and_free();
     }
 
-    const Element &at(std::size_t index) const
+    template <class... Args> T& emplace_back(Args &&...args) noexcept
     {
-        if (index >= m_size)
-            throw std::out_of_range("u tripping");
-        return *(static_cast<Element *>(p_arr + index));
+        if(m_begin == nullptr) _allocate_from_nullptr();
+        else if (m_end == m_cap) _grow_capacity(capacity() * ExpansionMult);
+        return *std::construct_at(m_end++, std::forward<Args>(args)...);
     }
 
-    std::size_t size() const
+    constexpr void push_back(T const& element) noexcept
     {
-        return m_size;
+        emplace_back(element);
     }
 
-    std::size_t capacity() const
+    constexpr void push_back(T&& element) noexcept
     {
-        return m_cap;
+        emplace_back(std::move(element));
     }
 
-    void shrink_to_fit()
+    constexpr T& at(std::size_t index)
     {
-        if (m_cap > m_size)
-            _grow_capacity(m_size);
+        if (index >= size()) throw std::out_of_range(std::format("Access at index {} within fiah::Vector of size {}.", index, size()));
+        return m_begin[index];
     }
 
-    void resize(uint64_t new_cap)
+    constexpr T const& at(std::size_t index) const
     {
-        m_cap = new_cap;
+        if (index >= size()) throw std::out_of_range(std::format("Access at index {} within fiah::Vector of size {}.", index, size()));
+        return m_begin[index];
     }
 
-    void pop_back()
+    [[nodiscard]] constexpr std::size_t size() const noexcept
     {
-        if (!m_size)
+        return static_cast<std::size_t>(m_end - m_begin);
+    }
+
+    [[nodiscard]] constexpr std::size_t capacity() const noexcept
+    {
+        return m_cap - m_begin;
+    }
+
+    [[nodiscard]] constexpr bool empty() const noexcept
+    {
+        return m_begin == m_cap;
+    }
+
+    constexpr void reserve(std::size_t new_cap) noexcept
+    {
+        if(m_begin == nullptr) return _allocate_from_nullptr(new_cap);
+
+        auto const current_cap = capacity();
+        if(current_cap >= new_cap) return;
+
+        _grow_capacity(new_cap);
+    }
+
+    constexpr void resize(std::size_t new_size) noexcept
+    {
+        if(m_begin == nullptr) {
+            _allocate_from_nullptr(new_size);
+            while(m_end not_eq m_cap) std::construct_at(m_end++);
             return;
-        --m_size;
-        std::destroy_at(p_arr + m_size);
+        }
+
+        auto const current_size = size();
+        auto const new_end = m_begin + new_size;
+        if(current_size >= new_size) {
+            while(m_end not_eq new_end) std::destroy_at(--m_end);
+            return;
+        }
+
+        if(capacity() < new_size) _grow_capacity(new_size);
+
+        auto const num_default{new_size - current_size};
+        while(m_end not_eq new_end)
+            std::construct_at(m_end);
+    }
+
+    constexpr void pop_back() noexcept
+    {
+        assert(not empty());
+        std::destroy_at(--m_end);
+    }
+
+    constexpr T& operator[](std::size_t pos) noexcept
+    {
+        assert(pos < size());
+        return m_begin[pos];
+    }
+
+    constexpr T const& operator[](std::size_t pos) const noexcept
+    {
+        assert(pos < size());
+        return m_begin[pos];
     }
 };
+
 } // namespace fiah

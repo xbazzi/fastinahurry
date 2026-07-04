@@ -33,7 +33,7 @@ protected:
 
     auto create_socket() -> std::expected<void, UdpError>
     {
-        int fd = ::socket(AF_INET, SOCK_DGRAM, 0);
+        auto const fd = ::socket(AF_INET, SOCK_DGRAM, 0);
         if (fd < 0)
             return std::unexpected(UdpError::BAD_SOCKET);
         m_sock = fd;
@@ -105,6 +105,19 @@ private:
     bool m_started{false};
 };
 
+[[noreturn]]
+#if defined(GNUC) || defined(clang)
+attribute((cold, noinline))
+#endif
+inline void udp_fail()
+{
+#if defined(GNUC__) || defined(clang)
+    __builtin_trap();
+#else
+    std::abort();
+#endif
+}
+
 class UdpClient : private UdpBase
 {
   public:
@@ -112,7 +125,8 @@ class UdpClient : private UdpBase
 
     explicit UdpClient(std::string ip, std::uint16_t port)
     {
-        create_socket();
+        if (not create_socket()) udp_fail();
+
         m_peer.sin_family = AF_INET;
         m_peer.sin_port = ::htons(port);
         ::inet_pton(AF_INET, ip.c_str(), &m_peer.sin_addr);

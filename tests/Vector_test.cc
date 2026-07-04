@@ -21,19 +21,13 @@ TEST_F(VectorTest, DefaultConstructor)
     EXPECT_EQ(vec.size(), 0);
 }
 
-TEST_F(VectorTest, SizeConstructor)
-{
-    fiah::Vector<int> vec(5);
-    EXPECT_EQ(vec.size(), 5);
-}
-
 TEST_F(VectorTest, PushBackIntegers)
 {
     fiah::Vector<int> vec;
     vec.push_back(10);
     vec.push_back(20);
     vec.push_back(30);
-    
+
     EXPECT_EQ(vec.size(), 3);
     EXPECT_EQ(vec[0], 10);
     EXPECT_EQ(vec[1], 20);
@@ -43,11 +37,11 @@ TEST_F(VectorTest, PushBackIntegers)
 TEST_F(VectorTest, PushBackStrings)
 {
     fiah::Vector<std::string> vec;
-    
+
     vec.push_back("Hello");
     vec.push_back("World");
     vec.push_back("Test");
-    
+
     EXPECT_EQ(vec.size(), 3);
     EXPECT_EQ(vec[0], "Hello");
     EXPECT_EQ(vec[1], "World");
@@ -57,13 +51,13 @@ TEST_F(VectorTest, PushBackStrings)
 TEST_F(VectorTest, CapacityGrowth)
 {
     fiah::Vector<int> vec;
-    
+
     // Push enough elements to trigger capacity growth
     for (int i = 0; i < 20; ++i)
     {
         vec.push_back(i);
     }
-    
+
     EXPECT_EQ(vec.size(), 20);
     for (int i = 0; i < 20; ++i)
     {

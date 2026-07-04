@@ -1,3 +1,4 @@
+#pragma once
 /**
  * @file TomlParser.hh
  * @author Xander Bazzi (codemaster@xbazzi.com)
@@ -9,7 +10,6 @@
  *
  */
 
-#pragma once
 // C++ Includes
 #include <cstdint>
 #include <expected>

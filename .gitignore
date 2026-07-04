@@ -8,3 +8,4 @@ perf*
 vtune*
 LastTest.log
 CTest*
+.idea/

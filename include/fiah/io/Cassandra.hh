@@ -1,3 +1,4 @@
+#pragma once
 // C++ Includes
 #include <cassert>
 #include <cstdint>

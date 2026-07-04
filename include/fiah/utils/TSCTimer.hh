@@ -1,3 +1,5 @@
+#pragma once
+
 // C++ Includes
 #include <cstdint>
 #ifdef _WIN32
