@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <chrono>
 #include <type_traits>
+#include <ratio>
 
 namespace fiah 
 {
@@ -45,44 +46,45 @@ template <Resolution R = Resolution::Nano, class Clock = std::chrono::steady_clo
 class TimeStamp
 {
 public:
-    using clock = Clock;
-    using duration = ResolutionDuration<R>::type;
-    using rep = duration::rep;
-    using time_point = std::chrono::time_point<clock, duration>;
+    using Duration = ResolutionDuration<R>::type;
+    using Rep = Duration::rep;
+    using TimePoint = std::chrono::time_point<Clock, Duration>;
 
-    static constexpr float NANO_PER_MICRO{1000.0};
+    constexpr TimeStamp() noexcept
+    {
+        update_now();
+    }
 
-    constexpr TimeStamp() noexcept = default;
-    explicit TimeStamp(rep ticks) noexcept : m_ticks{ticks} {}
+    explicit TimeStamp(Rep ticks) noexcept : m_ticks{ticks} {}
 
     TimeStamp& update_now() noexcept
     {
-        const auto now = clock::now().time_since_epoch();
-        m_ticks = std::chrono::duration_cast<duration>(now).count();
+        const auto now = Clock::now().time_since_epoch();
+        m_ticks = std::chrono::duration_cast<Duration>(now).count();
         return *this;
     }
 
-    rep get_ticks() const noexcept
+    Rep get_ticks() const noexcept
     {
         return m_ticks;
     }
 
-    template <class T>
-        requires std::is_integral_v<T>
-    static float to_micro(const T& val)
+    static float to_micro(const Rep val) noexcept
     {
-        return val / NANO_PER_MICRO;
+        using ratio = std::ratio_divide<typename Duration::period, std::chrono::microseconds::period>;
+        constexpr float factor = static_cast<float>(ratio::num) / static_cast<float>(ratio::den);
+        return static_cast<float>(val) * factor;
     }
 
-    template <class Duration>
-    constexpr void increment(Duration dur) noexcept
+    template <class OtherDuration>
+    constexpr void increment(OtherDuration dur) noexcept
     {
-        m_ticks += std::chrono::duration_cast<duration>(dur).count();
+        m_ticks += std::chrono::duration_cast<Duration>(dur).count();
     }
 
     constexpr auto operator<=>(const TimeStamp&) const noexcept = default;
 
 private:
-    rep m_ticks;
+    Rep m_ticks;
 };
 } // End namespace fiah

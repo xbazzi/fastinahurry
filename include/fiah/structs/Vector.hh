@@ -73,8 +73,9 @@ template <class T> class Vector
         _free();
     }
 
-  public:
+public:
 
+    using value_type = T;
     constexpr Vector() noexcept = default;
 
     template <std::size_t N>
@@ -97,7 +98,9 @@ template <class T> class Vector
     }
 
     constexpr Vector(Vector&& other) noexcept
-    : m_begin(other.m_begin), m_end(other.m_end), m_cap(other.m_cap)
+        : m_begin(other.m_begin), 
+          m_end(other.m_end),
+          m_cap(other.m_cap)
     {
         other.m_cap = other.m_end = other.m_begin = nullptr;
     }
@@ -113,6 +116,16 @@ template <class T> class Vector
     constexpr ~Vector() noexcept
     {
         _destroy_and_free();
+    }
+
+    T* begin()
+    {
+        return m_begin;
+    }
+
+    T* end()
+    {
+        return m_end;
     }
 
     template <class... Args> T& emplace_back(Args &&...args) noexcept
@@ -156,7 +169,7 @@ template <class T> class Vector
 
     [[nodiscard]] constexpr bool empty() const noexcept
     {
-        return m_begin == m_cap;
+        return m_begin == m_end;
     }
 
     constexpr void reserve(std::size_t new_cap) noexcept
@@ -188,13 +201,18 @@ template <class T> class Vector
 
         auto const num_default{new_size - current_size};
         while(m_end not_eq new_end)
-            std::construct_at(m_end);
+            std::construct_at(m_end++);
     }
 
     constexpr void pop_back() noexcept
     {
         assert(not empty());
         std::destroy_at(--m_end);
+    }
+
+    constexpr void clear() noexcept
+    {
+        _destroy_all();
     }
 
     constexpr T& operator[](std::size_t pos) noexcept

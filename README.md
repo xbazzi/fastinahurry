@@ -1,21 +1,23 @@
 # FastInAHurry
-Header-only C++ library with useful data structures and utilities for low-latency applications.
+Header-only C++ library with a performance-first approach. Not every component is guaranteed to be standards-compliant.
 
 # Readiness
-Some of the library is production-ready; some is not. Here is a table with the latest completion estimates:
+Some of the library is production-ready, and some is not:
 
 
 | Directory / File                              | Completion Estimate | Production-Ready?              | Basis                                                                                                         |
 | --------------------------------------------- | ------------------- | ------------------------------ | ------------------------------------------------------------------------------------------------------------- |
-| **[SpinMutex][1]**                            | 85%                 | **Beta**                      | Production worthy, but barely. Still needs ISA-specific handling. |
+| **[SpinMutex][1]**                            | 50%                 | **No**                      | Do not use. |
 | **[ThreadPool][2]**                            | 85%                 | **Alpha**     |                Technically ready, but can be made significantly more performant.    |                                   
-| **[UniquePtr][3]**                                    | 95%                  | **Yes**                      | Ready to go.                                                             |
-| **[SPSCQueue][4]**                                 | 60%                  | **Alpha**                      | Only use this queue to play around. Still needs a few optimizations.                       |
-| **[memory/][5]**                                  | 85%                 | **Beta**                      | Some of these might be faster than glibc, some might be slower. There is a lot of potential for speedups through vectorization and other optimizations. Use at your own risk while I add different code paths for different sizes.                                             |
+| **[UniquePtr][3]**                                    | 90%                  | **Yes**                      | Ready
+| **[SPSCQueue][4]**                                 | 80%                  | **Alpha**                      | Still needs a few optimizations.                       |
+| **[MPSCQueue][5]**                                 | 80%                  | **Alpha**                      | Still needs a few optimizations.                       |
+| **[Vector][6]**                                 | 90%                  | **Yes**                      | Ready |
 
-[1]: https://github.com/xbazzi/fastinahurry/tree/master/include/fiah/thread/SpinMutex.hpp "fastinahurry/include/fiah at master · xbazzi/fastinahurry · GitHub"
-[2]: https://github.com/xbazzi/fastinahurry/tree/master/include/fiah/thread/ThreadPool.hpp "fastinahurry/examples at master · xbazzi/fastinahurry · GitHub"
-[3]: https://github.com/xbazzi/fastinahurry/tree/master/include/fiah/handle/UniquePtr.hpp "fastinahurry/tests at master · xbazzi/fastinahurry · GitHub"
-[4]: https://github.com/xbazzi/fastinahurry/tree/master/include/fiah/structs/SPSCQueue.hh "GitHub - xbazzi/fastinahurry: Low-latency library"
-[5]: https://github.com/xbazzi/fastinahurry/tree/master/include/fiah/memory/ "GitHub - xbazzi/fastinahurry: Low-latency library"
+[1]: https://gitgud.boo/xbazzi/fastinahurry/src/branch/master/include/fiah/thread/SpinMutex.hpp ""
+[2]: https://gitgud.boo/xbazzi/fastinahurry/src/branch/master/include/fiah/thread/ThreadPool.hpp ""
+[3]: https://gitgud.boo/xbazzi/fastinahurry/src/branch/master/include/fiah/handle/UniquePtr.hpp ""
+[4]: https://gitgud.boo/xbazzi/fastinahurry/src/branch/master/include/fiah/structs/SPSCQueue.hpp ""
+[5]: https://gitgud.boo/xbazzi/fastinahurry/src/branch/master/include/fiah/structs/MPSCQueue.hpp ""
+[6]: https://gitgud.boo/xbazzi/fastinahurry/src/branch/master/include/fiah/structs/Vector.hpp ""
 

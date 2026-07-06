@@ -140,7 +140,7 @@ if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
 
   # Collect all benchmark source files
   file(GLOB_RECURSE BENCHMARK_SOURCES
-      "${CMAKE_CURRENT_SOURCE_DIR}/benchmarks/*_benchmark.cc"
+      "${CMAKE_CURRENT_SOURCE_DIR}/benchmarks/*_bench.cc"
   )
 
 if(BENCHMARK_SOURCES)
@@ -155,8 +155,8 @@ if(BENCHMARK_SOURCES)
 
     target_include_directories(fiah_benchmarks PRIVATE
         ${CMAKE_SOURCE_DIR}/include
-        ${CMAKE_SOURCE_DIR}/benchmarks   # For benchmark utilities
-        ${CMAKE_CURRENT_BINARY_DIR}      # For generated files
+        ${CMAKE_SOURCE_DIR}/benchmarks
+        ${CMAKE_CURRENT_BINARY_DIR}
     )
 
     target_link_libraries(fiah_benchmarks PRIVATE

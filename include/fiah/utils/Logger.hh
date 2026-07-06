@@ -21,7 +21,7 @@ namespace fiah
 /// @attention Instances must be exactly named `m_logger` for the
 ///            macros to work properly (`LOG_INFO()`, `LOG_ERROR()`, etc...)
 /// @tparam Tag
-/// @warning Made u look, u good tho.
+/// @warning Made u look.
 template <class Tag> class Logger
 {
   public:

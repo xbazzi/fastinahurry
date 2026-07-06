@@ -8,10 +8,7 @@
 #include <x86intrin.h>
 #endif
 
-// FastInAHurry Includes
-#include "fiah/utils/Logger.hh"
-#include "fiah/utils/Timer.hh"
-
+#include "fiah/utils/Types.hh"
 namespace fiah
 {
 class TSCTimer
@@ -19,13 +16,6 @@ class TSCTimer
   public:
     explicit TSCTimer(double dbTSCHz) : m_dbCyclesToMicros{1'000'000.0 / dbTSCHz}
     {
-        unsigned aux;
-        m_u64TimeNow = __rdtscp(&aux);
-    }
-
-    void increment(std::uint64_t ns)
-    {
-        m_u64TimeNow += ns;
     }
 
     std::uint64_t now()
@@ -44,7 +34,6 @@ class TSCTimer
 
   protected:
   private:
-    std::uint64_t m_u64TimeNow;
     double m_dbCyclesToMicros;
 };
 } // namespace fiah

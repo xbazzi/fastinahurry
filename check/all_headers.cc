@@ -15,6 +15,7 @@
 #include "fiah/utils/SimpleLogger.hh"
 #include "fiah/utils/TomlParser.hh"
 #include "fiah/utils/XorBitant.hh"
+#include "fiah/utils/SPSCLogger.hh"
 
 // IO
 #include "fiah/io/Socket.hh"
@@ -34,6 +35,7 @@
 #include "fiah/structs/SPSCQueue.hh"
 #include "fiah/structs/ThreadSafeQueue.hh"
 #include "fiah/structs/Vector.hh"
+#include "fiah/structs/MPSCQueue.hh"
 
 // Threads
 #include "fiah/thread/SpinMutex.hpp"

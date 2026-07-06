@@ -9,24 +9,36 @@ help: ## Show this help message
 
 # Default target: build everything
 all: configure ## Build all targets
-	cmake --build $(BUILD_DIR) 
+	CLICOLOR_FORCE=1 cmake --build $(BUILD_DIR)
 
 # Build only the "options" target
 options: configure ## Build options target
-	cmake --build $(BUILD_DIR) --target options
+	CLICOLOR_FORCE=1 cmake --build $(BUILD_DIR) --target options
 
 check: configure ## Compile all library headers (no tests/examples/benchmarks)
-	cmake --build $(BUILD_DIR) --target fiah_header_check
+	CLICOLOR_FORCE=1 cmake --build $(BUILD_DIR) --target fiah_header_check
 
 build-test: configure ## Build test target
-	cmake --build $(BUILD_DIR) --target fiah_tests
+	CLICOLOR_FORCE=1 cmake --build $(BUILD_DIR) --target fiah_tests
 
 tests: build-test ## Build and run tests (optional: FILTER=TestSuite.TestName)
 	./$(BUILD_DIR)/bin/fiah_tests $(if $(FILTER),--gtest_filter=$(FILTER),)
 
+build-bench: configure ## Build benchmark target
+	CLICOLOR_FORCE=1 cmake --build $(BUILD_DIR) --target fiah_benchmarks
+
+bench: build-bench ## Build and run benchmarks (optional: FILTER=BenchmarkName)
+	./$(BUILD_DIR)/bin/fiah_benchmarks $(if $(FILTER),--benchmark_filter=$(FILTER),)
+
 # Configure step (only runs once unless CMakeLists.txt changes)
 $(BUILD_DIR)/CMakeCache.txt: CMakeLists.txt ## Configure build directory
-	cmake -S . -B $(BUILD_DIR) -G Ninja -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+	cmake -S . -B $(BUILD_DIR) -G Ninja -DCMAKE_COLOR_DIAGNOSTICS=ON
+	@if [ -f CMakeUserPresets.json ]; then \
+		cmake --preset local; \
+	else \
+		cmake -S . -B $(BUILD_DIR) -G Ninja -DCMAKE_COLOR_DIAGNOSTICS=ON \
+		-DCMAKE_EXPORT_COMPILE_COMMANDS=ON; \
+	fi
 
 configure: $(BUILD_DIR)/CMakeCache.txt 
 
