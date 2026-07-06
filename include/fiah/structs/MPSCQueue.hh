@@ -32,6 +32,8 @@ concept small_T = sizeof(T) <= sizeof(sz_t);
 /// @tparam T 
 /// @tparam SIZE 
 /// @todo make specialization with atomic data for small T
+/// @todo add move to push()
+/// @todo switch to sequence counter
 template <class T, sz_t SIZE>
     requires size_pow2<SIZE> && 
     std::is_nothrow_copy_constructible_v<T> &&
