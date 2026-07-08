@@ -4,14 +4,6 @@
 
 namespace fiah
 {
-enum class CoreError : std::uint8_t
-{
-    INIT_CLIENT_FAIL,
-    SERVER_NOT_ONLINE,
-    INIT_SERVER_FAIL,
-    INVALID_STATE
-};
-
 enum class TomlParserError : std::uint8_t
 {
     FILE_NOT_FOUND,

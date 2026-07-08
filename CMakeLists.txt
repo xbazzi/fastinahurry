@@ -55,7 +55,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(GTest REQUIRED)
 find_package(Threads REQUIRED)
-find_package(REQUIRED)
 include(FetchContent)
 
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include")
