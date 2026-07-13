@@ -42,7 +42,10 @@ class MPSCQueue
 {
 public:
     #if defined(__cpp_lib_hardware_interference_size)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Winterference-size"
     using CacheLine = std::integral_constant<sz_t, std::hardware_destructive_interference_size>;
+#pragma GCC diagnostic pop
     #else
     using CacheLine = std::integral_constant<sz_t, 64ULL>;
     #endif

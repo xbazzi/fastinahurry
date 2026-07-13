@@ -12,12 +12,12 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-    add_compile_options( 
-        -g3 
+    add_compile_options(
+        -g3
         -Og
         -std=c++23
         -fsanitize=address,undefined,leak
-        -fno-omit-frame-pointer 
+        -fno-omit-frame-pointer
         -Wall
         -Wconversion
         -Wpedantic
@@ -25,6 +25,7 @@ if (CMAKE_BUILD_TYPE STREQUAL "Debug")
         -Wextra
         -Wno-interference-size
     )
+    add_link_options(-Wno-interference-size -fsanitize=address,undefined,leak)
 else()
     add_compile_options(
         -O3
@@ -38,7 +39,6 @@ else()
         -Wall
     )
 endif()
-add_link_options(-Wno-interference-size -fsanitize=address,undefined,leak)
 
 # Create header-only library interface
 add_library(fiah INTERFACE)
