@@ -34,7 +34,7 @@ class TcpServer : public Tcp
     std::expected<void, fiah::TcpError> start();
     std::expected<Socket, fiah::TcpError> accept_client();
 
-    __always_inline [[gnu::hot]] auto send(Socket &client, const void *buf, size_t len)
+    __attribute__((always_inline, hot)) auto send(Socket &client, const void *buf, size_t len)
         -> std::expected<std::uint64_t, fiah::TcpError>
     {
         fiah::Timer timer{};
@@ -44,7 +44,7 @@ class TcpServer : public Tcp
         return static_cast<std::uint64_t>(result);
     }
 
-    __always_inline [[gnu::hot]] auto recv(Socket &client, void *buf, size_t len)
+    __attribute__((always_inline, hot)) auto recv(Socket &client, void *buf, size_t len)
         -> std::expected<std::uint64_t, fiah::TcpError>
     {
         fiah::Timer timer{};

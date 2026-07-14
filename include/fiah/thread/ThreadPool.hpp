@@ -22,7 +22,7 @@ class ThreadPool
 {
   public:
     ThreadPool() = default;
-    ThreadPool(std::size_t num_threads);
+    ThreadPool(std::size_t num_threads = std::thread::hardware_concurrency());
 
     ThreadPool(const ThreadPool &) = delete;
     ThreadPool &operator=(const ThreadPool &) = delete;
@@ -46,7 +46,7 @@ class ThreadPool
     std::atomic_bool m_stopping{false};
 };
 
-ThreadPool::ThreadPool(std::size_t num_threads = std::thread::hardware_concurrency()) : m_num_threads{num_threads}
+ThreadPool::ThreadPool(std::size_t num_threads) : m_num_threads{num_threads}
 {
     using namespace std::chrono_literals;
     // auto stop_token = m_stop_source.get_token();

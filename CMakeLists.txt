@@ -23,9 +23,11 @@ if (CMAKE_BUILD_TYPE STREQUAL "Debug")
         -Wpedantic
         -Werror
         -Wextra
-        -Wno-interference-size
     )
-    add_link_options(-Wno-interference-size -fsanitize=address,undefined,leak)
+    add_link_options(-fsanitize=address,undefined,leak)
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+        add_compile_options(-Wno-interference-size)
+    endif()
 else()
     add_compile_options(
         -O3
@@ -121,6 +123,8 @@ if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
       <ranges>
       <print>
   )
+
+  add_dependencies(fiah_tests fiah_header_check)
 
   # Register tests with CTest
   add_test(NAME fiah_tests COMMAND fiah_tests)

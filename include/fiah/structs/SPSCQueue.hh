@@ -18,10 +18,14 @@ namespace fiah
 {
 
 #if defined(__cpp_lib_hardware_interference_size)
+#if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Winterference-size"
+#endif
 using cacheline_t = std::integral_constant<std::uint64_t, std::hardware_destructive_interference_size>;
+#if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC diagnostic pop
+#endif
 #else
 constexpr std::uint16_t CACHE_LINE_SIZE_BYTES{64};
 using cacheline_t = std::integral_constant<std::uint64_t, CACHE_LINE_SIZE_BYTES>;

@@ -53,6 +53,7 @@
               doxygen
               graphviz
               zsh
+              include-what-you-use
 
             ]);
 
@@ -65,9 +66,9 @@
           ];
           shell = pkgs.zsh;
           shellHook = ''
-            echo "Welcome to the FastInAHurry flake dev shell" 
-            export CC=gcc
-            export CXX=g++
+            echo "Welcome to the FastInAHurry flake dev shell"
+            export CC=''${CC:-gcc}
+            export CXX=''${CXX:-g++}
           '';
 
           # LLVM stuff

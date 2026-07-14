@@ -164,7 +164,7 @@ public:
 
     [[nodiscard]] constexpr std::size_t capacity() const noexcept
     {
-        return m_cap - m_begin;
+        return static_cast<std::size_t>(m_cap - m_begin);
     }
 
     [[nodiscard]] constexpr bool empty() const noexcept

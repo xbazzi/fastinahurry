@@ -34,7 +34,7 @@ class NewtonRaphson
 
         while (tol > stop_tol && count < max_iter)
         {
-            double new_x = x - f(x) / FiniteDiff::calc(x, 0.05, f);
+            double new_x = x - f(x) / FiniteDiff::calc(x, delta, f);
             tol = std::abs(x - new_x);
             x = new_x;
             ++count;

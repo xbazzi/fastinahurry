@@ -212,7 +212,7 @@ void SPSCLogger::_flush(Record* recs, u32_t n) noexcept
     {
         Record& rec = recs[i];
         int written_bytes = _serialize(line, rec, sizeof(line));
-        std::fwrite(line, 1, written_bytes < 0? 0uz: written_bytes, stdout);
+        std::fwrite(line, 1, written_bytes < 0 ? 0uz : static_cast<std::size_t>(written_bytes), stdout);
     }
     std::fflush(stdout);
 
@@ -272,7 +272,7 @@ __always_inline
 void SPSCLogger::_log(SPSCLogger::Level level, Location loc, const char* fmt, Args&&... args) noexcept
 {
     Record rec;
-    rec.ts_ns = TimeStamp<Resolution::Nano, std::chrono::system_clock>{}.get_ticks();
+    rec.ts_ns = static_cast<u64_t>(TimeStamp<Resolution::Nano, std::chrono::system_clock>{}.get_ticks());
     rec.loc   = loc;
     rec.buff_size = 0;
     rec.level = level;

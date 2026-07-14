@@ -39,11 +39,14 @@ TEST_F(LoggerNewTest, SingleProducer)
 TEST_F(LoggerNewTest, MultiProducer)
 {
     using namespace std::chrono_literals;
-    const auto log = [this](const int consumer_no) noexcept { 
-        m_logger.info(std::source_location::current(), "consumer%d\n", consumer_no); 
-        m_logger.warn(std::source_location::current(), "consumer%d\n", consumer_no); 
-        m_logger.error(std::source_location::current(), "consumer%d\n", consumer_no); 
+    const auto log = [this](const int consumer_no) noexcept {
+        m_logger.info(std::source_location::current(), "consumer%d\n", consumer_no);
+        m_logger.warn(std::source_location::current(), "consumer%d\n", consumer_no);
+        m_logger.error(std::source_location::current(), "consumer%d\n", consumer_no);
     };
+
+    // Register this thread as a producer before spawning others
+    m_logger.info(std::source_location::current(), "main\n");
 
     std::jthread(log, 1);
     std::jthread(log, 2);

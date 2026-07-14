@@ -59,7 +59,7 @@ protected:
 
 TEST_F(XorBitantTest, SingleClockSeed)
 {
-    std::uint64_t single_clock_seed = std::chrono::steady_clock::now().time_since_epoch().count();
+    std::uint64_t single_clock_seed = static_cast<std::uint64_t>(std::chrono::steady_clock::now().time_since_epoch().count());
     XorBitant xor_gen{single_clock_seed};
     
     generateHistogram(xor_gen, "single clock");
@@ -68,8 +68,8 @@ TEST_F(XorBitantTest, SingleClockSeed)
 
 TEST_F(XorBitantTest, DoubleClockSeed)
 {
-    std::uint64_t double_clock_seed = std::chrono::steady_clock::now().time_since_epoch().count() ^
-                                      std::chrono::system_clock::now().time_since_epoch().count();
+    std::uint64_t double_clock_seed = static_cast<std::uint64_t>(std::chrono::steady_clock::now().time_since_epoch().count()) ^
+                                      static_cast<std::uint64_t>(std::chrono::system_clock::now().time_since_epoch().count());
     XorBitant xor_gen{double_clock_seed};
     
     generateHistogram(xor_gen, "double clock");
@@ -78,8 +78,8 @@ TEST_F(XorBitantTest, DoubleClockSeed)
 
 TEST_F(XorBitantTest, ThreadDoubleClockSeed)
 {
-    std::uint64_t thread_double_clock_seed = std::chrono::steady_clock::now().time_since_epoch().count() ^
-                                             std::chrono::system_clock::now().time_since_epoch().count() ^
+    std::uint64_t thread_double_clock_seed = static_cast<std::uint64_t>(std::chrono::steady_clock::now().time_since_epoch().count()) ^
+                                             static_cast<std::uint64_t>(std::chrono::system_clock::now().time_since_epoch().count()) ^
                                              std::hash<std::thread::id>{}(std::this_thread::get_id());
     XorBitant xor_gen{thread_double_clock_seed};
     

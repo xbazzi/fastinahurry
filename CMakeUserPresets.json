@@ -1,0 +1,27 @@
+{
+  "version": 3,
+  "configurePresets": [
+    {
+      "name": "local",
+      "displayName": "Local dev (GCC)",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build",
+      "cacheVariables": {
+        "CMAKE_COLOR_DIAGNOSTICS": "ON",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
+    },
+    {
+      "name": "local-clang",
+      "displayName": "Local dev (Clang)",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build",
+      "cacheVariables": {
+        "CMAKE_COLOR_DIAGNOSTICS": "ON",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "CMAKE_C_COMPILER": "clang",
+        "CMAKE_CXX_COMPILER": "clang++"
+      }
+    }
+  ]
+}

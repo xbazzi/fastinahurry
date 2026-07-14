@@ -59,7 +59,7 @@ TEST_F(VectorTest, CapacityGrowth)
     }
 
     EXPECT_EQ(vec.size(), 20);
-    for (int i = 0; i < 20; ++i)
+    for (std::size_t i = 0; i < 20; ++i)
     {
         EXPECT_EQ(vec[i], i);
     }
