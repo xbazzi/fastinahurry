@@ -1,5 +1,13 @@
 # FastInAHurry
-Header-only C++ library with a performance-first approach. Not every component is guaranteed to be standards-compliant.
+
+[![GCC Debug](https://gitgud.boo/xbazzi/fastinahurry/actions/workflows/gcc-debug.yml/badge.svg)](https://gitgud.boo/xbazzi/fastinahurry/actions)
+[![GCC Release](https://gitgud.boo/xbazzi/fastinahurry/actions/workflows/gcc-release.yml/badge.svg)](https://gitgud.boo/xbazzi/fastinahurry/actions)
+[![Clang Debug](https://gitgud.boo/xbazzi/fastinahurry/actions/workflows/clang-debug.yml/badge.svg)](https://gitgud.boo/xbazzi/fastinahurry/actions)
+[![GCC](https://img.shields.io/badge/GCC-14-blue?logo=gnu)](https://gcc.gnu.org/)
+[![Clang](https://img.shields.io/badge/Clang-21-blue?logo=llvm)](https://clang.llvm.org/)
+[![coverage](https://img.shields.io/endpoint?url=https://gitgud.boo/xbazzi/fastinahurry/raw/branch/badges/coverage.json)](https://gitgud.boo/xbazzi/fastinahurry/actions)
+
+Header-only C++ library with a performance-first approach. Not every component is guaranteed to be standards-compliant, yet most are.
 
 # Readiness
 Some of the library is production-ready, and some is not:
