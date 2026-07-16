@@ -9,3 +9,4 @@ vtune*
 LastTest.log
 CTest*
 .idea/
+.devenv/
